@@ -282,7 +282,9 @@ namespace DiagramDesigner
                     var data = DataSource.FirstOrDefault(x => x.ID == SelectedItem.ID);
                     if (data == null) return;
                     data.Data.Text = ItemTextEditor.Text;
+                    data.Data.Changed = true;
                     DiagramManager.SetItemText(data, ItemTextEditor.Text);
+
                 };
                 return t;
             }

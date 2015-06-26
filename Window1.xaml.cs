@@ -44,5 +44,11 @@ namespace DiagramDesigner
         {
             Diagram.Expand();
         }
+
+        private void GetData_Click(object sender, RoutedEventArgs e)
+        {
+            var x = UserDataSourceRepository.GetChangedData();
+            MessageBox.Show(x.Count().ToString());
+        }
     }
 }

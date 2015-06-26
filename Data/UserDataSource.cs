@@ -68,5 +68,16 @@ namespace DiagramDesigner
                 CreateChildDesignerItem(diagramControl, childDesignerItem);
             }
         }
+
+        public static List<UserDataSource> GetChangedData()
+        {
+            List<UserDataSource> list = new List<UserDataSource>();
+            if (DesignerItems == null) return null;
+            foreach (var item in DesignerItems.Where(x => x.Data.Changed == true))
+            {
+                list.Add(new UserDataSource(item.ID.ToString(), item.ParentItemId.ToString(), item.Data.Text, ((CustomItemData)item.Data).Desc, ((CustomItemData)item.Data).YIndex));
+            }
+            return list;
+        }
     }
 }

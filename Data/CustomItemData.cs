@@ -16,8 +16,11 @@ namespace DiagramDesigner
             get { return _yIndex; }
             set
             {
-                _yIndex = value;
-                OnPropertyChanged("YIndex");
+                if (_yIndex != value)
+                {
+                    _yIndex = value;
+                    OnPropertyChanged("YIndex");
+                }
             }
         }
         private string _text;
@@ -26,11 +29,21 @@ namespace DiagramDesigner
             get { return _text; }
             set
             {
-                _text = value;
-                OnPropertyChanged("Text");
-                DiagramControl.BindData();
+                if (_text != value)
+                {
+                    _text = value;
+                    OnPropertyChanged("Text");
+                    DiagramControl.BindData();
+                    if (_text != "")//初始化时，不标记为更改
+                    {
+                        Changed = true;
+                    }
+                }
+
+
             }
         }
+        public bool Changed { get; set; }
         #endregion
 
         private string _desc;
@@ -39,9 +52,16 @@ namespace DiagramDesigner
             get { return _desc; }
             set
             {
-                _desc = value;
-                OnPropertyChanged("Desc");
-                DiagramControl.BindData();
+                if (_desc != value)
+                {
+                    _desc = value;
+                    OnPropertyChanged("Desc");
+                    DiagramControl.BindData();
+                    if (_desc != "")
+                    {
+                        Changed = true;
+                    }
+                }
             }
         }
 
@@ -54,6 +74,7 @@ namespace DiagramDesigner
             DiagramControl = diagramControl;
             Text = text;
             YIndex = yIndex;
+            Changed = false;
         }
         public CustomItemData(DiagramControl diagramControl, string text, string desc, double yIndex = double.MaxValue)
         {
@@ -61,6 +82,7 @@ namespace DiagramDesigner
             Text = text;
             Desc = desc;
             YIndex = yIndex;
+            Changed = false;
         }
 
         #endregion
@@ -76,6 +98,9 @@ namespace DiagramDesigner
         }
 
         #endregion
+
+
+
 
 
 

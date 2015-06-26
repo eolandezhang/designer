@@ -27,6 +27,7 @@
                     <Button x:Name="Remove" Content="移除" Click="Remove_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
                     <Button x:Name="Collapse" Content="折叠" Click="Collapse_Click"/>
                     <Button x:Name="Expand" Content="展开" Click="Expand_Click"/>
+                    <Button x:Name="GetData" Content="获取数据" Click="GetData_Click"/>
                 </ToolBarPanel>
             </ToolBar>
             <Grid>

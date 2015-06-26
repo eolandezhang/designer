@@ -1,0 +1,23 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:DiagramDesigner">
+
+    <Style TargetType="local:DiagramDataEditorControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <GroupBox x:Name="Header">
+                        <Grid>
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                      VerticalScrollBarVisibility="Auto" Name="DesignerScrollViewer">
+                                <Grid>
+                                    <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
+                    </GroupBox>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

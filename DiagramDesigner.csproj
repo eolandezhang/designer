@@ -81,9 +81,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Data\CustomItemData.cs" />
+    <Compile Include="Data\IDataSourceRepository.cs" />
     <Compile Include="DiagramControl.cs" />
     <Compile Include="DiagramDataEditorControl.cs" />
-    <Compile Include="IItemData.cs" />
+    <Compile Include="Data\IItemData.cs" />
     <Compile Include="Data\UserDataSource.cs" />
     <Compile Include="ZoomBox.cs" />
     <Page Include="Resources\DiagramDataEditorControl.xaml">

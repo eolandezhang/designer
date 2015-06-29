@@ -69,20 +69,20 @@ namespace DiagramDesigner
 
         #region Constructors
 
-        public CustomItemData(DiagramControl diagramControl, string text, double yIndex = double.MaxValue)
-        {
-            DiagramControl = diagramControl;
-            Text = text;
-            YIndex = yIndex;
-            Changed = false;
-        }
-        public CustomItemData(DiagramControl diagramControl, string text, string desc, double yIndex = double.MaxValue)
+        public CustomItemData(DiagramControl diagramControl, string text, string desc, bool added, bool removed, double yIndex = double.MaxValue)
         {
             DiagramControl = diagramControl;
             Text = text;
             Desc = desc;
             YIndex = yIndex;
             Changed = false;
+            Added = added;
+            Removed = removed;
+        }
+        public CustomItemData(DiagramControl diagramControl, string text, bool added, bool removed, double yIndex = double.MaxValue)
+            : this(diagramControl, text, "", added, removed, yIndex)
+        {
+
         }
 
         #endregion
@@ -105,5 +105,18 @@ namespace DiagramDesigner
 
 
 
+
+        private bool _added;
+        public bool Added
+        {
+            get { return _added; }
+            set { _added = value; }
+        }
+        private bool _removed;
+        public bool Removed
+        {
+            get { return _removed; }
+            set { _removed = value; }
+        }
     }
 }

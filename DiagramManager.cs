@@ -302,11 +302,15 @@ namespace DiagramDesigner
         protected static DesignerItem CreateDesignerItem/*创建元素*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset, SolidColorBrush borderBrush = null/*节点边框颜色*/)
         {
             var newItem = item;
+            if (newItem.Data == null) return null;
             CreateDesignerItemContent(item, borderBrush);
             item.Width = MinItemWidth;
             newItem.SetValue(Canvas.TopProperty, topOffset);
             newItem.SetValue(Canvas.LeftProperty, leftOffset);
-            canvas.Children.Add(newItem);
+            if (!newItem.Data.Removed)
+            {
+                canvas.Children.Add(newItem);
+            }
             canvas.Measure(Size.Empty);
             return newItem;
         }
@@ -686,6 +690,7 @@ namespace DiagramDesigner
 
             var canvas = parent.Parent as Canvas;
             if (canvas == null) return null;
+
             #region 起点 Connector
 
             var parentConnectorDecorator = parent.Template.FindName("PART_ConnectorDecorator", parent) as Control;
@@ -719,14 +724,20 @@ namespace DiagramDesigner
             if (c.Count == 0 || c.FirstOrDefault() == null)
             {
                 var conn = new Connection(source, sink); /*创建连线*/
-                canvas.Children.Add(conn); /*放到画布上*/
+                if (!childItem.Data.Removed)
+                {
+                    canvas.Children.Add(conn); /*放到画布上*/
+                }
             }
             else if (c.Count == 1)
             {
                 var cn = c.FirstOrDefault();
                 if (cn != null)
                 {
-                    canvas.Children.Add(cn);
+                    if (!childItem.Data.Removed)
+                    {
+                        canvas.Children.Add(cn);
+                    }
                 }
             }
             else if (c.Count > 1)//正常情况不会发生
@@ -736,7 +747,10 @@ namespace DiagramDesigner
                     connection.Source = null;
                     connection.Sink = null;
                     var conn = new Connection(source, sink); /*创建连线*/
-                    canvas.Children.Add(conn); /*放到画布上*/
+                    if (!childItem.Data.Removed)
+                    {
+                        canvas.Children.Add(conn); /*放到画布上*/
+                    }
                 }
             }
             #endregion

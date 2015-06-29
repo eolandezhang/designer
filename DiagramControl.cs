@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using DiagramDesigner.Data;
 
 namespace DiagramDesigner
 {
@@ -14,6 +15,7 @@ namespace DiagramDesigner
 
         public DesignerCanvas Designer { get; set; }
         public bool PreventNotify { get; set; }
+        public IDataSourceRepository DataSourceRepository { get; set; }
 
         #region SelectedItem
         private DesignerItem _selectedItem;
@@ -93,6 +95,7 @@ namespace DiagramDesigner
 
         public DiagramControl()
         {
+            DataSourceRepository = new UserDataSourceRepository();
             LoadDataSource();//模拟数据
             InitData();
             RegistPropertyChanged();
@@ -112,7 +115,7 @@ namespace DiagramDesigner
             if (!DataSource.Any())
             {
                 PreventNotify = true;
-                var newItem = new DesignerItem(Guid.NewGuid(), new CustomItemData(this, GetText(), ""));
+                var newItem = new DesignerItem(Guid.NewGuid(), new CustomItemData(this, GetText(), "", false, false));
                 DataSource.Add(newItem);
                 PreventNotify = false;
             }
@@ -121,10 +124,10 @@ namespace DiagramDesigner
         void LoadDataSource()
         {
             PreventNotify = true;
-            var root = UserDataSourceRepository.InitDesignerItems(this);
+            var root = DataSourceRepository.InitDesignerItems(this);
             if (root != null)
             {
-                var list = UserDataSourceRepository.DesignerItems.OrderBy(x => x.Data.YIndex);
+                var list = DataSourceRepository.DesignerItems.OrderBy(x => x.Data.YIndex);
                 foreach (var designerItem in list)
                 {
                     DataSource.Add(designerItem);
@@ -205,9 +208,12 @@ namespace DiagramDesigner
             }
             var parent = DataSource.FirstOrDefault(x => x.ID == designerItem.ParentItemId);
             if (parent == null) return;
-            var newitem = new DesignerItem(n5, parent.ID, new CustomItemData(this, GetText(), ""));
+            var newitem = new DesignerItem(n5, parent.ID, new CustomItemData(this, GetText(), true, false));
             DataSource.Add(newitem);
             SelectedItem = newitem;
+
+            DataSourceRepository.DesignerItems.Add(newitem);
+            DataSourceRepository.UpdateDataSources();
         }
         public void AddAfter(DesignerItem parentDesignerItem)
         {
@@ -218,10 +224,13 @@ namespace DiagramDesigner
             {
                 return;
             }
-            var newitem = new DesignerItem(n5, parentDesignerItem.ID, new CustomItemData(this, GetText(), ""));
+            var newitem = new DesignerItem(n5, parentDesignerItem.ID,
+                new CustomItemData(this, GetText(), true, false));
             DataSource.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.UpdateYIndex(newitem);
+            DataSourceRepository.DesignerItems.Add(newitem);
+            DataSourceRepository.UpdateDataSources();
         }
         private string GetText()
         {
@@ -242,20 +251,28 @@ namespace DiagramDesigner
             foreach (var designerItem in list)
             {
                 var item1 = designerItem;
-                DataSource.Remove(item1);
+                //DataSource.Remove(item1);
+                item1.Data.Removed = true;
+                item1.Visibility = Visibility.Collapsed;
             }
-            DataSource.Remove(item);
+            //DataSource.Remove(item);
+            item.Data.Removed = true;
+            item.Visibility = Visibility.Collapsed;
             PreventNotify = false;
             var connections = DiagramManager.GetItemConnections(d);
             var sink = connections.Where(x => x.Sink.ParentDesignerItem.Equals(d));
             foreach (var connection in sink)
             {
-                connection.Sink = null;
+                //connection.Sink = null;
+                Designer.Children.Remove(connection);
+                connection.Visibility = Visibility.Collapsed;
             }
             if (!PreventNotify)
                 BindData();
             var parent = DataSource.FirstOrDefault(x => x.ID == d.ParentItemId);
             SelectedItem = parent;
+
+            DataSourceRepository.UpdateDataSources();
         }
 
         public void Collapse()
@@ -282,9 +299,9 @@ namespace DiagramDesigner
                     var data = DataSource.FirstOrDefault(x => x.ID == SelectedItem.ID);
                     if (data == null) return;
                     data.Data.Text = ItemTextEditor.Text;
-                    data.Data.Changed = true;
+                    data.Data.Changed = !data.Data.Added;
                     DiagramManager.SetItemText(data, ItemTextEditor.Text);
-
+                    DataSourceRepository.UpdateDataSources();
                 };
                 return t;
             }

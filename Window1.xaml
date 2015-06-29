@@ -27,7 +27,7 @@
                     <Button x:Name="Remove" Content="移除" Click="Remove_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
                     <Button x:Name="Collapse" Content="折叠" Click="Collapse_Click"/>
                     <Button x:Name="Expand" Content="展开" Click="Expand_Click"/>
-                    <Button x:Name="GetData" Content="获取数据" Click="GetData_Click"/>
+                    <Button x:Name="GetData" Content="获取数据" Click="GetData_Click" CommandParameter="{Binding ElementName=Diagram}"/>
                 </ToolBarPanel>
             </ToolBar>
             <Grid>
@@ -49,16 +49,24 @@
                                     <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="*"></RowDefinition>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"></ColumnDefinition>
                                     <ColumnDefinition Width="*"></ColumnDefinition>
                                 </Grid.ColumnDefinitions>
-                                <Label Content="Text" Grid.Row="0" Grid.Column="0"></Label>
-                                <TextBox Text="{Binding Text,UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1"></TextBox>
-                                <Label Content="Desc" Grid.Row="1" Grid.Column="0"></Label>
-                                <TextBox Text="{Binding Desc ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="1"  Grid.Column="1"></TextBox>
+                                <Label Content="Text" Grid.Row="0" Grid.Column="0"/>
+                                <TextBox Text="{Binding Text,UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1"/>
+                                <Label Content="Desc" Grid.Row="1" Grid.Column="0"/>
+                                <TextBox Text="{Binding Desc ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="1"  Grid.Column="1"/>
+                                <Label Content="Changed" Grid.Row="2" Grid.Column="0"/>
+                                <TextBox Text="{Binding Changed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="2"  Grid.Column="1"/>
+                                <Label Content="Added" Grid.Row="3" Grid.Column="0"/>
+                                <TextBox Text="{Binding Added ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="3"  Grid.Column="1"/>
+                                <Label Content="Removed" Grid.Row="4" Grid.Column="0"/>
+                                <TextBox Text="{Binding Removed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="4"  Grid.Column="1"/>
                             </Grid>
                         </s:DiagramDataEditorControl.Content>
                     </s:DiagramDataEditorControl>

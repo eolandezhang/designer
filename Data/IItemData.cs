@@ -11,5 +11,7 @@ namespace DiagramDesigner
         string Text { get; set; }
         double YIndex { get; set; }
         bool Changed { get; set; }
+        bool Added { get; set; }
+        bool Removed { get; set; }
     }
 }

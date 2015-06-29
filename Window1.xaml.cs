@@ -47,8 +47,9 @@ namespace DiagramDesigner
 
         private void GetData_Click(object sender, RoutedEventArgs e)
         {
-            var x = UserDataSourceRepository.GetChangedData();
-            MessageBox.Show(x.Count().ToString());
+            var param = (DiagramControl)((Button)sender).CommandParameter;
+            var list = param.DataSourceRepository.DataSources;
+            MessageBox.Show(string.Format("Changed:{0},Added:{1},Removed:{2}", list.Count(x => x.Changed), list.Count(x => x.Added), list.Count(x => x.Removed)));
         }
     }
 }

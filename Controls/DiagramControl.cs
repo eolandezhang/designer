@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using DiagramDesigner.Controls;
 
-namespace DiagramDesigner
+namespace DiagramDesigner.Controls
 {
     public class DiagramControl : ContentControl, INotifyPropertyChanged
     {
@@ -293,11 +291,11 @@ namespace DiagramDesigner
             {
                 var item1 = designerItem;
                 //DataSource.Remove(item1);
-                item1.Data.Removed = true;
+                if (!item1.Data.Added) item1.Data.Removed = true;
                 item1.Visibility = Visibility.Collapsed;
             }
             //DataSource.Remove(item);
-            item.Data.Removed = true;
+            if (!item.Data.Added) item.Data.Removed = true;
             item.Visibility = Visibility.Collapsed;
             PreventNotify = false;
             var connections = DiagramManager.GetItemConnections(d);

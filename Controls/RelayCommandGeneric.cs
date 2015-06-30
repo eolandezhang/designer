@@ -9,10 +9,7 @@
 * @version 1.0 
 * ==============================================================================*/
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using System.Windows.Input;
 
 namespace DiagramDesigner.Controls

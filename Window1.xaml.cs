@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DiagramDesigner.Controls;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using DiagramDesigner.Controls;
 
 namespace DiagramDesigner
 {

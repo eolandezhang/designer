@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Windows.Controls;
+using DiagramDesigner.Controls;
 
 namespace DiagramDesigner
 {

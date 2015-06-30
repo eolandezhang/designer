@@ -35,7 +35,7 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="200"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <s:DiagramControl 
+                <c:DiagramControl 
                     Grid.Column="0" 
                     x:Name="Diagram" 
                     DiagramHeader="树状图" 
@@ -48,8 +48,8 @@
                         <RowDefinition/>
                         <RowDefinition Height="200"/>
                     </Grid.RowDefinitions>
-                    <s:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" >
-                        <s:DiagramDataEditorControl.Content>
+                    <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" >
+                        <c:DiagramDataEditorControl.Content>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"></RowDefinition>
@@ -83,8 +83,8 @@
                                 <Label Content="ParentId" Grid.Row="7" Grid.Column="0"/>
                                 <TextBox Text="{Binding ParentId ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="7"  Grid.Column="1"  TextWrapping="WrapWithOverflow" Width="120" IsReadOnly="True"/>
                             </Grid>
-                        </s:DiagramDataEditorControl.Content>
-                    </s:DiagramDataEditorControl>
+                        </c:DiagramDataEditorControl.Content>
+                    </c:DiagramDataEditorControl>
                     <s:ZoomBox Grid.Row="1" 
                                DiagramControl="{Binding ElementName=Diagram}"/>
                 </Grid>

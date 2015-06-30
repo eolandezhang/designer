@@ -37,22 +37,22 @@
                                             Grid.Column="0" 
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
-                                            DiagramDataEditorControl="{Binding ElementName=DiagramDataEditor}"
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
-                                            ItemDatas="{Binding ItemDatas}"/>
+                                            ItemDatas="{Binding ItemDatas}"
+                                            ItemDataBase="{Binding EditorDataSource,Mode=TwoWay}"/>
                                     </Grid>
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>
                         </xcad:LayoutDocumentPaneGroup>
-                        <xcad:LayoutAnchorablePaneGroup DockWidth="300" DockMinWidth="300">
+                        <xcad:LayoutAnchorablePaneGroup DockWidth="320" DockMinWidth="320">
                             <xcad:LayoutAnchorablePane>
-                                <xcad:LayoutAnchorable ContentId="toolWindow1" Title="Attributes" >
+                                <xcad:LayoutAnchorable ContentId="toolWindow1" Title="Attributes" AutoHideWidth="320">
                                     <Grid Column="1">
                                         <Grid.RowDefinitions>
                                             <RowDefinition/>
                                             <RowDefinition Height="200"/>
                                         </Grid.RowDefinitions>
-                                        <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" >
+                                        <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataSource="{Binding EditorDataSource}">
                                             <c:DiagramDataEditorControl.Content>
                                                 <Grid>
                                                     <Grid.RowDefinitions>
@@ -101,8 +101,8 @@
 
         </xcad:DockingManager>
     </DockPanel>
-    
-    
+
+
     <!--<DockPanel>
             <ToolBar DockPanel.Dock="Top">
                 <ToolBarPanel Orientation="Horizontal">

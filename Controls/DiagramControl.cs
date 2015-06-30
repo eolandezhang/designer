@@ -21,52 +21,41 @@ namespace DiagramDesigner.Controls
         private DesignerCanvas Designer { get; set; }
         private bool PreventNotify { get; set; }
         #endregion
-
-        #region Public Property
-
-        #region SelectedItem
-
         private DesignerItem _selectedItem;
         public DesignerItem SelectedItem
         {
-            get
-            {
-                return _selectedItem;
-            }
+            get { return _selectedItem; }
             set
             {
-                if (Equals(SelectedItem, value)) return;
                 _selectedItem = value;
+
                 OnPropertyChanged("SelectedItem");
             }
         }
 
-        #endregion
-
-        #endregion
 
         #region Dependency Property
 
         #region DiagramDataEditorControl 节点编辑器
 
-        public static readonly DependencyProperty DiagramDataEditorControlProperty = DependencyProperty.Register(
-            "DiagramDataEditorControl", typeof(DiagramDataEditorControl), typeof(DiagramControl), new FrameworkPropertyMetadata(null,
-                (d, e) =>
-                {
-                    var c = d as DiagramControl;
-                    if (c.SelectedItem != null)
-                        c.DiagramDataEditorControl.ItemData = c.SelectedItem.Data;
-                    else
-                    {
-                        c.DiagramDataEditorControl.ItemData = new ItemDataBase();
-                    }
-                }));
+        //public static readonly DependencyProperty DiagramDataEditorControlProperty = DependencyProperty.Register(
+        //    "DiagramDataEditorControl", typeof(DiagramDataEditorControl), typeof(DiagramControl), new FrameworkPropertyMetadata(null,
+        //        (d, e) =>
+        //        {
+        //            var c = d as DiagramControl;
+        //            if (c.SelectedItem != null)
+        //                c.DiagramDataEditorControl.ItemData = c.SelectedItem.Data;
+        //            else
+        //            {
+        //                c.DiagramDataEditorControl.ItemData = new ItemDataBase();
+        //            }
+        //        }));
 
-        public DiagramDataEditorControl DiagramDataEditorControl
-        {
-            get { return (DiagramDataEditorControl)GetValue(DiagramDataEditorControlProperty); }
-            set { SetValue(DiagramDataEditorControlProperty, value); }
-        }
+        //public DiagramDataEditorControl DiagramDataEditorControl
+        //{
+        //    get { return (DiagramDataEditorControl)GetValue(DiagramDataEditorControlProperty); }
+        //    set { SetValue(DiagramDataEditorControlProperty, value); }
+        //}
 
         #endregion
 
@@ -124,13 +113,63 @@ namespace DiagramDesigner.Controls
         #region DiagramHeaderProperty 画板区域标题
 
         public static readonly DependencyProperty DiagramHeaderProperty = DependencyProperty.Register(
-            "DiagramHeader", typeof(string), typeof(DiagramControl), new PropertyMetadata(default(string)));
+            "DiagramHeader", typeof(string), typeof(DiagramControl), new FrameworkPropertyMetadata(default(string)));
 
         public string DiagramHeader
         {
             get { return (string)GetValue(DiagramHeaderProperty); }
             set { SetValue(DiagramHeaderProperty, value); }
         }
+
+        #endregion
+
+
+
+
+        public ItemDataBase ItemDataBase
+        {
+            get { return (ItemDataBase)GetValue(ItemDataBaseProperty); }
+            set { SetValue(ItemDataBaseProperty, value); }
+        }
+
+        public static readonly DependencyProperty ItemDataBaseProperty =
+            DependencyProperty.Register("ItemDataBase", typeof(ItemDataBase), typeof(DiagramControl), new FrameworkPropertyMetadata(
+                null, (d, e) =>
+                {
+                    var c = d as DiagramControl;
+                    if (c != null)
+                        //c.OnSelectedItemChanged();
+                        DiagramManager.HighlightSelected(e.NewValue as DesignerItem);
+                }));
+
+
+
+        #region SelectedItem
+
+        //public DesignerItem SelectedItem
+        //{
+        //    get
+        //    {
+        //        return (DesignerItem)GetValue(SelectedItemProperty);
+        //    }
+        //    set
+        //    {
+        //        SetValue(SelectedItemProperty, value);
+        //    }
+        //}
+
+        //public static readonly DependencyProperty SelectedItemProperty =
+        //    DependencyProperty.Register(
+        //    "SelectedItem",
+        //    typeof(DesignerItem), typeof(DiagramControl), new FrameworkPropertyMetadata(
+        //        null, (d, e) =>
+        //        {
+        //            var c = d as DiagramControl;
+        //            if (c != null)
+        //                //c.OnSelectedItemChanged();
+        //                DiagramManager.HighlightSelected(e.NewValue as DesignerItem);
+        //        }));
+
 
         #endregion
 
@@ -141,16 +180,10 @@ namespace DiagramDesigner.Controls
         public DiagramControl()
         {
             DesignerItems = new ObservableCollection<DesignerItem>();
-            //ItemDatas = new ObservableCollection<ItemDataBase>();
+
             RegistPropertyChanged();
             RegistCollectionChanged();
-            ItemDatas = new ObservableCollection<ItemDataBase>()
-            {
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",false,false),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,2),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,1)
-            };
-            GenerateDesignerItems(ItemDatas);
+
         }
 
         #endregion
@@ -178,12 +211,13 @@ namespace DiagramDesigner.Controls
             var root = InitDesignerItems(data);
             if (root == null)
             {
-                //InitData(); //如果DataSource中无数据，则自动创建一个根节点
+                InitData(); //如果DataSource中无数据，则自动创建一个根节点
             }
             else
             {
                 SelectedItem = root;
             }
+            BindData();
             PreventNotify = false;
         }
 
@@ -194,27 +228,37 @@ namespace DiagramDesigner.Controls
                 switch (e.PropertyName)
                 {
                     case "SelectedItem":
-                        if (DiagramDataEditorControl != null)
                         {
-                            DiagramDataEditorControl.DiagramControl = this;
                             if (SelectedItem != null)
                             {
-                                DiagramManager.HighlightSelected(SelectedItem);
-                                if (DiagramDataEditorControl != null)
-                                {
-                                    DiagramDataEditorControl.ItemData = SelectedItem.Data;
-                                }
-                            }
-                            else
-                            {
-
-                                DiagramDataEditorControl.ItemData = null;
+                                ItemDataBase = SelectedItem.Data;
                             }
                         }
                         break;
                 }
             };
         }
+
+        //void OnSelectedItemChanged()
+        //{
+        //    if (DiagramDataEditorControl != null)
+        //    {
+        //        DiagramDataEditorControl.DiagramControl = this;
+        //        if (SelectedItem != null)
+        //        {
+
+        //            if (DiagramDataEditorControl != null)
+        //            {
+        //                DiagramDataEditorControl.ItemData = SelectedItem.Data;
+        //            }
+        //        }
+        //        else
+        //        {
+
+        //            DiagramDataEditorControl.ItemData = null;
+        //        }
+        //    }
+        //}
 
         void RegistCollectionChanged()
         {
@@ -237,11 +281,12 @@ namespace DiagramDesigner.Controls
             var items = DiagramManager.GetDesignerItems(designer);
             if (items != null)
             {
+                items.ForEach(x => x.Data.DiagramControl = this);
                 items.ForEach(x =>
                 {
                     x.PreviewMouseLeftButtonDown += (s, e) =>
                     {
-                        SelectedItem = designer.SelectionService.SelectedItem;
+                        //SelectedItem = designer.SelectionService.SelectedItem;
                     };
                     x.MouseDoubleClick += (sender, e) =>
                     {

@@ -1,6 +1,7 @@
 ﻿using DiagramDesigner.Controls;
 using DiagramDesigner.Data;
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,7 +16,19 @@ namespace DiagramDesigner
     [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
     public class DesignerItem : ContentControl, ISelectable, IGroupable
     {
-        public ItemDataBase Data { get; set; }
+        private ItemDataBase _data;
+        public ItemDataBase Data
+        {
+            get { return _data; }
+            set
+            {
+                if (_data != value)
+                {
+                    _data = value;
+                    
+                }
+            }
+        }
 
         #region ID
         private Guid id;
@@ -287,5 +300,7 @@ namespace DiagramDesigner
                 }
             }
         }
+
+        
     }
 }

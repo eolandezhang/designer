@@ -4,9 +4,10 @@ using System.ComponentModel;
 
 namespace DiagramDesigner.Data
 {
-    
+
     public class ItemDataBase : INotifyPropertyChanged
     {
+        public DiagramControl DiagramControl { get; set; }
         public Guid Id { get; set; }
         private Guid _parentId;
         public Guid ParentId
@@ -32,6 +33,10 @@ namespace DiagramDesigner.Data
                 if (_text == value) return;
                 _text = value;
                 OnPropertyChanged("Text");
+                if (DiagramControl != null)
+                {
+                    DiagramControl.BindData();
+                }
                 if (_text != "")//初始化时，不标记为更改
                 {
                     Changed = true;
@@ -63,7 +68,7 @@ namespace DiagramDesigner.Data
                 OnPropertyChanged("YIndex");
             }
         }
-        
+
         #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;

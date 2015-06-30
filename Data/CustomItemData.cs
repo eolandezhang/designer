@@ -29,6 +29,10 @@ namespace DiagramDesigner.Data
                 if (_desc == value) return;
                 _desc = value;
                 OnPropertyChanged("Desc");
+                if (DiagramControl != null)
+                {
+                    DiagramControl.BindData();
+                }
                 if (_desc != "")
                 {
                     Changed = true;

@@ -168,7 +168,7 @@
                             BorderThickness="1"
                             Background="#EEE"
                             BorderBrush="DimGray">
-                        <Expander IsExpanded="True"
+                        <GroupBox 
                                   Background="Transparent">
                             <Border BorderBrush="DimGray"
                                     BorderThickness="0,1,0,0"
@@ -200,7 +200,7 @@
                                     </Canvas>
                                 </Grid>
                             </Border>
-                            <Expander.Header>
+                            <GroupBox.Header>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -213,6 +213,7 @@
                                             Ticks="50,100,125,150,200"
                                             Minimum="50"
                                             Maximum="200"
+                                            Value="100"
                                             IsSnapToTickEnabled="True"
                                             IsMoveToPointEnabled="False" Width="180" />
 
@@ -227,8 +228,8 @@
                                                HorizontalAlignment="Right"
                                                Margin="1,0,2,0" />
                                 </Grid>
-                            </Expander.Header>
-                        </Expander>
+                            </GroupBox.Header>
+                        </GroupBox>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

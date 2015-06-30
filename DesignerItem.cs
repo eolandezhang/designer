@@ -25,11 +25,6 @@ namespace DiagramDesigner
         }
         #endregion
 
-        #region ParentItemId
-
-        public Guid ParentItemId { get; set; }
-        #endregion
-
         #region ParentID
         //分组时用的，并不是表示父节点ID
         public Guid ParentID
@@ -169,36 +164,21 @@ namespace DiagramDesigner
 
         public bool IsShadow { get; set; }
 
-        //private double zIndex;
-
-        //public double ZIndex
-        //{
-        //    get { return zIndex; }
-        //    set
-        //    {
-        //        zIndex = value;
-        //        Data.ZIndex = value;
-        //    }
-        //}
-
         static DesignerItem()
         {
             // set the key to reference the style for this control
-            FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(
+            DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(DesignerItem), new FrameworkPropertyMetadata(typeof(DesignerItem)));
         }
 
         public DesignerItem(Guid id)
         {
             this.id = id;
-            this.Loaded += new RoutedEventHandler(DesignerItem_Loaded);
-
+            Loaded += DesignerItem_Loaded;
+            Data = new CustomItemData(id);
         }
 
-        public DesignerItem()
-            : this(Guid.NewGuid())
-        {
-        }
+        public DesignerItem() : this(Guid.NewGuid()) { }
         public DesignerItem(Guid id, IItemData itemData)
             : this(id)
         {
@@ -207,7 +187,7 @@ namespace DiagramDesigner
         public DesignerItem(Guid id, Guid parentItemId, IItemData itemData)
             : this(id)
         {
-            ParentItemId = parentItemId;
+            Data.ParentId = parentItemId;
             Data = itemData;
         }
 

@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using DiagramDesigner.Data;
 
 namespace DiagramDesigner
 {
@@ -97,13 +96,9 @@ namespace DiagramDesigner
         {
             DataSourceRepository = new UserDataSourceRepository();
             LoadDataSource();//模拟数据
-            InitData();
+            InitData();//如果DataSource中无数据，则自动创建一个根节点
             RegistPropertyChanged();
-            DataSource.CollectionChanged += (s, e) =>
-            {
-                if (!PreventNotify)
-                    BindData();
-            };
+            RegistCollectionChanged();
         }
 
         #endregion
@@ -115,7 +110,8 @@ namespace DiagramDesigner
             if (!DataSource.Any())
             {
                 PreventNotify = true;
-                var newItem = new DesignerItem(Guid.NewGuid(), new CustomItemData(this, GetText(), "", false, false));
+                var id = Guid.NewGuid();
+                var newItem = new DesignerItem(id, new CustomItemData(this, id, Guid.Empty, GetText(), "", false, false));
                 DataSource.Add(newItem);
                 PreventNotify = false;
             }
@@ -158,6 +154,16 @@ namespace DiagramDesigner
                 }
             };
         }
+
+        void RegistCollectionChanged()
+        {
+            DataSource.CollectionChanged += (s, e) =>
+            {
+                if (!PreventNotify)
+                    BindData();
+            };
+        }
+
         public void BindData()
         {
             var designer = Designer;
@@ -196,7 +202,7 @@ namespace DiagramDesigner
         {
             if (designerItem == null) return;
             if (designerItem.Data == null) return;
-            if (designerItem.ParentItemId.Equals(Guid.Empty))
+            if (designerItem.Data.ParentId.Equals(Guid.Empty))
             {
                 AddAfter(designerItem);
                 return;
@@ -206,9 +212,9 @@ namespace DiagramDesigner
             {
                 return;
             }
-            var parent = DataSource.FirstOrDefault(x => x.ID == designerItem.ParentItemId);
+            var parent = DataSource.FirstOrDefault(x => x.ID == designerItem.Data.ParentId);
             if (parent == null) return;
-            var newitem = new DesignerItem(n5, parent.ID, new CustomItemData(this, GetText(), true, false));
+            var newitem = new DesignerItem(n5, parent.ID, new CustomItemData(this, n5, parent.ID, GetText(), true, false));
             DataSource.Add(newitem);
             SelectedItem = newitem;
 
@@ -225,7 +231,7 @@ namespace DiagramDesigner
                 return;
             }
             var newitem = new DesignerItem(n5, parentDesignerItem.ID,
-                new CustomItemData(this, GetText(), true, false));
+                new CustomItemData(this, n5, parentDesignerItem.ID, GetText(), true, false));
             DataSource.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.UpdateYIndex(newitem);
@@ -240,7 +246,7 @@ namespace DiagramDesigner
         public void Delete(DesignerItem d)
         {
             if (d == null) return;
-            if (d.ParentItemId == Guid.Empty) return;
+            if (d.Data.ParentId == Guid.Empty) return;
             if (d.Data == null) return;
             var item = this.DataSource.FirstOrDefault(x => x.ID == d.ID);
             if (item == null) return;
@@ -269,7 +275,7 @@ namespace DiagramDesigner
             }
             if (!PreventNotify)
                 BindData();
-            var parent = DataSource.FirstOrDefault(x => x.ID == d.ParentItemId);
+            var parent = DataSource.FirstOrDefault(x => x.ID == d.Data.ParentId);
             SelectedItem = parent;
 
             DataSourceRepository.UpdateDataSources();
@@ -310,14 +316,14 @@ namespace DiagramDesigner
         #endregion
 
         #region 数据源初始化节点
-        public DesignerItem CreateRootItem(string id, IItemData itemData)
+        public DesignerItem CreateRootItem(Guid id, IItemData itemData)
         {
-            return new DesignerItem(new Guid(id), itemData);
+            return new DesignerItem(id, itemData);
         }
 
-        public DesignerItem CreateChildItem(string parentId, string childId, IItemData itemData)
+        public DesignerItem CreateChildItem(Guid parentId, Guid childId, IItemData itemData)
         {
-            return new DesignerItem(new Guid(childId), new Guid(parentId), itemData);
+            return new DesignerItem(childId, parentId, itemData);
         }
         #endregion
 
@@ -336,7 +342,7 @@ namespace DiagramDesigner
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
             BindData();
 
-            var root = DataSource.FirstOrDefault(x => x.ParentItemId == Guid.Empty);
+            var root = DataSource.FirstOrDefault(x => x.Data.ParentId == Guid.Empty);
             DiagramManager.HighlightSelected(root);
         }
 

@@ -37,17 +37,17 @@ namespace DiagramDesigner
         public static DesignerItem/*根节点*/ GenerateItems(Canvas canvas, IList<DesignerItem> dataSource/*数据源*/)
         {
             if (dataSource.Count == 0) return null;
-            var root = dataSource.FirstOrDefault(x => x.ParentItemId.Equals(Guid.Empty));
+            var root = dataSource.FirstOrDefault(x => x.Data.ParentId.Equals(Guid.Empty));
             if (root == null) return null;
             IList<DesignerItem> designerItems = new List<DesignerItem>();
             CreateItems(canvas, dataSource, root, designerItems);
-            return designerItems.FirstOrDefault(x => x.ParentItemId.Equals(Guid.Empty));
+            return designerItems.FirstOrDefault(x => x.Data.ParentId.Equals(Guid.Empty));
         }
 
         public static void ArrangeWithRootItems(Canvas canvas)
         {
             var items = GetDesignerItems(canvas);
-            var root = items.FirstOrDefault(x => x.ParentItemId.Equals(Guid.Empty));
+            var root = items.FirstOrDefault(x => x.Data.ParentId.Equals(Guid.Empty));
             if (root != null)
             {
                 ArrangeWithRootItems(root);
@@ -317,7 +317,7 @@ namespace DiagramDesigner
         protected static void CreateDesignerItemContent/*创建元素内容，固定结构*/(DesignerItem item, SolidColorBrush borderBrush = null)
         {
             if (item == null) return;
-            if (item.Data != null && item.Data.Text.Equals(GetItemText(item))) { return; }
+            if (item.Data != null && item.Data.Text == (GetItemText(item))) { return; }
             if (borderBrush == null) borderBrush = DefaultBorderBrush;
             var border = new Border()
             {
@@ -558,7 +558,7 @@ namespace DiagramDesigner
                     if (!connections.Any()) return;
                     var connection = connections.First();
                     connection.Source = source;
-                    item.ParentItemId = parent.ID;
+                    item.Data.ParentId = parent.ID;
                 }
             }
         }
@@ -640,7 +640,7 @@ namespace DiagramDesigner
 
             if (designerItems.All(x => !x.ID.Equals(parentItem.ID)))
             {
-                if (parentItem.ParentItemId.Equals(Guid.Empty)) //是根节点？
+                if (parentItem.Data.ParentId.Equals(Guid.Empty)) //是根节点？
                 {
                     parentDesignerItem = CreateRoot(canvas, parentItem, 5d, 5d);
                     if (parentDesignerItem != null)
@@ -654,7 +654,7 @@ namespace DiagramDesigner
                 parentDesignerItem = designerItems.FirstOrDefault(x => x.ID.Equals(parentItem.ID));
             }
 
-            var childs = dataSource.Where(x => x.ParentItemId.Equals(parentItem.ID));
+            var childs = dataSource.Where(x => x.Data.ParentId.Equals(parentItem.ID));
 
             foreach (var childItem in childs)
             {

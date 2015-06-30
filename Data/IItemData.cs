@@ -8,6 +8,8 @@ namespace DiagramDesigner
 {
     public interface IItemData : INotifyPropertyChanged
     {
+        Guid Id { get; set; }
+        Guid ParentId { get; set; }
         string Text { get; set; }
         double YIndex { get; set; }
         bool Changed { get; set; }

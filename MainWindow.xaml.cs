@@ -1,32 +1,25 @@
 ﻿using DiagramDesigner.Controls;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace DiagramDesigner
 {
-    public partial class Window1 : Window
+    public partial class MainWindow : Window
     {
-        public Window1()
+        public MainWindow()
         {
             InitializeComponent();
-            var data = new ObservableCollection<IItemData>()
-            {
-                new CustomItemData(Diagram,"d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",false,false),
-                new CustomItemData(Diagram,"d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,2),
-                new CustomItemData(Diagram,"d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,1)
-            };
-            Diagram.ItemDatas = data;
-            
+            //将来用框架的消息通知改写
+            ((MainViewModel)DataContext).InitData(Diagram);
         }
-        
 
-        private void AddSibling_OnClick(object sender, RoutedEventArgs e)
-        {
-            var param = (DesignerItem)((Button)sender).CommandParameter;
-            Diagram.AddSibling(param);
-        }
+
+        //private void AddSibling_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    var param = (DesignerItem)((Button)sender).CommandParameter;
+        //    Diagram.AddSibling(param);
+        //}
 
         private void Remove_OnClick(object sender, RoutedEventArgs e)
         {

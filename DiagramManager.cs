@@ -47,6 +47,7 @@ namespace DiagramDesigner
         public static void ArrangeWithRootItems(Canvas canvas)
         {
             var items = GetDesignerItems(canvas);
+            if (items == null) return;
             var root = items.FirstOrDefault(x => x.Data.ParentId.Equals(Guid.Empty));
             if (root != null)
             {
@@ -353,7 +354,7 @@ namespace DiagramDesigner
             var list = new List<DesignerItem>();
 
             var itemCount = VisualTreeHelper.GetChildrenCount(canvas);
-            if (itemCount == 0) return null;
+            if (itemCount == 0) return list;
             for (int n = 0; n < itemCount; n++)
             {
                 var c = VisualTreeHelper.GetChild(canvas, n);
@@ -674,7 +675,7 @@ namespace DiagramDesigner
         protected static DesignerItem CreateRoot/*创建根节点*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset)
         {
             var allItems = GetDesignerItems(canvas);
-            if (allItems == null)
+            if (!allItems.Any())
             {
                 // 检查Canvas中是否已经有内容
                 var root = CreateDesignerItem(canvas, item, topOffset, leftOffset);

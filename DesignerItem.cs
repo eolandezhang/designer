@@ -1,4 +1,5 @@
 ﻿using DiagramDesigner.Controls;
+using DiagramDesigner.Data;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,7 +15,7 @@ namespace DiagramDesigner
     [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
     public class DesignerItem : ContentControl, ISelectable, IGroupable
     {
-        public IItemData Data { get; set; }
+        public ItemDataBase Data { get; set; }
 
         #region ID
         private Guid id;
@@ -161,7 +162,7 @@ namespace DiagramDesigner
         }
 
         #endregion
-        
+
 
         public bool IsShadow { get; set; }
 
@@ -170,10 +171,6 @@ namespace DiagramDesigner
             // set the key to reference the style for this control
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(DesignerItem), new FrameworkPropertyMetadata(typeof(DesignerItem)));
-
-
-
-
         }
 
         public DiagramControl DiagramControl
@@ -194,17 +191,24 @@ namespace DiagramDesigner
         {
             this.id = id;
             Loaded += DesignerItem_Loaded;
+        }
+        public DesignerItem() : this(Guid.NewGuid()) { }
+
+        public DesignerItem(DiagramControl diagramControl, Guid id)
+        {
+            this.id = id;
+            Loaded += DesignerItem_Loaded;
             Data = new CustomItemData(id);
         }
 
-        public DesignerItem() : this(Guid.NewGuid()) { }
-        public DesignerItem(Guid id, IItemData itemData)
-            : this(id)
+        public DesignerItem(DiagramControl diagramControl) : this(diagramControl, Guid.NewGuid()) { }
+        public DesignerItem(DiagramControl diagramControl, Guid id, ItemDataBase itemData)
+            : this(diagramControl, id)
         {
             Data = itemData;
         }
-        public DesignerItem(Guid id, Guid parentItemId, IItemData itemData)
-            : this(id)
+        public DesignerItem(DiagramControl diagramControl, Guid id, Guid parentItemId, ItemDataBase itemData)
+            : this(diagramControl, id)
         {
             Data.ParentId = parentItemId;
             Data = itemData;

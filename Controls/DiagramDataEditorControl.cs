@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using DiagramDesigner.Data;
 
 namespace DiagramDesigner.Controls
 {
@@ -15,8 +16,8 @@ namespace DiagramDesigner.Controls
         }
         public DiagramControl DiagramControl { get; set; }
 
-        private IItemData _itemData = null;
-        public IItemData ItemData
+        private ItemDataBase _itemData = null;
+        public ItemDataBase ItemData
         {
             get
             {

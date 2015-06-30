@@ -7,7 +7,7 @@ using DiagramDesigner.Controls;
 
 namespace DiagramDesigner
 {
-    public class ZoomBox : Control
+    public class ZoomBoxControl : Control
     {
         private Thumb zoomThumb;
         private Canvas zoomCanvas;
@@ -15,31 +15,14 @@ namespace DiagramDesigner
         private ScaleTransform scaleTransform;
         private DesignerCanvas designerCanvas;
 
-
-        public static readonly DependencyProperty DiagramControlProperty = DependencyProperty.Register(
-             "DiagramControl", typeof(DiagramControl), typeof(ZoomBox), new FrameworkPropertyMetadata(default(DiagramControl)));
-
-        public DiagramControl DiagramControl
-        {
-            get { return (DiagramControl)GetValue(DiagramControlProperty); }
-            set { SetValue(DiagramControlProperty, value); }
-        }
-
         public ScrollViewer ScrollViewer
         {
-            get
-            {
-                return DiagramControl.Template.FindName("DesignerScrollViewer", DiagramControl) as ScrollViewer;
-            }
+            get { return (ScrollViewer)GetValue(ScrollViewerProperty); }
+            set { SetValue(ScrollViewerProperty, value); }
         }
-        //public ScrollViewer ScrollViewer
-        //{
-        //    get { return (ScrollViewer)GetValue(ScrollViewerProperty); }
-        //    set { SetValue(ScrollViewerProperty, value); }
-        //}
 
-        //public static readonly DependencyProperty ScrollViewerProperty =
-        //    DependencyProperty.Register("ScrollViewer", typeof(ScrollViewer), typeof(ZoomBox));
+        public static readonly DependencyProperty ScrollViewerProperty =
+            DependencyProperty.Register("ScrollViewer", typeof(ScrollViewer), typeof(ZoomBoxControl));
 
         public override void OnApplyTemplate()
         {

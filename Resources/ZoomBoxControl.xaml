@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:s="clr-namespace:DiagramDesigner">
 
-    <Style TargetType="{x:Type s:ZoomBox}">
+    <Style TargetType="{x:Type s:ZoomBoxControl}">
 
         <Style.Resources>
 
@@ -163,7 +163,7 @@
                 Value="true" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type s:ZoomBox}">
+                <ControlTemplate TargetType="{x:Type s:ZoomBoxControl}">
                     <Border CornerRadius="1"
                             BorderThickness="1"
                             Background="#EEE"
@@ -210,11 +210,11 @@
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
                                             Margin="0"
-                                            Ticks="100,125,150,200"
-                                            Minimum="100"
+                                            Ticks="50,100,125,150,200"
+                                            Minimum="50"
                                             Maximum="200"
                                             IsSnapToTickEnabled="True"
-                                            IsMoveToPointEnabled="False" Width="80" />
+                                            IsMoveToPointEnabled="False" Width="180" />
 
                                     <TextBlock Text="{Binding ElementName=PART_ZoomSlider, Path=Value}"
                                                Grid.Column="1"

@@ -222,11 +222,12 @@ namespace DiagramDesigner
             if (DataSource.Count == 1)
                 SelectedItem = DataSource.FirstOrDefault();
 
-            AddSiblingCommand = new RelayCommand(() =>
+            //模拟数据
+            AddSiblingCommand = new RelayCommand<DesignerItem>((x) =>
             {
                 if (SelectedItem != null)
                 {
-                    MessageBox.Show("Add Sibling:" + SelectedItem.Data.Text);
+                    MessageBox.Show("Add Sibling:" + x.Data.Text);
                 }
             });
         }

@@ -182,7 +182,7 @@
                         DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
                         <Grid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Add Sibling" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Command="{Binding DiagramControl.AddSiblingCommand}"/>
+                                <MenuItem Header="Add Sibling" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Command="{Binding DiagramControl.AddSiblingCommand}" CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
                             </ContextMenu>
                         </Grid.ContextMenu>
                         <Grid.RowDefinitions>

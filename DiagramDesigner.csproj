@@ -81,6 +81,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\RelayCommand.cs" />
+    <Compile Include="Controls\RelayCommandGeneric.cs" />
     <Compile Include="Data\CustomItemData.cs" />
     <Compile Include="Controls\DiagramControl.cs" />
     <Compile Include="Controls\DiagramDataEditorControl.cs" />

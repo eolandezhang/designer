@@ -161,6 +161,7 @@ namespace DiagramDesigner
         }
 
         #endregion
+        
 
         public bool IsShadow { get; set; }
 
@@ -169,6 +170,24 @@ namespace DiagramDesigner
             // set the key to reference the style for this control
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(DesignerItem), new FrameworkPropertyMetadata(typeof(DesignerItem)));
+
+
+
+
+        }
+
+        public DiagramControl DiagramControl
+        {
+            get
+            {
+                DesignerCanvas designer = VisualTreeHelper.GetParent(this) as DesignerCanvas;
+                if (designer != null)
+                {
+                    var diagramControl = designer.TemplatedParent as DiagramControl;
+                    return diagramControl;
+                }
+                return null;
+            }
         }
 
         public DesignerItem(Guid id)
@@ -195,6 +214,16 @@ namespace DiagramDesigner
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             //base.OnPreviewMouseDown(e);
+            SelectItem();
+
+            e.Handled = false;
+
+
+
+        }
+
+        private void SelectItem()
+        {
             DesignerCanvas designer = VisualTreeHelper.GetParent(this) as DesignerCanvas;
 
             // update selection
@@ -214,16 +243,21 @@ namespace DiagramDesigner
                     designer.SelectionService.SelectItem(this);
                 }
                 Focus();
-            }
 
-            e.Handled = false;
+                if (DiagramControl != null)
+                {
+                    DiagramControl.SelectedItem = this;
+                }
+
+            }
         }
 
-        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
+
+        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
+
             DiagramManager.HighlightSelected(this);
         }
-
 
 
         void DesignerItem_Loaded(object sender, RoutedEventArgs e)

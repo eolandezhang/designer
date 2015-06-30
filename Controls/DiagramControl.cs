@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using DiagramDesigner.Controls;
 
 namespace DiagramDesigner
 {
@@ -14,7 +17,7 @@ namespace DiagramDesigner
 
         public DesignerCanvas Designer { get; set; }
         public bool PreventNotify { get; set; }
-        public IDataSourceRepository DataSourceRepository { get; set; }
+        //public IDataSourceRepository DataSourceRepository { get; set; }
 
         #region SelectedItem
         private DesignerItem _selectedItem;
@@ -54,23 +57,40 @@ namespace DiagramDesigner
 
         #region DataSource
 
-        public static readonly DependencyProperty DataSourceProperty = DependencyProperty.Register(
-            "Items", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl), new FrameworkPropertyMetadata(new ObservableCollection<DesignerItem>(), OnItemsChanged, OnCoerecItemsValue));
-        public ObservableCollection<DesignerItem> DataSource
-        {
-            get { return (ObservableCollection<DesignerItem>)GetValue(DataSourceProperty); }
-            set { SetValue(DataSourceProperty, value); }
-        }
+        private ObservableCollection<DesignerItem> DataSource;
 
-        private static object OnCoerecItemsValue(DependencyObject d, object baseValue)
-        {
-            return baseValue ?? new ObservableCollection<DesignerItem>();
-        }
+        //public static readonly DependencyProperty DataSourceProperty = DependencyProperty.Register(
+        //    "Items", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl), new FrameworkPropertyMetadata(new ObservableCollection<DesignerItem>(),
+        //        (d, e) =>
+        //        {
+        //            var diagramControl = d as DiagramControl;
+        //            if (diagramControl != null) diagramControl.BindData();
+        //        },
+        //        (d, baseValue) => baseValue ?? new ObservableCollection<DesignerItem>()));
 
-        private static void OnItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        //public ObservableCollection<DesignerItem> DataSource
+        //{
+        //    get { return (ObservableCollection<DesignerItem>)GetValue(DataSourceProperty); }
+        //    set { SetValue(DataSourceProperty, value); }
+        //}
+
+        public static readonly DependencyProperty ItemDatasProperty = DependencyProperty.Register(
+            "ItemDatas", typeof(ObservableCollection<IItemData>), typeof(DiagramControl), new FrameworkPropertyMetadata(new ObservableCollection<IItemData>(),
+                (d, e) =>
+                {
+                    var diagramControl = d as DiagramControl;
+                    if (diagramControl != null)
+                        diagramControl.LoadDataSource(diagramControl.ItemDatas);
+                }));
+
+        public ObservableCollection<IItemData> ItemDatas
         {
-            var diagramControl = d as DiagramControl;
-            if (diagramControl != null) diagramControl.BindData();
+            get { return (ObservableCollection<IItemData>)GetValue(ItemDatasProperty); }
+            set
+            {
+                ItemDatas.Clear();
+                SetValue(ItemDatasProperty, value);
+            }
         }
 
         #endregion
@@ -88,15 +108,22 @@ namespace DiagramDesigner
 
         #endregion
 
+        public static readonly DependencyProperty AddSiblingCommandProperty = DependencyProperty.Register(
+            "AddSiblingCommand", typeof(ICommand), typeof(DiagramControl), new PropertyMetadata(default(ICommand)));
+
+        public ICommand AddSiblingCommand
+        {
+            get { return (ICommand)GetValue(AddSiblingCommandProperty); }
+            set { SetValue(AddSiblingCommandProperty, value); }
+        }
+
         #endregion
 
         #region Constructors
 
         public DiagramControl()
         {
-            DataSourceRepository = new UserDataSourceRepository();
-            LoadDataSource();//模拟数据
-            InitData();//如果DataSource中无数据，则自动创建一个根节点
+            DataSource = new ObservableCollection<DesignerItem>();
             RegistPropertyChanged();
             RegistCollectionChanged();
         }
@@ -113,21 +140,23 @@ namespace DiagramDesigner
                 var id = Guid.NewGuid();
                 var newItem = new DesignerItem(id, new CustomItemData(this, id, Guid.Empty, GetText(), "", false, false));
                 DataSource.Add(newItem);
+                SelectedItem = newItem;
                 PreventNotify = false;
             }
         }
-
-        void LoadDataSource()
+        /// <summary>
+        /// 用数据初始化
+        /// </summary>
+        public void LoadDataSource(ObservableCollection<IItemData> data)
         {
             PreventNotify = true;
-            var root = DataSourceRepository.InitDesignerItems(this);
-            if (root != null)
+            var root = InitDesignerItems(data);
+            if (root == null)
             {
-                var list = DataSourceRepository.DesignerItems.OrderBy(x => x.Data.YIndex);
-                foreach (var designerItem in list)
-                {
-                    DataSource.Add(designerItem);
-                }
+                InitData(); //如果DataSource中无数据，则自动创建一个根节点
+            }
+            else
+            {
                 SelectedItem = root;
             }
             PreventNotify = false;
@@ -192,6 +221,14 @@ namespace DiagramDesigner
             }
             if (DataSource.Count == 1)
                 SelectedItem = DataSource.FirstOrDefault();
+
+            AddSiblingCommand = new RelayCommand(() =>
+            {
+                if (SelectedItem != null)
+                {
+                    MessageBox.Show("Add Sibling:" + SelectedItem.Data.Text);
+                }
+            });
         }
 
         #endregion
@@ -217,9 +254,7 @@ namespace DiagramDesigner
             var newitem = new DesignerItem(n5, parent.ID, new CustomItemData(this, n5, parent.ID, GetText(), true, false));
             DataSource.Add(newitem);
             SelectedItem = newitem;
-
-            DataSourceRepository.DesignerItems.Add(newitem);
-            DataSourceRepository.UpdateDataSources();
+            UpdateItemDatas();
         }
         public void AddAfter(DesignerItem parentDesignerItem)
         {
@@ -235,8 +270,7 @@ namespace DiagramDesigner
             DataSource.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.UpdateYIndex(newitem);
-            DataSourceRepository.DesignerItems.Add(newitem);
-            DataSourceRepository.UpdateDataSources();
+            UpdateItemDatas();
         }
         private string GetText()
         {
@@ -278,7 +312,7 @@ namespace DiagramDesigner
             var parent = DataSource.FirstOrDefault(x => x.ID == d.Data.ParentId);
             SelectedItem = parent;
 
-            DataSourceRepository.UpdateDataSources();
+            UpdateItemDatas();
         }
 
         public void Collapse()
@@ -305,9 +339,9 @@ namespace DiagramDesigner
                     var data = DataSource.FirstOrDefault(x => x.ID == SelectedItem.ID);
                     if (data == null) return;
                     data.Data.Text = ItemTextEditor.Text;
-                    data.Data.Changed = !data.Data.Added;
+                    data.Data.Changed = true;
                     DiagramManager.SetItemText(data, ItemTextEditor.Text);
-                    DataSourceRepository.UpdateDataSources();
+                    UpdateItemDatas();
                 };
                 return t;
             }
@@ -326,6 +360,38 @@ namespace DiagramDesigner
             return new DesignerItem(childId, parentId, itemData);
         }
         #endregion
+
+        public DesignerItem InitDesignerItems(IList<IItemData> data)
+        {
+            var root = ItemDatas.FirstOrDefault(x => x.ParentId == Guid.Empty);
+            if (root == null) return null;
+            var rootDesignerItem = CreateRootItem(root.Id, root);
+            DataSource.Clear();
+            DataSource.Add(rootDesignerItem);
+            CreateChildDesignerItem(rootDesignerItem);
+            return rootDesignerItem;
+        }
+
+        public void CreateChildDesignerItem(DesignerItem parentDesignerItem)
+        {
+            var child = ItemDatas.Where(x => x.ParentId == parentDesignerItem.ID && !x.Removed);
+            foreach (var userDataSource in child)
+            {
+                var childDesignerItem = CreateChildItem(parentDesignerItem.ID, userDataSource.Id, userDataSource);
+                DataSource.Add(childDesignerItem);
+                CreateChildDesignerItem(childDesignerItem);
+            }
+        }
+
+        public void UpdateItemDatas()
+        {
+            ItemDatas.Clear();
+            foreach (var item in DataSource)
+            {
+                ItemDatas.Add(item.Data as CustomItemData);
+            }
+        }
+
 
         #region Override
 

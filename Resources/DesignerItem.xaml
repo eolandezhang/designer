@@ -178,7 +178,13 @@
                 <ControlTemplate TargetType="{x:Type s:DesignerItem}">
                     <!--<Grid DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                           ContextMenu="{StaticResource DesignerItemContextMenu}">-->
-                    <Grid DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+                    <Grid 
+                        DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Add Sibling" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Command="{Binding DiagramControl.AddSiblingCommand}"/>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>
                             <RowDefinition Height="10"></RowDefinition>

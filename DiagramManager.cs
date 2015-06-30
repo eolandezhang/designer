@@ -371,7 +371,7 @@ namespace DiagramDesigner
                         where Equals(itemConnection.Source.ParentDesignerItem, item)
                         && itemConnection.Source != null && itemConnection.Sink != null
                         select itemConnection.Sink.ParentDesignerItem).OrderBy(x => x.Data.YIndex).ToList();
-            item.IsExpanderVisible = list.Any();
+            item.IsExpanderVisible = list.Any(x => x.Data.Removed == false);
             if (item.Equals(GetRootItem(canvas)))
                 item.IsExpanderVisible = false;
             return list;
@@ -559,6 +559,7 @@ namespace DiagramDesigner
                     var connection = connections.First();
                     connection.Source = source;
                     item.Data.ParentId = parent.ID;
+
                 }
             }
         }

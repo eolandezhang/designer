@@ -22,12 +22,12 @@
         <DockPanel>
             <ToolBar DockPanel.Dock="Top">
                 <ToolBarPanel Orientation="Horizontal">
-                    <Button x:Name="Add" Content="增加" Click="ButtonBase_OnClick" CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
+                    <Button x:Name="AddSibling" Content="增加" Click="AddSibling_OnClick" CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
                     <Button x:Name="AddAfter" Content="增加(之后)" Click="AddAfter_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
                     <Button x:Name="Remove" Content="移除" Click="Remove_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
                     <Button x:Name="Collapse" Content="折叠" Click="Collapse_Click"/>
                     <Button x:Name="Expand" Content="展开" Click="Expand_Click"/>
-                    <Button x:Name="GetData" Content="获取数据" Click="GetData_Click" CommandParameter="{Binding ElementName=Diagram}"/>
+                    <Button x:Name="GetData" Content="数据信息" Click="GetData_Click" CommandParameter="{Binding ElementName=Diagram}"/>
                 </ToolBarPanel>
             </ToolBar>
             <Grid>
@@ -35,7 +35,13 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="200"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <s:DiagramControl Grid.Column="0" x:Name="Diagram" DiagramHeader="树状图" DiagramDataEditorControl="{Binding ElementName=DiagramDataEditor}"/>
+                <s:DiagramControl 
+                    Grid.Column="0" 
+                    x:Name="Diagram" 
+                    DiagramHeader="树状图" 
+                    DiagramDataEditorControl="{Binding ElementName=DiagramDataEditor}"
+                    
+                    />
                 <GridSplitter Width="2" Grid.Column="0" />
                 <Grid Column="1">
                     <Grid.RowDefinitions>
@@ -46,6 +52,9 @@
                         <s:DiagramDataEditorControl.Content>
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
@@ -62,11 +71,17 @@
                                 <Label Content="Desc" Grid.Row="1" Grid.Column="0"/>
                                 <TextBox Text="{Binding Desc ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="1"  Grid.Column="1"/>
                                 <Label Content="Changed" Grid.Row="2" Grid.Column="0"/>
-                                <TextBox Text="{Binding Changed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="2"  Grid.Column="1"/>
+                                <TextBox Text="{Binding Changed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="2"  Grid.Column="1" IsReadOnly="True"/>
                                 <Label Content="Added" Grid.Row="3" Grid.Column="0"/>
-                                <TextBox Text="{Binding Added ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="3"  Grid.Column="1"/>
+                                <TextBox Text="{Binding Added ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="3"  Grid.Column="1" IsReadOnly="True"/>
                                 <Label Content="Removed" Grid.Row="4" Grid.Column="0"/>
-                                <TextBox Text="{Binding Removed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="4"  Grid.Column="1"/>
+                                <TextBox Text="{Binding Removed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="4"  Grid.Column="1" IsReadOnly="True"/>
+                                <Label Content="YIndex" Grid.Row="5" Grid.Column="0"/>
+                                <TextBox Text="{Binding YIndex ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="5"  Grid.Column="1" IsReadOnly="True"/>
+                                <Label Content="Id" Grid.Row="6" Grid.Column="0"/>
+                                <TextBox Text="{Binding Id ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="6"  Grid.Column="1" TextWrapping="WrapWithOverflow" Width="120" IsReadOnly="True"/>
+                                <Label Content="ParentId" Grid.Row="7" Grid.Column="0"/>
+                                <TextBox Text="{Binding ParentId ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="7"  Grid.Column="1"  TextWrapping="WrapWithOverflow" Width="120" IsReadOnly="True"/>
                             </Grid>
                         </s:DiagramDataEditorControl.Content>
                     </s:DiagramDataEditorControl>

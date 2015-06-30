@@ -11,7 +11,21 @@ namespace DiagramDesigner
     {
         #region IItemData
         public Guid Id { get; set; }
-        public Guid ParentId { get; set; }
+        private Guid _parentId;
+        public Guid ParentId
+        {
+            get { return _parentId; }
+            set
+            {
+                if (_parentId == value) return;
+                _parentId = value;
+                OnPropertyChanged("ParentId");
+                if (!Added)
+                {
+                    Changed = true;
+                }
+            }
+        }
         private string _text;
         public string Text
         {
@@ -35,6 +49,7 @@ namespace DiagramDesigner
             set
             {
                 if (_changed == value) return;
+                if (Added) value = false;
                 _changed = value;
                 OnPropertyChanged("Changed");
             }

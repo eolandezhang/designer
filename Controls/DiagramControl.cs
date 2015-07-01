@@ -18,7 +18,23 @@ namespace DiagramDesigner.Controls
         #region Fields & Properties
         public readonly ObservableCollection<DesignerItem> DesignerItems;/*节点元素*/
         private DesignerCanvas Designer { get; set; }
-        private bool PreventNotify { get; set; }
+        private bool Suppress /*阻止通知*/{ get; set; }
+        private DesignerItem Copy;
+
+        private string _dataInfo;
+
+        public string DataInfo
+        {
+            get { return _dataInfo; }
+            set
+            {
+                _dataInfo = value;
+                OnPropertyChanged("DataInfo");
+            }
+        }
+
+
+
         #endregion
 
         #region Dependency Property 用于数据绑定
@@ -102,14 +118,44 @@ namespace DiagramDesigner.Controls
         //    get { return (ControlTemplate)GetValue(ToolBarControlTemplateProperty); }
         //    set { SetValue(ToolBarControlTemplateProperty, value); }
         //}
-        
+
         #endregion
 
         #region Constructors
+
+        void GetDataInfo()
+        {
+            var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
+            DataInfo = string.Format("Changed:{0},Added:{1},Removed:{2},Total:{3}",
+                         list.Count(x => x.Changed),
+                         list.Count(x => x.Added),
+                         list.Count(x => x.Removed),
+                         list.Count(x => !x.Removed));
+        }
+
         public DiagramControl()
         {
             DesignerItems = new ObservableCollection<DesignerItem>();
-            DesignerItems.CollectionChanged += (s, e) => { if (!PreventNotify)BindData(); };
+            DesignerItems.CollectionChanged += (s, e) =>
+            {
+                if (!Suppress)
+                {
+                    BindData();
+                    GetDataInfo();
+                }
+            };
+            this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, ExcuteCopy));
+            this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, ExcutePaste));
+        }
+
+        private void ExcutePaste(object sender, ExecutedRoutedEventArgs e)
+        {
+            PasteCommand.Execute(null);
+        }
+
+        private void ExcuteCopy(object sender, ExecutedRoutedEventArgs e)
+        {
+            CopyCommand.Execute(null);
         }
         #endregion
 
@@ -118,19 +164,20 @@ namespace DiagramDesigner.Controls
         DesignerItem InitData/*如果画布无节点则自动添加一个节点*/()
         {
             var id = Guid.NewGuid();
-            var newItem = new DesignerItem(this, id, new CustomItemData(id, Guid.Empty, GetText(), "", false, false));
+            var newItem = new DesignerItem(id, new CustomItemData(id, Guid.Empty, GetText(), "", false, false));
             DesignerItems.Add(newItem);
             return newItem;
         }
 
         void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/()
         {
-            PreventNotify = true;/*利用数据源创建节点时不执行CollectionChange事件*/
+            Suppress = true;/*利用数据源创建节点时不执行CollectionChange事件*/
             var root = InitDesignerItems() ?? InitData();/*创建DesignerItems*/
             BindData();/*将DesignerItems放到画布上，并且创建连线*/
             SelectedItem = root;
             DiagramManager.HighlightSelected(SelectedItem);
-            PreventNotify = false;
+            Suppress = false;
+            GetDataInfo();
         }
 
         public void BindData/*将DesignerItems放到画布上，并且创建连线*/()
@@ -166,10 +213,11 @@ namespace DiagramDesigner.Controls
             if (DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
             var parent = DesignerItems.FirstOrDefault(x => x.ID == designerItem.Data.ParentId);
             if (parent == null) return;
-            var newitem = new DesignerItem(this, n5, parent.ID, new CustomItemData(n5, parent.ID, GetText(), "", true, false));
+            var newitem = new DesignerItem(n5, new CustomItemData(n5, parent.ID, GetText(), "", true, false));
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.HighlightSelected(SelectedItem);
+            GetDataInfo();
         }
         public void AddAfter(DesignerItem parentDesignerItem)
         {
@@ -177,11 +225,12 @@ namespace DiagramDesigner.Controls
             if (parentDesignerItem.Data == null) return;
             var n5 = Guid.NewGuid();
             if (DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
-            var newitem = new DesignerItem(this, n5, parentDesignerItem.ID,
+            var newitem = new DesignerItem(n5, parentDesignerItem.ID,
                 new CustomItemData(n5, parentDesignerItem.ID, GetText(), "", true, false));
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.HighlightSelected(SelectedItem);
+            GetDataInfo();
         }
         public void Delete(DesignerItem d)
         {
@@ -190,7 +239,7 @@ namespace DiagramDesigner.Controls
             if (d.Data == null) return;
             var item = this.DesignerItems.FirstOrDefault(x => x.ID == d.ID);
             if (item == null) return;
-            PreventNotify = true;
+            Suppress = true;
             var list = new List<DesignerItem>();
             //删除子节点
             DiagramManager.GetAllSubItems(d, list);
@@ -201,7 +250,7 @@ namespace DiagramDesigner.Controls
             }
             item.Data.Removed = true;
             item.Visibility = Visibility.Collapsed;
-            PreventNotify = false;
+            Suppress = false;
 
             #region 移除连线
             var connections = DiagramManager.GetItemConnections(d);
@@ -211,11 +260,13 @@ namespace DiagramDesigner.Controls
                 Designer.Children.Remove(connection);
                 connection.Visibility = Visibility.Collapsed;
             }
-            if (!PreventNotify)
+            if (!Suppress)
                 BindData();
             var parent = DesignerItems.FirstOrDefault(x => x.ID == d.Data.ParentId);
             SelectedItem = parent;
             #endregion
+
+            GetDataInfo();
         }
         TextBox _itemTextEditor;
         TextBox ItemTextEditor
@@ -232,6 +283,7 @@ namespace DiagramDesigner.Controls
                     data.Data.Text = ItemTextEditor.Text;
                     data.Data.Changed = true;
                     DiagramManager.SetItemText(data, ItemTextEditor.Text);
+                    GetDataInfo();
                 };
                 return t;
             }
@@ -265,9 +317,9 @@ namespace DiagramDesigner.Controls
             }
         }
         private DesignerItem CreateRootItem(ItemDataBase itemData)
-        { return new DesignerItem(this, itemData.Id, itemData); }
+        { return new DesignerItem(itemData.Id, itemData); }
         private DesignerItem CreateChildItem(Guid parentId, ItemDataBase itemData)
-        { return new DesignerItem(this, itemData.Id, parentId, itemData); }
+        { return new DesignerItem(itemData.Id, parentId, itemData); }
 
         #endregion
 
@@ -344,6 +396,36 @@ namespace DiagramDesigner.Controls
                 return new RelayCommand(GenerateDesignerItems);
             }
         }
+        public ICommand CopyCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                    {
+                        if (SelectedItem != null)
+                        {
+                            Copy = (DesignerItem)SelectedItem.Clone();
+                        }
+                    });
+            }
+        }
+
+        public ICommand PasteCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (Copy != null)
+                    {
+                        Copy.Data.ParentId = SelectedItem.ID;
+                        DesignerItems.Add(Copy);
+                        Copy = null;
+                    }
+                });
+            }
+        }
+
         #endregion
 
         #region Override
@@ -372,7 +454,7 @@ namespace DiagramDesigner.Controls
         {
             var handler = PropertyChanged;
             if (handler == null) return;
-            if (!PreventNotify)
+            if (!Suppress)
                 handler(this, new PropertyChangedEventArgs(name));
         }
 

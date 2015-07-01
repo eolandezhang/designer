@@ -35,13 +35,20 @@
                                                 <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=ReloadCommand}"/>
                                             </ToolBar>
                                         </ToolBarTray>
-                                        <c:DiagramControl 
+
+                                        <StatusBar DockPanel.Dock="Bottom" Background="White">
+                                            <StatusBarItem  DataContext="{Binding ElementName=Diagram}">
+                                                <Label Content="{Binding DataInfo}"></Label>
+                                            </StatusBarItem>
+                                        </StatusBar>
+                                        <c:DiagramControl
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
                                             SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
                                            />
+
 
                                     </DockPanel>
                                 </xcad:LayoutDocument>

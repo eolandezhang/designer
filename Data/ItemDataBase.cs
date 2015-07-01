@@ -1,12 +1,14 @@
 ﻿using DiagramDesigner.Controls;
 using System;
 using System.ComponentModel;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DiagramDesigner.Data
 {
 
-    public class ItemDataBase : INotifyPropertyChanged
+    public class ItemDataBase : INotifyPropertyChanged, ICloneable
     {
+        private bool Suppress /*阻止通知*/{ get; set; }
         public DiagramControl DiagramControl { get; set; }
         public Guid Id { get; set; }
         private Guid _parentId;
@@ -74,11 +76,30 @@ namespace DiagramDesigner.Data
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(string name)
         {
+            if (Suppress) return;
             var handler = PropertyChanged;
             if (handler == null) return;
             handler(this, new PropertyChangedEventArgs(name));
         }
 
         #endregion
+
+
+
+        public object Clone()
+        {
+            var item = new ItemDataBase();
+            item.Suppress = true;/*复制时阻止通知*/
+            item.DiagramControl = DiagramControl;
+            item.Id = Guid.NewGuid();
+            item.ParentId = ParentId;
+            item.Text = Text+"-"+"Copy";
+            item.Changed = false;
+            item.Added = false;
+            item.Removed = false;
+            item.YIndex = 0;
+            item.Suppress = false;
+            return item;
+        }
     }
 }

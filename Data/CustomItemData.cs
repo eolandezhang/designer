@@ -52,12 +52,14 @@ namespace DiagramDesigner.Data
             string desc,
             bool added,
             bool removed,
-            double yIndex = double.MaxValue)
+            double xIndex,
+            double yIndex)
         {
             Id = id;
             ParentId = parentId;
             Text = text;
             Desc = desc;
+            XIndex = xIndex;
             YIndex = yIndex;
             Changed = false;
             Added = added;
@@ -71,7 +73,8 @@ namespace DiagramDesigner.Data
             string desc,
             bool added,
             bool removed,
-            double yIndex = double.MaxValue)
+            double xIndex,
+            double yIndex)
             : this(
             new Guid(id),
             parentId == "" ? Guid.Empty : new Guid(parentId),
@@ -79,6 +82,7 @@ namespace DiagramDesigner.Data
             desc,
             added,
             removed,
+            xIndex,
             yIndex) { }
 
         #endregion

@@ -53,7 +53,6 @@ namespace DiagramDesigner
             {
                 ArrangeWithRootItems(root);
             }
-
         }
 
         static void ArrangeWithRootItems/*给定根节点，重新布局*/(DesignerItem rootItem/*根节点*/)
@@ -64,8 +63,8 @@ namespace DiagramDesigner
             if (directSubItems.Count == 0) return;
             var rootSubItems =
                 directSubItems.Where(x => x.Visibility.Equals(Visibility.Visible)).ToList();
-            var parentTop = (double)rootItem.GetValue(Canvas.TopProperty);
-            var parentLeft = (double)rootItem.GetValue(Canvas.LeftProperty);
+            rootItem.Data.YIndex = (double)rootItem.GetValue(Canvas.TopProperty);
+            rootItem.Data.XIndex = (double)rootItem.GetValue(Canvas.LeftProperty);
             for (var i = 0; i < rootSubItems.Count; i++)
             {
                 //计算之前的所有子节点个数
@@ -77,9 +76,13 @@ namespace DiagramDesigner
                 var preChildCount = list.OrderBy(x => x.Data.YIndex).Count(x => x.Visibility.Equals(Visibility.Visible));
 
                 //设置top
-                rootSubItems.ElementAt(i).SetValue(Canvas.TopProperty, parentTop + (preChildCount + i + 1) * ChildTopOffset);
+                var top = rootItem.Data.YIndex + (preChildCount + i + 1) * ChildTopOffset;
+                var left = rootItem.Data.XIndex + GetOffset(rootItem);
+                rootSubItems.ElementAt(i).SetValue(Canvas.TopProperty, top);
+                rootSubItems.ElementAt(i).Data.YIndex = top;
                 //设置left
-                rootSubItems.ElementAt(i).SetValue(Canvas.LeftProperty, parentLeft + GetOffset(rootItem));
+                rootSubItems.ElementAt(i).SetValue(Canvas.LeftProperty, left);
+                rootSubItems.ElementAt(i).Data.XIndex = left;
                 SetItemFontColor(rootSubItems.ElementAt(i), DefaultFontColorBrush);
                 ArrangeWithRootItems(rootSubItems.ElementAt(i));
             }
@@ -184,7 +187,7 @@ namespace DiagramDesigner
             }
             ShowItemConnection(designerItem);/*拖动完毕，显示连线*/
             ResetBrushBorderFontStyle(canvas, designerItem);/*恢复边框字体样式*/
-            UpdateYIndex(canvas);
+
             ArrangeWithRootItems(canvas);/*重新布局*/
         }
         public static void ExpandAll/*展开所有*/(Canvas canvas)
@@ -453,12 +456,19 @@ namespace DiagramDesigner
                 }
             }
         }
-        private static void UpdateYIndex/*按照Top位置排序*/(Canvas canvas)
-        {
-            var designerItems = new List<DesignerItem>();
-            GetAllSubItems(GetRootItem(canvas), designerItems);
-            foreach (var item in designerItems) { item.Data.YIndex = Canvas.GetTop(item); }
-        }
+        //public static void UpdateXYIndex/*按照Top位置排序*/(Canvas canvas)
+        //{
+        //    var designerItems = new List<DesignerItem>();
+        //    var root = GetRootItem(canvas);
+        //    root.Data.XIndex = Canvas.GetLeft(root);
+        //    root.Data.YIndex = Canvas.GetTop(root);
+        //    GetAllSubItems(root, designerItems);
+        //    foreach (var item in designerItems)
+        //    {
+        //        item.Data.YIndex = Canvas.GetTop(item);
+        //        item.Data.XIndex = Canvas.GetLeft(item);
+        //    }
+        //}
 
         protected static void SendConnectionsToBack(Canvas canvas)
         {
@@ -627,7 +637,7 @@ namespace DiagramDesigner
             {
                 if (parentItem.Data.ParentId.Equals(Guid.Empty)) //是根节点？
                 {
-                    parentDesignerItem = CreateRoot(canvas, parentItem, 5d, 5d);
+                    parentDesignerItem = CreateRoot(canvas, parentItem, parentItem.Data.YIndex, parentItem.Data.XIndex);
                     if (parentDesignerItem != null)
                     {
                         designerItems.Add(parentDesignerItem);

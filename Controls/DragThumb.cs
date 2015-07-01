@@ -62,6 +62,10 @@ namespace DiagramDesigner.Controls
             DiagramManager.HighlightParent(designerItem, designer);/*拖动节点时，高亮父节点*/
 
             #endregion
+
+            //DiagramManager.UpdateXYIndex(designer);
+
+            designerItem.Data.YIndex = Canvas.GetTop(designerItem);
         }
 
         //拖动前保存元素位置

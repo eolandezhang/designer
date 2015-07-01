@@ -75,6 +75,7 @@
                                                         <RowDefinition Height="Auto"></RowDefinition>
                                                         <RowDefinition Height="Auto"></RowDefinition>
                                                         <RowDefinition Height="Auto"></RowDefinition>
+                                                        <RowDefinition Height="Auto"></RowDefinition>
                                                         <RowDefinition Height="*"></RowDefinition>
                                                     </Grid.RowDefinitions>
                                                     <Grid.ColumnDefinitions>
@@ -91,12 +92,14 @@
                                                     <TextBox Text="{Binding Added ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="3"  Grid.Column="1" IsReadOnly="True"/>
                                                     <Label Content="Removed" Grid.Row="4" Grid.Column="0"/>
                                                     <TextBox Text="{Binding Removed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="4"  Grid.Column="1" IsReadOnly="True"/>
-                                                    <Label Content="YIndex" Grid.Row="5" Grid.Column="0"/>
-                                                    <TextBox Text="{Binding YIndex ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="5"  Grid.Column="1" IsReadOnly="True"/>
-                                                    <Label Content="Id" Grid.Row="6" Grid.Column="0"/>
-                                                    <TextBox Text="{Binding Id ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="6"  Grid.Column="1" TextWrapping="Wrap" IsReadOnly="True"/>
-                                                    <Label Content="ParentId" Grid.Row="7" Grid.Column="0"/>
-                                                    <TextBox Text="{Binding ParentId ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="7"  Grid.Column="1"  TextWrapping="Wrap" IsReadOnly="True"/>
+                                                    <Label Content="XIndex" Grid.Row="5" Grid.Column="0"/>
+                                                    <TextBox Text="{Binding XIndex ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="5"  Grid.Column="1" IsReadOnly="True"/>
+                                                    <Label Content="YIndex" Grid.Row="6" Grid.Column="0"/>
+                                                    <TextBox Text="{Binding YIndex ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="6"  Grid.Column="1" IsReadOnly="True"/>
+                                                    <Label Content="Id" Grid.Row="7" Grid.Column="0"/>
+                                                    <TextBox Text="{Binding Id ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="7"  Grid.Column="1" TextWrapping="Wrap" IsReadOnly="True"/>
+                                                    <Label Content="ParentId" Grid.Row="8" Grid.Column="0"/>
+                                                    <TextBox Text="{Binding ParentId ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="8"  Grid.Column="1"  TextWrapping="Wrap" IsReadOnly="True"/>
                                                 </Grid>
                                             </c:DiagramDataEditorControl.Content>
                                         </c:DiagramDataEditorControl>

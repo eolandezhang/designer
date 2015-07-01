@@ -164,7 +164,7 @@ namespace DiagramDesigner.Controls
         DesignerItem InitData/*如果画布无节点则自动添加一个节点*/()
         {
             var id = Guid.NewGuid();
-            var newItem = new DesignerItem(id, new CustomItemData(id, Guid.Empty, GetText(), "", false, false));
+            var newItem = new DesignerItem(id, new CustomItemData(id, Guid.Empty, GetText(), "", false, false, 5d, 5d));
             DesignerItems.Add(newItem);
             return newItem;
         }
@@ -213,7 +213,7 @@ namespace DiagramDesigner.Controls
             if (DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
             var parent = DesignerItems.FirstOrDefault(x => x.ID == designerItem.Data.ParentId);
             if (parent == null) return;
-            var newitem = new DesignerItem(n5, new CustomItemData(n5, parent.ID, GetText(), "", true, false));
+            var newitem = new DesignerItem(n5, new CustomItemData(n5, parent.ID, GetText(), "", true, false, 0, double.MaxValue));
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.HighlightSelected(SelectedItem);
@@ -226,7 +226,7 @@ namespace DiagramDesigner.Controls
             var n5 = Guid.NewGuid();
             if (DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
             var newitem = new DesignerItem(n5, parentDesignerItem.ID,
-                new CustomItemData(n5, parentDesignerItem.ID, GetText(), "", true, false));
+                new CustomItemData(n5, parentDesignerItem.ID, GetText(), "", true, false, 0, double.MaxValue));
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.HighlightSelected(SelectedItem);

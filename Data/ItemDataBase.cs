@@ -59,6 +59,17 @@ namespace DiagramDesigner.Data
         }
         public bool Added { get; set; }
         public bool Removed { get; set; }
+        private double _xIndex;
+        public double XIndex
+        {
+            get { return _xIndex; }
+            set
+            {
+                if (_xIndex.Equals(value)) return;
+                _xIndex = value;
+                OnPropertyChanged("XIndex");
+            }
+        }
         private double _yIndex;
         public double YIndex
         {
@@ -70,6 +81,7 @@ namespace DiagramDesigner.Data
                 OnPropertyChanged("YIndex");
             }
         }
+
 
         #region INotifyPropertyChanged
 
@@ -93,10 +105,11 @@ namespace DiagramDesigner.Data
             item.DiagramControl = DiagramControl;
             item.Id = Guid.NewGuid();
             item.ParentId = ParentId;
-            item.Text = Text+"-"+"Copy";
+            item.Text = Text + "-" + "Copy";
             item.Changed = false;
             item.Added = false;
             item.Removed = false;
+            item.XIndex = 0;
             item.YIndex = 0;
             item.Suppress = false;
             return item;

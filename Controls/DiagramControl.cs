@@ -15,51 +15,15 @@ namespace DiagramDesigner.Controls
 {
     public class DiagramControl : ContentControl, INotifyPropertyChanged
     {
-        private ObservableCollection<DesignerItem> DesignerItems;/*节点元素*/
-
-        #region Private Property
+        #region Fields & Properties
+        public readonly ObservableCollection<DesignerItem> DesignerItems;/*节点元素*/
         private DesignerCanvas Designer { get; set; }
         private bool PreventNotify { get; set; }
         #endregion
-        private DesignerItem _selectedItem;
-        public DesignerItem SelectedItem
-        {
-            get { return _selectedItem; }
-            set
-            {
-                _selectedItem = value;
 
-                OnPropertyChanged("SelectedItem");
-            }
-        }
+        #region Dependency Property 用于数据绑定
 
-
-        #region Dependency Property
-
-        #region DiagramDataEditorControl 节点编辑器
-
-        //public static readonly DependencyProperty DiagramDataEditorControlProperty = DependencyProperty.Register(
-        //    "DiagramDataEditorControl", typeof(DiagramDataEditorControl), typeof(DiagramControl), new FrameworkPropertyMetadata(null,
-        //        (d, e) =>
-        //        {
-        //            var c = d as DiagramControl;
-        //            if (c.SelectedItem != null)
-        //                c.DiagramDataEditorControl.ItemData = c.SelectedItem.Data;
-        //            else
-        //            {
-        //                c.DiagramDataEditorControl.ItemData = new ItemDataBase();
-        //            }
-        //        }));
-
-        //public DiagramDataEditorControl DiagramDataEditorControl
-        //{
-        //    get { return (DiagramDataEditorControl)GetValue(DiagramDataEditorControlProperty); }
-        //    set { SetValue(DiagramDataEditorControlProperty, value); }
-        //}
-
-        #endregion
-
-        #region ZoomBoxControlProperty
+        #region ZoomBoxControlProperty 缩放控件，以后需要修改
 
         public static readonly DependencyProperty ZoomBoxControlProperty = DependencyProperty.Register(
             "ZoomBoxControl", typeof(ZoomBoxControl), typeof(DiagramControl), new FrameworkPropertyMetadata(default(ZoomBoxControl),
@@ -92,9 +56,8 @@ namespace DiagramDesigner.Controls
                     {
                         if (diagramControl.ItemDatas != null)
                         {
-                            diagramControl.GenerateDesignerItems(diagramControl.ItemDatas);
+                            diagramControl.GenerateDesignerItems();
                         }
-
                     }
                 }));
 
@@ -123,153 +86,54 @@ namespace DiagramDesigner.Controls
 
         #endregion
 
+        #region SelectedItem 选中项
 
+        public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
+           "SelectedItem", typeof(DesignerItem), typeof(DiagramControl), new PropertyMetadata(default(DesignerItem)));
 
-
-        public ItemDataBase ItemDataBase
+        public DesignerItem SelectedItem
         {
-            get { return (ItemDataBase)GetValue(ItemDataBaseProperty); }
-            set { SetValue(ItemDataBaseProperty, value); }
+            get { return (DesignerItem)GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
         }
-
-        public static readonly DependencyProperty ItemDataBaseProperty =
-            DependencyProperty.Register("ItemDataBase", typeof(ItemDataBase), typeof(DiagramControl), new FrameworkPropertyMetadata(
-                null, (d, e) =>
-                {
-                    var c = d as DiagramControl;
-                    if (c != null)
-                        //c.OnSelectedItemChanged();
-                        DiagramManager.HighlightSelected(e.NewValue as DesignerItem);
-                }));
-
-
-
-        #region SelectedItem
-
-        //public DesignerItem SelectedItem
-        //{
-        //    get
-        //    {
-        //        return (DesignerItem)GetValue(SelectedItemProperty);
-        //    }
-        //    set
-        //    {
-        //        SetValue(SelectedItemProperty, value);
-        //    }
-        //}
-
-        //public static readonly DependencyProperty SelectedItemProperty =
-        //    DependencyProperty.Register(
-        //    "SelectedItem",
-        //    typeof(DesignerItem), typeof(DiagramControl), new FrameworkPropertyMetadata(
-        //        null, (d, e) =>
-        //        {
-        //            var c = d as DiagramControl;
-        //            if (c != null)
-        //                //c.OnSelectedItemChanged();
-        //                DiagramManager.HighlightSelected(e.NewValue as DesignerItem);
-        //        }));
-
 
         #endregion
 
         #endregion
 
         #region Constructors
-
         public DiagramControl()
         {
             DesignerItems = new ObservableCollection<DesignerItem>();
-
-            RegistPropertyChanged();
-            RegistCollectionChanged();
-
+            DesignerItems.CollectionChanged += (s, e) => { if (!PreventNotify)BindData(); };
         }
-
         #endregion
 
-        #region Method
+        #region Methods
 
-        void InitData()
+        DesignerItem InitData/*如果画布无节点则自动添加一个节点*/()
         {
-            if (!DesignerItems.Any())
-            {
-                PreventNotify = true;
-                var id = Guid.NewGuid();
-                var newItem = new DesignerItem(this, id, new CustomItemData(id, Guid.Empty, GetText(), "", false, false));
-                DesignerItems.Add(newItem);
-                SelectedItem = newItem;
-                PreventNotify = false;
-            }
+            var id = Guid.NewGuid();
+            var newItem = new DesignerItem(this, id, new CustomItemData(id, Guid.Empty, GetText(), "", false, false));
+            DesignerItems.Add(newItem);
+            return newItem;
         }
-        /// <summary>
-        /// 用数据初始化
-        /// </summary>
-        void GenerateDesignerItems(IList<ItemDataBase> data)
+
+        void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/()
         {
-            PreventNotify = true;
-            var root = InitDesignerItems(data);
+            PreventNotify = true;/*利用数据源创建节点时不执行CollectionChange事件*/
+            var root = InitDesignerItems();/*创建DesignerItems*/
             if (root == null)
             {
-                InitData(); //如果DataSource中无数据，则自动创建一个根节点
+                root = InitData(); //如果DataSource中无数据，则自动创建一个根节点
             }
-            else
-            {
-                SelectedItem = root;
-            }
-            BindData();
+            BindData();/*将DesignerItems放到画布上，并且创建连线*/
+            SelectedItem = root;
+            DiagramManager.HighlightSelected(root);
             PreventNotify = false;
         }
 
-        void RegistPropertyChanged()
-        {
-            PropertyChanged += (sender, e) =>
-            {
-                switch (e.PropertyName)
-                {
-                    case "SelectedItem":
-                        {
-                            if (SelectedItem != null)
-                            {
-                                ItemDataBase = SelectedItem.Data;
-                            }
-                        }
-                        break;
-                }
-            };
-        }
-
-        //void OnSelectedItemChanged()
-        //{
-        //    if (DiagramDataEditorControl != null)
-        //    {
-        //        DiagramDataEditorControl.DiagramControl = this;
-        //        if (SelectedItem != null)
-        //        {
-
-        //            if (DiagramDataEditorControl != null)
-        //            {
-        //                DiagramDataEditorControl.ItemData = SelectedItem.Data;
-        //            }
-        //        }
-        //        else
-        //        {
-
-        //            DiagramDataEditorControl.ItemData = null;
-        //        }
-        //    }
-        //}
-
-        void RegistCollectionChanged()
-        {
-            DesignerItems.CollectionChanged += (s, e) =>
-            {
-                if (!PreventNotify)
-                    BindData();
-            };
-        }
-
-        public void BindData()
+        public void BindData/*将DesignerItems放到画布上，并且创建连线*/()
         {
             var designer = Designer;
             if (designer == null) return;
@@ -284,26 +148,22 @@ namespace DiagramDesigner.Controls
                 items.ForEach(x => x.Data.DiagramControl = this);
                 items.ForEach(x =>
                 {
-                    x.PreviewMouseLeftButtonDown += (s, e) =>
-                    {
-                        //SelectedItem = designer.SelectionService.SelectedItem;
-                    };
                     x.MouseDoubleClick += (sender, e) =>
                     {
                         _itemTextEditor = ItemTextEditor;
                         DiagramManager.Edit(Designer, SelectedItem, _itemTextEditor);
-                    }
-                    ;
+                    };
                 });
             }
             if (DesignerItems.Count == 1)
                 SelectedItem = DesignerItems.FirstOrDefault();
+            //if (SelectedItem != null)
+            //    DiagramManager.HighlightSelected(SelectedItem);
         }
 
         #endregion
 
-        #region 节点操作
-
+        #region 用命令，创建节点
         public void AddSibling(DesignerItem designerItem)
         {
             if (designerItem == null) return;
@@ -323,7 +183,8 @@ namespace DiagramDesigner.Controls
             var newitem = new DesignerItem(this, n5, parent.ID, new CustomItemData(n5, parent.ID, GetText(), "", true, false));
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
-            UpdateItemDatas();
+            DiagramManager.UpdateYIndex(newitem);
+            DiagramManager.HighlightSelected(SelectedItem);
         }
         public void AddAfter(DesignerItem parentDesignerItem)
         {
@@ -339,13 +200,8 @@ namespace DiagramDesigner.Controls
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
             DiagramManager.UpdateYIndex(newitem);
-            UpdateItemDatas();
+            DiagramManager.HighlightSelected(SelectedItem);
         }
-        private string GetText()
-        {
-            return "Item-" + DesignerItems.Count();
-        }
-
         public void Delete(DesignerItem d)
         {
             if (d == null) return;
@@ -355,15 +211,14 @@ namespace DiagramDesigner.Controls
             if (item == null) return;
             PreventNotify = true;
             var list = new List<DesignerItem>();
+            //删除子节点
             DiagramManager.GetAllSubItems(d, list);
-
             foreach (var designerItem in list)
             {
-                var item1 = designerItem;
-                if (!item1.Data.Added) item1.Data.Removed = true;
-                item1.Visibility = Visibility.Collapsed;
+                designerItem.Data.Removed = true;
+                designerItem.Visibility = Visibility.Collapsed;
             }
-            if (!item.Data.Added) item.Data.Removed = true;
+            item.Data.Removed = true;
             item.Visibility = Visibility.Collapsed;
             PreventNotify = false;
             #region 移除连线
@@ -382,10 +237,7 @@ namespace DiagramDesigner.Controls
             SelectedItem = parent;
 
             #endregion
-
-            UpdateItemDatas();
         }
-
         public void Collapse()
         {
             if (Designer == null) return;
@@ -396,7 +248,6 @@ namespace DiagramDesigner.Controls
             if (Designer == null) return;
             DiagramManager.ExpandAll(Designer);
         }
-
         TextBox _itemTextEditor;
         TextBox ItemTextEditor
         {
@@ -412,62 +263,42 @@ namespace DiagramDesigner.Controls
                     data.Data.Text = ItemTextEditor.Text;
                     data.Data.Changed = true;
                     DiagramManager.SetItemText(data, ItemTextEditor.Text);
-                    UpdateItemDatas();
                 };
                 return t;
             }
         }
-
-        #endregion
-
-        #region 数据源初始化节点
-        public DesignerItem CreateRootItem(Guid id, ItemDataBase itemData)
+        private string GetText()
         {
-            return new DesignerItem(this, id, itemData);
-        }
-
-        public DesignerItem CreateChildItem(Guid parentId, Guid childId, ItemDataBase itemData)
-        {
-            return new DesignerItem(this, childId, parentId, itemData);
+            return "Item-" + DesignerItems.Count();
         }
         #endregion
 
         #region 用数据源，构建节点元素
 
-        DesignerItem InitDesignerItems(IList<ItemDataBase> data)
+        private DesignerItem InitDesignerItems()
         {
             var root = ItemDatas.FirstOrDefault(x => x.ParentId == Guid.Empty);
             if (root == null) return null;
-            var rootDesignerItem = CreateRootItem(root.Id, root);
+            var rootDesignerItem = CreateRootItem(root);
             DesignerItems.Clear();
             DesignerItems.Add(rootDesignerItem);
             CreateChildDesignerItem(rootDesignerItem);
             return rootDesignerItem;
         }
-
-        void CreateChildDesignerItem(DesignerItem parentDesignerItem)
+        private void CreateChildDesignerItem(DesignerItem parentDesignerItem)
         {
             var child = ItemDatas.Where(x => x.ParentId == parentDesignerItem.ID && !x.Removed);
             foreach (var userDataSource in child)
             {
-                var childDesignerItem = CreateChildItem(parentDesignerItem.ID, userDataSource.Id, userDataSource);
+                var childDesignerItem = CreateChildItem(parentDesignerItem.ID, userDataSource);
                 DesignerItems.Add(childDesignerItem);
                 CreateChildDesignerItem(childDesignerItem);
             }
         }
-
-        #endregion
-
-        #region 控件发生变化，同时更新数据源
-
-        void UpdateItemDatas()
-        {
-            ItemDatas.Clear();
-            foreach (var item in DesignerItems)
-            {
-                ItemDatas.Add(item.Data as CustomItemData);
-            }
-        }
+        private DesignerItem CreateRootItem(ItemDataBase itemData)
+        { return new DesignerItem(this, itemData.Id, itemData); }
+        private DesignerItem CreateChildItem(Guid parentId, ItemDataBase itemData)
+        { return new DesignerItem(this, itemData.Id, parentId, itemData); }
 
         #endregion
 
@@ -477,21 +308,75 @@ namespace DiagramDesigner.Controls
         {
             get
             {
-                return new RelayCommand<DesignerItem>((x) =>
+                return new RelayCommand(() =>
                 {
                     if (SelectedItem != null)
                     {
-                        AddSibling(x);
+                        AddSibling(SelectedItem);
                     }
                 });
             }
         }
+        public ICommand AddAfterCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (SelectedItem != null)
+                    {
+                        AddAfter(SelectedItem);
+                    }
+                });
+            }
+        }
+        public ICommand RemoveCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (SelectedItem != null)
+                    {
+                        Delete(SelectedItem);
+                    }
+                });
+            }
+        }
+        public ICommand CollapseCommand
+        {
+            get
+            {
+                return new RelayCommand(Collapse);
+            }
+        }
+        public ICommand ExpandCommand
+        {
+            get
+            {
+                return new RelayCommand(Expand);
+            }
+        }
+        public ICommand GetDataCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                   {
+                       var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
+                       MessageBox.Show(string.Format("Changed:{0}\nAdded:{1}\nRemoved:{2}\nTotal:{3}", list.Count(x => x.Changed), list.Count(x => x.Added), list.Count(x => x.Removed), list.Count(x => !x.Removed)));
+                   });
+            }
+        }
 
+        public ICommand ReloadCommand
+        {
+            get
+            {
+                return new RelayCommand(GenerateDesignerItems);
+            }
+        }
         #endregion
-
-
-
-
 
         #region Override
 
@@ -508,8 +393,7 @@ namespace DiagramDesigner.Controls
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
             BindData();
 
-            var root = DesignerItems.FirstOrDefault(x => x.Data.ParentId == Guid.Empty);
-            DiagramManager.HighlightSelected(root);
+
         }
 
         #endregion

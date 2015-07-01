@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using DiagramDesigner.Data;
 
 namespace DiagramDesigner.Controls
 {

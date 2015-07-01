@@ -385,6 +385,7 @@ namespace DiagramDesigner
             foreach (var subItem in
                 (from itemConnection in GetItemConnections(item)
                  where Equals(itemConnection.Source.ParentDesignerItem, item)
+                 && itemConnection.Sink.ParentDesignerItem.Data.Removed == false
                  select itemConnection.Sink.ParentDesignerItem).OrderBy(x => x.Data.YIndex))
             {
                 if (subitems.Contains(subItem)) continue;

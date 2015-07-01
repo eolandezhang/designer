@@ -17,21 +17,21 @@ namespace DiagramDesigner
 {
     public partial class DesignerCanvas
     {
-        public static RoutedCommand Group = new RoutedCommand();
-        public static RoutedCommand Ungroup = new RoutedCommand();
-        public static RoutedCommand BringForward = new RoutedCommand();
+        //public static RoutedCommand Group = new RoutedCommand();
+        //public static RoutedCommand Ungroup = new RoutedCommand();
+        //public static RoutedCommand BringForward = new RoutedCommand();
         public static RoutedCommand BringToFront = new RoutedCommand();
-        public static RoutedCommand SendBackward = new RoutedCommand();
-        public static RoutedCommand SendToBack = new RoutedCommand();
-        public static RoutedCommand AlignTop = new RoutedCommand();
-        public static RoutedCommand AlignVerticalCenters = new RoutedCommand();
-        public static RoutedCommand AlignBottom = new RoutedCommand();
-        public static RoutedCommand AlignLeft = new RoutedCommand();
-        public static RoutedCommand AlignHorizontalCenters = new RoutedCommand();
-        public static RoutedCommand AlignRight = new RoutedCommand();
-        public static RoutedCommand DistributeHorizontal = new RoutedCommand();
-        public static RoutedCommand DistributeVertical = new RoutedCommand();
-        public static RoutedCommand SelectAll = new RoutedCommand();
+        //public static RoutedCommand SendBackward = new RoutedCommand();
+        //public static RoutedCommand SendToBack = new RoutedCommand();
+        //public static RoutedCommand AlignTop = new RoutedCommand();
+        //public static RoutedCommand AlignVerticalCenters = new RoutedCommand();
+        //public static RoutedCommand AlignBottom = new RoutedCommand();
+        //public static RoutedCommand AlignLeft = new RoutedCommand();
+        //public static RoutedCommand AlignHorizontalCenters = new RoutedCommand();
+        //public static RoutedCommand AlignRight = new RoutedCommand();
+        //public static RoutedCommand DistributeHorizontal = new RoutedCommand();
+        //public static RoutedCommand DistributeVertical = new RoutedCommand();
+        //public static RoutedCommand SelectAll = new RoutedCommand();
 
         public DesignerCanvas()
         {
@@ -43,22 +43,22 @@ namespace DiagramDesigner
             this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, Copy_Executed, Copy_Enabled));
             this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, Paste_Executed, Paste_Enabled));
             this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Delete, Delete_Executed, Delete_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.Group, Group_Executed, Group_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.Ungroup, Ungroup_Executed, Ungroup_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.BringForward, BringForward_Executed, Order_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.Group, Group_Executed, Group_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.Ungroup, Ungroup_Executed, Ungroup_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.BringForward, BringForward_Executed, Order_Enabled));
             this.CommandBindings.Add(new CommandBinding(DesignerCanvas.BringToFront, BringToFront_Executed, Order_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.SendBackward, SendBackward_Executed, Order_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.SendToBack, SendToBack_Executed, Order_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignTop, AlignTop_Executed, Align_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignVerticalCenters, AlignVerticalCenters_Executed, Align_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignBottom, AlignBottom_Executed, Align_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignLeft, AlignLeft_Executed, Align_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignHorizontalCenters, AlignHorizontalCenters_Executed, Align_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignRight, AlignRight_Executed, Align_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.DistributeHorizontal, DistributeHorizontal_Executed, Distribute_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.DistributeVertical, DistributeVertical_Executed, Distribute_Enabled));
-            this.CommandBindings.Add(new CommandBinding(DesignerCanvas.SelectAll, SelectAll_Executed));
-            SelectAll.InputGestures.Add(new KeyGesture(Key.A, ModifierKeys.Control));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.SendBackward, SendBackward_Executed, Order_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.SendToBack, SendToBack_Executed, Order_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignTop, AlignTop_Executed, Align_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignVerticalCenters, AlignVerticalCenters_Executed, Align_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignBottom, AlignBottom_Executed, Align_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignLeft, AlignLeft_Executed, Align_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignHorizontalCenters, AlignHorizontalCenters_Executed, Align_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.AlignRight, AlignRight_Executed, Align_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.DistributeHorizontal, DistributeHorizontal_Executed, Distribute_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.DistributeVertical, DistributeVertical_Executed, Distribute_Enabled));
+            //this.CommandBindings.Add(new CommandBinding(DesignerCanvas.SelectAll, SelectAll_Executed));
+            //SelectAll.InputGestures.Add(new KeyGesture(Key.A, ModifierKeys.Control));
 
             this.AllowDrop = true;
             Clipboard.Clear();

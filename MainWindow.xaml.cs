@@ -1,7 +1,9 @@
-﻿using DiagramDesigner.Controls;
+﻿using System.Collections.Generic;
+using DiagramDesigner.Controls;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using DiagramDesigner.Data;
 
 namespace DiagramDesigner
 {
@@ -45,8 +47,7 @@ namespace DiagramDesigner
 
         private void GetData_Click(object sender, RoutedEventArgs e)
         {
-            var param = (DiagramControl)((Button)sender).CommandParameter;
-            var list = param.ItemDatas;
+            var list = Diagram.DesignerItems.Select(designerItem => designerItem.Data).ToList();
             MessageBox.Show(string.Format("Changed:{0}\nAdded:{1}\nRemoved:{2}", list.Count(x => x.Changed), list.Count(x => x.Added), list.Count(x => x.Removed)));
         }
     }

@@ -3,7 +3,7 @@
                     xmlns:s="clr-namespace:DiagramDesigner"
                     xmlns:c="clr-namespace:DiagramDesigner.Controls">
 
-    <ContextMenu x:Key="ConnectionContextMenu">
+    <!--<ContextMenu x:Key="ConnectionContextMenu">
         <MenuItem Header="Delete" Command="{x:Static ApplicationCommands.Delete}">
             <MenuItem.Icon>
                 <Image Source="Images/Delete.png" Width="16"/>
@@ -32,7 +32,7 @@
                 </MenuItem.Icon>
             </MenuItem>
         </MenuItem>
-    </ContextMenu>
+    </ContextMenu>-->
 
     <Style TargetType="{x:Type s:Connection}">
         <Style.Resources>
@@ -82,8 +82,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type s:Connection}">
-                    <Canvas DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
-                            ContextMenu="{StaticResource ConnectionContextMenu}">
+                    <!--<Canvas DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                            ContextMenu="{StaticResource ConnectionContextMenu}">-->
+                    <Canvas DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
                         <Path Name="PART_ConnectionPath"
                               StrokeThickness="1"
                               Stroke="{StaticResource SolidBorderBrush}"

@@ -14,15 +14,16 @@
     <DockPanel>
         <ToolBar DockPanel.Dock="Top">
             <ToolBarPanel Orientation="Horizontal">
-                <Button x:Name="AddSibling" Content="增加" Command="{Binding ElementName=Diagram,Path=AddSiblingCommand}" CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
-                <Button x:Name="AddAfter" Content="增加(之后)" Click="AddAfter_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
-                <Button x:Name="Remove" Content="移除" Click="Remove_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
-                <Button x:Name="Collapse" Content="折叠" Click="Collapse_Click"/>
-                <Button x:Name="Expand" Content="展开" Click="Expand_Click"/>
-                <Button x:Name="GetData" Content="数据信息" Click="GetData_Click" CommandParameter="{Binding ElementName=Diagram}"/>
+                <Button x:Name="AddSibling" Content="增加" Command="{Binding ElementName=Diagram,Path=AddSiblingCommand}"/>
+                <Button x:Name="AddAfter" Content="增加(之后)"  Command="{Binding ElementName=Diagram,Path=AddAfterCommand}"/>
+                <Button x:Name="Remove" Content="移除"   Command="{Binding ElementName=Diagram,Path=RemoveCommand}"/>
+                <Button x:Name="Collapse" Content="折叠"   Command="{Binding ElementName=Diagram,Path=CollapseCommand}"/>
+                <Button x:Name="Expand" Content="展开"   Command="{Binding ElementName=Diagram,Path=ExpandCommand}"/>
+                <Button x:Name="GetData" Content="数据信息"  Command="{Binding ElementName=Diagram,Path=GetDataCommand}"/>
+                <Button x:Name="Reload" Content="重新加载"  Command="{Binding ElementName=Diagram,Path=ReloadCommand}"/>
             </ToolBarPanel>
         </ToolBar>
-        <xcad:DockingManager Grid.Row="1" x:Name="dockManager" AllowMixedOrientation="True" >
+        <xcad:DockingManager x:Name="dockManager" AllowMixedOrientation="True" >
             <xcad:DockingManager.Theme>
                 <xcad:MetroTheme/>
             </xcad:DockingManager.Theme>
@@ -33,13 +34,22 @@
                             <xcad:LayoutDocumentPane>
                                 <xcad:LayoutDocument ContentId="document1" Title="Document 1"  >
                                     <Grid>
+                                        <!--<c:DiagramControl 
+                                            Grid.Column="0" 
+                                            x:Name="Diagram" 
+                                            DiagramHeader="树状图" 
+                                            ZoomBoxControl="{Binding ElementName=ZoomBox}"
+                                            ItemDatas="{Binding ItemDatas}"
+                                            ItemDataBase="{Binding EditorDataSource,Mode=OneWayToSource}"
+                                            />-->
                                         <c:DiagramControl 
                                             Grid.Column="0" 
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
-                                            ItemDataBase="{Binding EditorDataSource,Mode=TwoWay}"/>
+                                            SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
+                                            />
                                     </Grid>
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>
@@ -53,7 +63,7 @@
                                             <RowDefinition Height="200"/>
                                         </Grid.RowDefinitions>
                                         <!--<c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataSource="{Binding EditorDataSource}">-->
-                                        <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataContext="{Binding EditorDataSource}"  >
+                                        <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataContext="{Binding SelectedItem.Data}"  >
                                             <c:DiagramDataEditorControl.Content>
                                                 <Grid>
                                                     <Grid.RowDefinitions>
@@ -102,79 +112,5 @@
 
         </xcad:DockingManager>
     </DockPanel>
-
-
-    <!--<DockPanel>
-            <ToolBar DockPanel.Dock="Top">
-                <ToolBarPanel Orientation="Horizontal">
-                    <Button x:Name="AddSibling" Content="增加" Command="{Binding ElementName=Diagram,Path=AddSiblingCommand}" CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
-                    <Button x:Name="AddAfter" Content="增加(之后)" Click="AddAfter_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
-                    <Button x:Name="Remove" Content="移除" Click="Remove_OnClick"  CommandParameter="{Binding ElementName=Diagram,Path=SelectedItem}"/>
-                    <Button x:Name="Collapse" Content="折叠" Click="Collapse_Click"/>
-                    <Button x:Name="Expand" Content="展开" Click="Expand_Click"/>
-                    <Button x:Name="GetData" Content="数据信息" Click="GetData_Click" CommandParameter="{Binding ElementName=Diagram}"/>
-                </ToolBarPanel>
-            </ToolBar>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="300"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <c:DiagramControl 
-                    Grid.Column="0" 
-                    x:Name="Diagram" 
-                    DiagramHeader="树状图" 
-                    DiagramDataEditorControl="{Binding ElementName=DiagramDataEditor}"
-                    ZoomBoxControl="{Binding ElementName=ZoomBox}"
-                    ItemDatas="{Binding ItemDatas}"
-                    />
-                <GridSplitter Width="2" Grid.Column="0" />
-                <Grid Column="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="200"/>
-                    </Grid.RowDefinitions>
-                    <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" >
-                        <c:DiagramDataEditorControl.Content>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="*"></RowDefinition>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                    <ColumnDefinition Width="*"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <Label Content="Text" Grid.Row="0" Grid.Column="0"/>
-                                <TextBox Text="{Binding Text,UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1"/>
-                                <Label Content="Desc" Grid.Row="1" Grid.Column="0"/>
-                                <TextBox Text="{Binding Desc ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="1"  Grid.Column="1"/>
-                                <Label Content="Changed" Grid.Row="2" Grid.Column="0"/>
-                                <TextBox Text="{Binding Changed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="2"  Grid.Column="1" IsReadOnly="True"/>
-                                <Label Content="Added" Grid.Row="3" Grid.Column="0"/>
-                                <TextBox Text="{Binding Added ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="3"  Grid.Column="1" IsReadOnly="True"/>
-                                <Label Content="Removed" Grid.Row="4" Grid.Column="0"/>
-                                <TextBox Text="{Binding Removed ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="4"  Grid.Column="1" IsReadOnly="True"/>
-                                <Label Content="YIndex" Grid.Row="5" Grid.Column="0"/>
-                                <TextBox Text="{Binding YIndex ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="5"  Grid.Column="1" IsReadOnly="True"/>
-                                <Label Content="Id" Grid.Row="6" Grid.Column="0"/>
-                                <TextBox Text="{Binding Id ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="6"  Grid.Column="1" TextWrapping="Wrap" IsReadOnly="True"/>
-                                <Label Content="ParentId" Grid.Row="7" Grid.Column="0"/>
-                                <TextBox Text="{Binding ParentId ,UpdateSourceTrigger=PropertyChanged}" Grid.Row="7"  Grid.Column="1"  TextWrapping="Wrap" IsReadOnly="True"/>
-                            </Grid>
-                        </c:DiagramDataEditorControl.Content>
-                    </c:DiagramDataEditorControl>
-                    <s:ZoomBoxControl Grid.Row="1"
-                               />
-                </Grid>
-            </Grid>
-        </DockPanel>-->
 
 </Window>

@@ -11,7 +11,7 @@
                 <ResourceDictionary Source="Resources/Styles/GroupBox.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/Expander.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ScrollBar.xaml"/>
-                <ResourceDictionary Source="Resources/ApplicationToolbar.xaml"/>
+                <!--<ResourceDictionary Source="Resources/ApplicationToolbar.xaml"/>-->
                 <ResourceDictionary Source="Resources/DesignerItem.xaml"/>
                 <ResourceDictionary Source="Resources/ToolboxItem.xaml"/>
                 <ResourceDictionary Source="Resources/Toolbox.xaml"/>

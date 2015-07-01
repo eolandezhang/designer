@@ -17,22 +17,11 @@ namespace DiagramDesigner
 {
     public class MainViewModel : ObservableObject
     {
-        private ItemDataBase _editorDataSource;
-        public ItemDataBase EditorDataSource
+        private DesignerItem _selectedItem;
+        public DesignerItem SelectedItem
         {
-            get
-            {
-                return _editorDataSource;
-            }
-            set
-            {
-                if (_editorDataSource != value)
-                {
-                    _editorDataSource = value;
-
-                    OnPropertyChanged("EditorDataSource");
-                }
-            }
+            get { return _selectedItem; }
+            set { _selectedItem = value; OnPropertyChanged("SelectedItem"); }
         }
 
         private ObservableCollection<ItemDataBase> _itemDatas;
@@ -51,21 +40,8 @@ namespace DiagramDesigner
         public MainViewModel()
         {
             ItemDatas = new ObservableCollection<ItemDataBase>();
-            PropertyChanged += MainViewModel_PropertyChanged;
         }
 
-        void MainViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case "SelectedItem":
-                    {
-                        //MessageBox.Show(SelectedItem.Data.Text);
-
-                    }
-                    break;
-            }
-        }
         //可用框架中的消息实现
         public void InitData(DiagramControl diagramControl)
         {

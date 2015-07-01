@@ -34,24 +34,30 @@ namespace DiagramDesigner
         private static readonly SolidColorBrush DefaultFontColorBrush = Brushes.Black;
         #endregion
 
-        public static DesignerItem/*根节点*/ GenerateItems(Canvas canvas, IList<DesignerItem> dataSource/*数据源*/)
+        public static List<DesignerItem>/*根节点*/ GenerateItems(Canvas canvas, IList<DesignerItem> dataSource/*数据源*/)
         {
             if (dataSource.Count == 0) return null;
-            var root = dataSource.FirstOrDefault(x => x.Data.ParentId.Equals(Guid.Empty));
-            if (root == null) return null;
-            IList<DesignerItem> designerItems = new List<DesignerItem>();
-            CreateItems(canvas, dataSource, root, designerItems);
-            return designerItems.FirstOrDefault(x => x.Data.ParentId.Equals(Guid.Empty));
+            var roots = dataSource.Where(x => x.Data.ParentId.Equals(Guid.Empty)).ToList();
+            //if (roots == null) return null;
+            foreach (var root in roots)
+            {
+                IList<DesignerItem> designerItems = new List<DesignerItem>();
+                CreateItems(canvas, dataSource, root, designerItems);
+            }
+            return roots;
         }
 
         public static void ArrangeWithRootItems(Canvas canvas)
         {
             var items = GetDesignerItems(canvas);
             if (items == null) return;
-            var root = items.FirstOrDefault(x => x.Data.ParentId.Equals(Guid.Empty));
-            if (root != null)
+            var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
+            foreach (var root in roots)
             {
-                ArrangeWithRootItems(root);
+                if (root != null)
+                {
+                    ArrangeWithRootItems(root);
+                }
             }
         }
 
@@ -94,8 +100,7 @@ namespace DiagramDesigner
         {
             var designer = designerItem.Parent as Canvas;
             if (designer == null) return;
-            var root = GetRootItem(designer);
-            ArrangeWithRootItems(root);
+            ArrangeWithRootItems(designer);
         }
         public static void HighlightParent/*拖动时高亮父节点*/(DesignerItem designerItem, Canvas designer)
         {
@@ -207,19 +212,12 @@ namespace DiagramDesigner
                 item.IsExpanded = false;
             }
         }
-
-
-        protected class Sibling
-        {
-            public double Top { get; set; }
-            public DesignerItem Item { get; set; }
-        }
-        protected static DesignerItem GetRootItem/*取得画布上的根节点*/(Canvas canvas)
+        protected static List<DesignerItem> GetRootItem/*取得画布上的根节点*/(Canvas canvas)
         {
             return (from designerItem in GetDesignerItems(canvas)
                     let sink = GetItemConnector(designerItem, "Left")
                     where sink != null && sink.Connections.Count == 0
-                    select designerItem).FirstOrDefault();
+                    select designerItem).ToList();
         }
         private static double GetOffset(FrameworkElement item)
         {
@@ -520,11 +518,11 @@ namespace DiagramDesigner
                         && !Equals(designerItem, item) /*让parent不能为自己*/
                         && !subitems.Contains(designerItem) /*让parent不能为子节点*/
                         && designerItem.IsShadow == false
-                        select new Sibling() { Top = top, Item = designerItem }).ToList();
+                        select designerItem).ToList();
 
             if (!list.Any()) return null;
-            var parent = list.OrderByDescending(x => x.Top).First();
-            return parent.Item;
+            var parent = list.OrderByDescending(x => x.Data.YIndex).First();
+            return parent;
         }
         protected static void ChangeParent(DesignerItem item)
         {
@@ -667,17 +665,11 @@ namespace DiagramDesigner
         }
         protected static DesignerItem CreateRoot/*创建根节点*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset)
         {
-            var allItems = GetDesignerItems(canvas);
-            if (!allItems.Any())
-            {
-                // 检查Canvas中是否已经有内容
-                var root = CreateDesignerItem(canvas, item, topOffset, leftOffset);
-                SetItemFontColor(root, DefaultFontColorBrush);
-                root.CanCollapsed = false;
-                root.IsExpanderVisible = false;
-                return root; // 没有节点时才能创建根节点
-            }
-            return null;
+            var root = CreateDesignerItem(canvas, item, topOffset, leftOffset);
+            SetItemFontColor(root, DefaultFontColorBrush);
+            root.CanCollapsed = false;
+            root.IsExpanderVisible = false;
+            return root;
         }
         protected static DesignerItem CreateChild(DesignerItem parent, DesignerItem childItem)
         {

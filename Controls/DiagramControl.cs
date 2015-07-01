@@ -67,8 +67,10 @@ namespace DiagramDesigner.Controls
             "ItemDatas", typeof(ObservableCollection<ItemDataBase>), typeof(DiagramControl), new PropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
+
                     var diagramControl = d as DiagramControl;
                     if (diagramControl == null) return;
+                    if (diagramControl.Suppress) return;
                     if (diagramControl.ItemDatas != null) { diagramControl.GenerateDesignerItems(); }
                 }));
 
@@ -172,9 +174,11 @@ namespace DiagramDesigner.Controls
         void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/()
         {
             Suppress = true;/*利用数据源创建节点时不执行CollectionChange事件*/
-            var root = InitDesignerItems() ?? InitData();/*创建DesignerItems*/
+
+            var roots = InitDesignerItems();
+            if (!roots.Any()) InitData();/*创建DesignerItems*/
             BindData();/*将DesignerItems放到画布上，并且创建连线*/
-            SelectedItem = root;
+            SelectedItem = roots.FirstOrDefault();
             DiagramManager.HighlightSelected(SelectedItem);
             Suppress = false;
             GetDataInfo();
@@ -187,6 +191,7 @@ namespace DiagramDesigner.Controls
             designer.Children.Clear();
             var designerItems = DiagramManager.GenerateItems(designer, DesignerItems);
             if (designerItems == null) return;
+            if (!designerItems.Any()) return;
             DiagramManager.ArrangeWithRootItems(designer);
             var items = DiagramManager.GetDesignerItems(designer);
             if (items == null) return;
@@ -204,6 +209,17 @@ namespace DiagramDesigner.Controls
         #endregion
 
         #region 用命令，创建节点
+        public void AddRootDesignerItem()
+        {
+            var n5 = Guid.NewGuid();
+            var newitem = new DesignerItem(n5, new CustomItemData(n5, Guid.Empty, GetText(), "", true, false, Designer.ActualWidth / 2, Designer.ActualHeight / 2));
+
+            DesignerItems.Add(newitem);
+
+            SelectedItem = newitem;
+            DiagramManager.HighlightSelected(SelectedItem);
+        }
+
         public void AddSibling(DesignerItem designerItem)
         {
             if (designerItem == null) return;
@@ -235,7 +251,6 @@ namespace DiagramDesigner.Controls
         public void Delete(DesignerItem d)
         {
             if (d == null) return;
-            if (d.Data.ParentId == Guid.Empty) return;
             if (d.Data == null) return;
             var item = this.DesignerItems.FirstOrDefault(x => x.ID == d.ID);
             if (item == null) return;
@@ -262,8 +277,11 @@ namespace DiagramDesigner.Controls
             }
             if (!Suppress)
                 BindData();
-            var parent = DesignerItems.FirstOrDefault(x => x.ID == d.Data.ParentId);
-            SelectedItem = parent;
+            if (d.Data.ParentId != Guid.Empty)
+            {
+                var parent = DesignerItems.FirstOrDefault(x => x.ID == d.Data.ParentId);
+                SelectedItem = parent;
+            }
             #endregion
 
             GetDataInfo();
@@ -296,15 +314,22 @@ namespace DiagramDesigner.Controls
 
         #region 用数据源，构建节点元素
 
-        private DesignerItem InitDesignerItems()
+        private List<DesignerItem> InitDesignerItems()
         {
-            var root = ItemDatas.FirstOrDefault(x => x.ParentId == Guid.Empty);
-            if (root == null) return null;
-            var rootDesignerItem = CreateRootItem(root);
+
+            var roots = ItemDatas.Where(x => x.ParentId == Guid.Empty);
+            if (roots == null || !roots.Any()) return null;
+            List<DesignerItem> rootDesignerItems = new List<DesignerItem>();
             DesignerItems.Clear();
-            DesignerItems.Add(rootDesignerItem);
-            CreateChildDesignerItem(rootDesignerItem);
-            return rootDesignerItem;
+            foreach (var root in roots)
+            {
+                var rootDesignerItem = CreateRootItem(root);
+                rootDesignerItems.Add(rootDesignerItem);
+
+                DesignerItems.Add(rootDesignerItem);
+                CreateChildDesignerItem(rootDesignerItem);
+            }
+            return rootDesignerItems;
         }
         private void CreateChildDesignerItem(DesignerItem parentDesignerItem)
         {
@@ -324,7 +349,13 @@ namespace DiagramDesigner.Controls
         #endregion
 
         #region Commands
-
+        public ICommand AddRootDesignerItemCommand
+        {
+            get
+            {
+                return new RelayCommand(AddRootDesignerItem);
+            }
+        }
         public ICommand AddSiblingCommand
         {
             get
@@ -426,6 +457,27 @@ namespace DiagramDesigner.Controls
             }
         }
 
+        public ICommand SaveCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    SaveData();
+                });
+            }
+        }
+        void SaveData()
+        {
+            Suppress = true;
+            ItemDatas.Clear();
+            foreach (var item in DesignerItems)
+            {
+                ItemDatas.Add(item.Data);
+            }
+
+            Suppress = false;
+        }
         #endregion
 
         #region Override

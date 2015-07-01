@@ -6,7 +6,7 @@
         xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
         WindowStartupLocation="CenterScreen"
         Title="Diagram Designer"
-        Height="600" Width="800" Background="White"
+        Height="720" Width="1000" Background="White"
         Icon="Resources/Images/tree_32.ico"
         >
     <Window.DataContext>
@@ -26,12 +26,16 @@
                                     <DockPanel Background="White">
                                         <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
                                             <ToolBar DataContext="{Binding ElementName=Diagram}">
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加" Command="{Binding Path=AddSiblingCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(独立)" Command="{Binding Path=AddRootDesignerItemCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=AddSiblingCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=AddAfterCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=RemoveCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=CollapseCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=ExpandCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4"   Content="数据信息" Command="{Binding Path=GetDataCommand}"/>
+                                                <!--<Button Margin="4,0,4,0" Padding="5,4,5,4"   Content="数据信息" Command="{Binding Path=GetDataCommand}"/>-->
+
+                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="保存" Command="{Binding Path=SaveCommand}"/>
+
                                                 <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=ReloadCommand}"/>
                                             </ToolBar>
                                         </ToolBarTray>

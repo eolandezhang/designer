@@ -173,22 +173,19 @@ namespace DiagramDesigner
         {
             if (designerItem == null) return;
             var canvas = VisualTreeHelper.GetParent(designerItem) as DesignerCanvas;
-            if (canvas != null)
-            {
-                RemoveShadows(canvas);/*移除影子*/
+            if (canvas == null) return;
+            RemoveShadows(canvas);/*移除影子*/
 
-                var left = (double)designerItem.GetValue(Canvas.LeftProperty);
-                var top = (double)designerItem.GetValue(Canvas.TopProperty);
-                if (!left.Equals(originalLeft) && !top.Equals(originalTop)) /*位置不变，则不改变父节点*/
-                {
-                    ChangeParent(designerItem);/*改变父节点*/
-                }
-                ShowItemConnection(designerItem);/*拖动完毕，显示连线*/
-                ResetBrushBorderFontStyle(canvas, designerItem);/*恢复边框字体样式*/
-                //designerItem.Data.YIndex = (double)designerItem.GetValue(Canvas.TopProperty);
-                UpdateYIndex(canvas);
-                ArrangeWithRootItems(canvas);/*重新布局*/
+            var left = (double)designerItem.GetValue(Canvas.LeftProperty);
+            var top = (double)designerItem.GetValue(Canvas.TopProperty);
+            if (!left.Equals(originalLeft) && !top.Equals(originalTop)) /*位置不变，则不改变父节点*/
+            {
+                ChangeParent(designerItem);/*改变父节点*/
             }
+            ShowItemConnection(designerItem);/*拖动完毕，显示连线*/
+            ResetBrushBorderFontStyle(canvas, designerItem);/*恢复边框字体样式*/
+            UpdateYIndex(canvas);
+            ArrangeWithRootItems(canvas);/*重新布局*/
         }
         public static void ExpandAll/*展开所有*/(Canvas canvas)
         {
@@ -200,6 +197,7 @@ namespace DiagramDesigner
         }
         public static void CollapseAll/*折叠所有，除了根节点*/(Canvas canvas)
         {
+            if (canvas == null) return;
             var items = GetDesignerItems(canvas);
             foreach (var item in items.Where(item => item.CanCollapsed))
             {
@@ -363,7 +361,7 @@ namespace DiagramDesigner
             }
             return list;
         }
-        protected static List<DesignerItem> GetDirectSubItems/*取得直接子节点*/(DesignerItem item)
+        private static List<DesignerItem> GetDirectSubItems/*取得直接子节点*/(DesignerItem item)
         {
             var canvas = item.Parent as Canvas;
             if (canvas == null) return null;
@@ -397,7 +395,7 @@ namespace DiagramDesigner
                 }
             }
         }
-        protected static DesignerItem GetParentItem/*父节点*/(DesignerItem item)
+        private static DesignerItem GetParentItem/*父节点*/(DesignerItem item)
         {
             var connector = GetItemConnector(item, "Left");
             var connection = connector.Connections.FirstOrDefault(x => x.Sink != null && x.Source != null);
@@ -407,7 +405,7 @@ namespace DiagramDesigner
             }
             return null;
         }
-        public static void BringToFront/*将制定元素移到最前面*/(DesignerItem designerItem)
+        private static void BringToFront/*将制定元素移到最前面*/(DesignerItem designerItem)
         {
 
             var canvas = designerItem.Parent as Canvas;
@@ -433,7 +431,7 @@ namespace DiagramDesigner
                 }
             }
         }
-        public static void BringToFront/*将制定元素移到最前面*/(Canvas canvas, UIElement element)
+        private static void BringToFront/*将制定元素移到最前面*/(Canvas canvas, UIElement element)
         {
             List<UIElement> childrenSorted =
                 (from UIElement item in canvas.Children
@@ -455,28 +453,12 @@ namespace DiagramDesigner
                 }
             }
         }
-        public static void UpdateYIndex/*按照Top位置排序*/(Canvas canvas)
+        private static void UpdateYIndex/*按照Top位置排序*/(Canvas canvas)
         {
-            List<DesignerItem> designerItems = new List<DesignerItem>();
+            var designerItems = new List<DesignerItem>();
             GetAllSubItems(GetRootItem(canvas), designerItems);
-            foreach (var item in designerItems)
-            {
-                item.Data.YIndex = Canvas.GetTop(item);
-            }
+            foreach (var item in designerItems) { item.Data.YIndex = Canvas.GetTop(item); }
         }
-        public static void UpdateYIndex/*按照Top位置排序*/(DesignerItem designerItem)
-        {
-            var canvas = designerItem.Parent as Canvas;
-            if (canvas == null) return;
-            List<DesignerItem> designerItems = new List<DesignerItem>();
-            GetAllSubItems(GetRootItem(canvas), designerItems);
-            foreach (var item in designerItems)
-            {
-                item.Data.YIndex = Canvas.GetTop(item);
-            }
-        }
-
-
 
         protected static void SendConnectionsToBack(Canvas canvas)
         {

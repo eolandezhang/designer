@@ -7,22 +7,12 @@
         WindowStartupLocation="CenterScreen"
         Title="Diagram Designer"
         Height="600" Width="800" Background="White"
-        Icon="Resources/Images/tree_32.ico">
+        Icon="Resources/Images/tree_32.ico"
+        >
     <Window.DataContext>
         <s:MainViewModel/>
     </Window.DataContext>
-    <DockPanel>
-        <ToolBar DockPanel.Dock="Top">
-            <ToolBarPanel Orientation="Horizontal">
-                <Button x:Name="AddSibling" Content="增加" Command="{Binding ElementName=Diagram,Path=AddSiblingCommand}"/>
-                <Button x:Name="AddAfter" Content="增加(之后)"  Command="{Binding ElementName=Diagram,Path=AddAfterCommand}"/>
-                <Button x:Name="Remove" Content="移除"   Command="{Binding ElementName=Diagram,Path=RemoveCommand}"/>
-                <Button x:Name="Collapse" Content="折叠"   Command="{Binding ElementName=Diagram,Path=CollapseCommand}"/>
-                <Button x:Name="Expand" Content="展开"   Command="{Binding ElementName=Diagram,Path=ExpandCommand}"/>
-                <Button x:Name="GetData" Content="数据信息"  Command="{Binding ElementName=Diagram,Path=GetDataCommand}"/>
-                <Button x:Name="Reload" Content="重新加载"  Command="{Binding ElementName=Diagram,Path=ReloadCommand}"/>
-            </ToolBarPanel>
-        </ToolBar>
+    <Grid Background="White">
         <xcad:DockingManager x:Name="dockManager" AllowMixedOrientation="True" >
             <xcad:DockingManager.Theme>
                 <xcad:MetroTheme/>
@@ -32,25 +22,28 @@
                     <xcad:LayoutPanel Orientation="Horizontal">
                         <xcad:LayoutDocumentPaneGroup>
                             <xcad:LayoutDocumentPane>
-                                <xcad:LayoutDocument ContentId="document1" Title="Document 1"  >
-                                    <Grid>
-                                        <!--<c:DiagramControl 
-                                            Grid.Column="0" 
-                                            x:Name="Diagram" 
-                                            DiagramHeader="树状图" 
-                                            ZoomBoxControl="{Binding ElementName=ZoomBox}"
-                                            ItemDatas="{Binding ItemDatas}"
-                                            ItemDataBase="{Binding EditorDataSource,Mode=OneWayToSource}"
-                                            />-->
+                                <xcad:LayoutDocument ContentId="document1" Title="Diagram" >
+                                    <DockPanel Background="White">
+                                        <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
+                                            <ToolBar DataContext="{Binding ElementName=Diagram}">
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加" Command="{Binding Path=AddSiblingCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=AddAfterCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=RemoveCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=CollapseCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=ExpandCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4"   Content="数据信息" Command="{Binding Path=GetDataCommand}"/>
+                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=ReloadCommand}"/>
+                                            </ToolBar>
+                                        </ToolBarTray>
                                         <c:DiagramControl 
-                                            Grid.Column="0" 
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
                                             SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
-                                            />
-                                    </Grid>
+                                           />
+
+                                    </DockPanel>
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>
                         </xcad:LayoutDocumentPaneGroup>
@@ -111,6 +104,6 @@
             </xcad:DockingManager.Layout>
 
         </xcad:DockingManager>
-    </DockPanel>
+    </Grid>
 
 </Window>

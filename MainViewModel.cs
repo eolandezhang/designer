@@ -40,10 +40,11 @@ namespace DiagramDesigner
         public MainViewModel()
         {
             ItemDatas = new ObservableCollection<ItemDataBase>();
+            InitData();
         }
 
         //可用框架中的消息实现
-        public void InitData(DiagramControl diagramControl)
+        public void InitData()
         {
             ItemDatas = new ObservableCollection<ItemDataBase>()
             {

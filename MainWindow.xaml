@@ -52,7 +52,8 @@
                                             <RowDefinition/>
                                             <RowDefinition Height="200"/>
                                         </Grid.RowDefinitions>
-                                        <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataSource="{Binding EditorDataSource}">
+                                        <!--<c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataSource="{Binding EditorDataSource}">-->
+                                        <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataContext="{Binding EditorDataSource}"  >
                                             <c:DiagramDataEditorControl.Content>
                                                 <Grid>
                                                     <Grid.RowDefinitions>

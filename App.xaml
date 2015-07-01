@@ -21,6 +21,7 @@
                 <ResourceDictionary Source="Resources/ZoomBoxControl.xaml"/>
                 <ResourceDictionary Source="Resources/DiagramControl.xaml"/>
                 <ResourceDictionary Source="Resources/DiagramDataEditorControl.xaml"/>
+                <ResourceDictionary Source="Resources/FlatButton.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <mvvm:DataContextSpy x:Key="dataContext" DataContext="{Binding}" />
         </ResourceDictionary>

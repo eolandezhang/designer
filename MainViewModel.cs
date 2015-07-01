@@ -1,4 +1,7 @@
-﻿/* ============================================================================== 
+﻿using DiagramDesigner.Controls;
+using DiagramDesigner.Data;
+using DiagramDesigner.MVVM;
+/* ============================================================================== 
 * 类名称：MainViewModel 
 * 类描述： 
 * 创建人：eolandecheung 
@@ -8,41 +11,19 @@
 * 修改备注： 
 * @version 1.0 
 * ==============================================================================*/
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Windows.Input;
-using DiagramDesigner.Controls;
-using DiagramDesigner.Data;
-using DiagramDesigner.MVVM;
-using System.Windows;
 
 namespace DiagramDesigner
 {
     public class MainViewModel : ObservableObject
     {
-        //private DesignerItem _selectedItem;
-        //public DesignerItem SelectedItem
-        //{
-        //    get { return _selectedItem; }
-        //    set
-        //    {
-        //        if (_selectedItem != value)
-        //        {
-        //            _selectedItem = value;
-
-        //            EditorDataSource = value == null ? null : value.Data;
-        //            OnPropertyChanged("SelectedItem");
-        //        }
-        //    }
-        //}
         private ItemDataBase _editorDataSource;
         public ItemDataBase EditorDataSource
         {
-            get { return _editorDataSource; }
+            get
+            {
+                return _editorDataSource;
+            }
             set
             {
                 if (_editorDataSource != value)

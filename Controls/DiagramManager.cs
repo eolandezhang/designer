@@ -104,19 +104,22 @@ namespace DiagramDesigner
         }
         public static void HighlightParent/*拖动时高亮父节点*/(DesignerItem designerItem, Canvas designer)
         {
+
+            foreach (var item in GetDesignerItems(designer)
+                .Where(item => item.IsShadow == false && !item.Equals(designerItem)))
+            {
+                SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness),
+                    DefaultBackgroundBrush);
+            }
             var parent = GetTopSibling(designerItem);
-            if (parent == null)
+            if (parent != null)
             {
-                ShadowChildItemsBrushBorderFontStyle(designerItem);
-                return;
+                SetItemBorderStyle(parent, HighlightBorderBrush, new Thickness(HighlightBorderThickness),
+                    DefaultBackgroundBrush);
+                SetDragItemStyle(designerItem);
             }
-            foreach (var item in GetDesignerItems(designer).Where(item => item.IsShadow == false && !item.Equals(designerItem)))
-            {
-                SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
-            }
-            SetItemBorderStyle(parent, HighlightBorderBrush, new Thickness(HighlightBorderThickness), DefaultBackgroundBrush);
             ShadowChildItemsBrushBorderFontStyle(designerItem);
-            SetDragItemStyle(designerItem);
+
         }
         public static void HighlightSelected/*高亮选中*/(DesignerItem item)
         {
@@ -505,16 +508,14 @@ namespace DiagramDesigner
             var subitems = new List<DesignerItem>();
             GetAllSubItems(item, subitems);
 
-            var topPosition = (double)item.GetValue(Canvas.TopProperty);/*鼠标拖动后的位置*/
-            var leftPosition = (double)item.GetValue(Canvas.LeftProperty);/*鼠标拖动后的位置*/
-
-
             var pre = GetDesignerItems(canvas).Where(x => x.Visibility.Equals(Visibility.Visible));
             var list = (from designerItem in pre
-                        let top = (double)designerItem.GetValue(Canvas.TopProperty)
-                        let left = (double)designerItem.GetValue(Canvas.LeftProperty)
-                        where top <= topPosition /*top位置小于自己的top位置*/
-                        && left <= leftPosition
+                        let top = Canvas.GetTop(designerItem)
+                        let left = Canvas.GetLeft(designerItem)
+                        let right = left + designerItem.ActualWidth
+                        where top <= Canvas.GetTop(item) /*top位置小于自己的top位置*/
+                        && left <= Canvas.GetLeft(item)
+                        && right >= Canvas.GetLeft(item)
                         && !Equals(designerItem, item) /*让parent不能为自己*/
                         && !subitems.Contains(designerItem) /*让parent不能为子节点*/
                         && designerItem.IsShadow == false
@@ -551,7 +552,6 @@ namespace DiagramDesigner
                     var connection = connections.First();
                     connection.Source = source;
                     item.Data.ParentId = parent.ID;
-
                 }
             }
         }

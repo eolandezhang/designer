@@ -63,8 +63,6 @@ namespace DiagramDesigner.Controls
 
             #endregion
 
-            //DiagramManager.UpdateXYIndex(designer);
-
             designerItem.Data.YIndex = Canvas.GetTop(designerItem);
         }
 

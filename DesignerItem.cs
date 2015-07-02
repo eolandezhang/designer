@@ -220,17 +220,29 @@ namespace DiagramDesigner
             if (designer != null)
             {
                 if ((Keyboard.Modifiers & (ModifierKeys.Shift | ModifierKeys.Control)) != ModifierKeys.None)
-                    if (IsSelected) { designer.SelectionService.RemoveFromSelection(this); }
-                    else { designer.SelectionService.AddToSelection(this); }
+                    if (IsSelected)
+                    {
+                        designer.SelectionService.RemoveFromSelection(this);
+                    }
+                    else
+                    {
+                        designer.SelectionService.AddToSelection(this);
+                    }
                 else if (!IsSelected) { designer.SelectionService.SelectItem(this); }
                 Focus();
-                if (DiagramControl != null) { DiagramControl.SelectedItem = this; }
+                //if (DiagramControl != null) { DiagramControl.SelectedItem = this; }
             }
             e.Handled = false;
         }
         protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
-            DiagramManager.HighlightSelected(this);
+            //DiagramManager.HighlightSelected(this);
+
+            //DesignerCanvas designer = VisualTreeHelper.GetParent(this) as DesignerCanvas;
+            //if (designer != null)
+            //{
+            //    MessageBox.Show((designer.SelectionService.CurrentSelection.Count).ToString());
+            //}
         }
         void DesignerItem_Loaded(object sender, RoutedEventArgs e)
         {

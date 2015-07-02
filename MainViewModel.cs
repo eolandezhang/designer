@@ -12,6 +12,7 @@ using DiagramDesigner.MVVM;
 * @version 1.0 
 * ==============================================================================*/
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace DiagramDesigner
 {
@@ -20,7 +21,18 @@ namespace DiagramDesigner
         private DesignerItem _selectedItem;
         public DesignerItem SelectedItem
         {
-            get { return _selectedItem; }
+            get
+            {
+                if (SelectedItems != null && SelectedItems.Count() == 1)
+                {
+                    _selectedItem = SelectedItems.FirstOrDefault();
+                }
+                else
+                {
+                    _selectedItem = null;
+                }
+                return _selectedItem;
+            }
             set { _selectedItem = value; OnPropertyChanged("SelectedItem"); }
         }
 
@@ -37,9 +49,24 @@ namespace DiagramDesigner
                 }
             }
         }
+        private ObservableCollection<DesignerItem> _selectedItems;
+        public ObservableCollection<DesignerItem> SelectedItems
+        {
+            get { return _selectedItems; }
+            set
+            {
+                if (_selectedItems != value)
+                {
+                    _selectedItems = value;
+                    OnPropertyChanged("SelectedItems");
+                }
+            }
+        }
+
         public MainViewModel()
         {
             ItemDatas = new ObservableCollection<ItemDataBase>();
+            SelectedItems = new ObservableCollection<DesignerItem>();
             InitData();
         }
 

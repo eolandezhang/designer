@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
+using DiagramDesigner.Controls;
 
 namespace DiagramDesigner
 {
@@ -8,8 +10,8 @@ namespace DiagramDesigner
     {
         private DesignerCanvas designerCanvas;
 
-        private DesignerItem _selectedItem;
-        public DesignerItem SelectedItem { get { return _selectedItem; } }
+        //private DesignerItem _selectedItem;
+        //public DesignerItem SelectedItem { get { return _selectedItem; } }
 
         private List<ISelectable> _currentSelection;
         internal List<ISelectable> CurrentSelection
@@ -31,8 +33,8 @@ namespace DiagramDesigner
 
         internal void SelectItem(ISelectable item)
         {
-            var x = item as DesignerItem;
-            _selectedItem = x;
+            //var x = item as DesignerItem;
+            //_selectedItem = x;
 
             this.ClearSelection();
             this.AddToSelection(item);
@@ -40,20 +42,36 @@ namespace DiagramDesigner
 
         internal void AddToSelection(ISelectable item)
         {
-            if (item is IGroupable)
+            var x = item as DesignerItem;
+            if (x != null)
             {
-                List<IGroupable> groupItems = GetGroupMembers(item as IGroupable);
-
-                foreach (ISelectable groupItem in groupItems)
-                {
-                    groupItem.IsSelected = true;
-                    CurrentSelection.Add(groupItem);
-                }
-            }
-            else
-            {
-                item.IsSelected = true;
                 CurrentSelection.Add(item);
+                x.IsSelected = true;
+                DiagramManager.HighlightSelected(x);
+                //var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
+                //if (diagramControl != null)
+                //{
+                //    diagramControl.SelectedItem = x;
+                //    diagramControl.SelectedItems = CurrentSelection.ConvertAll((c) => c as DesignerItem);
+                //    //
+                //}
+
+
+                //if (item is IGroupable)
+                //{
+                //List<IGroupable> groupItems = GetGroupMembers(item as IGroupable);
+
+                //foreach (ISelectable groupItem in groupItems)
+                //{
+                //    groupItem.IsSelected = true;
+                //    CurrentSelection.Add(groupItem);
+                //}
+                //}
+                //else
+                //{
+                //    item.IsSelected = true;
+                //    CurrentSelection.Add(item);
+                //}
             }
         }
 

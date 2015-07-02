@@ -31,8 +31,17 @@ namespace DiagramDesigner.Controls
             }
         }
 
+        private string _selectionInfo;
 
-
+        public string SelectionInfo
+        {
+            get { return _selectionInfo; }
+            set
+            {
+                _selectionInfo = value;
+                OnPropertyChanged("SelectionInfo");
+            }
+        }
         #endregion
 
         #region Dependency Property 用于数据绑定
@@ -99,40 +108,35 @@ namespace DiagramDesigner.Controls
 
         #region SelectedItem 选中项
 
-        public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
-           "SelectedItem", typeof(DesignerItem), typeof(DiagramControl), new PropertyMetadata(default(DesignerItem)));
+        //public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
+        //   "SelectedItem", typeof(DesignerItem), typeof(DiagramControl), new PropertyMetadata(default(DesignerItem)));
+
+        //public DesignerItem SelectedItem
+        //{
+        //    get { return (DesignerItem)GetValue(SelectedItemProperty); }
+        //    set { SetValue(SelectedItemProperty, value); }
+        //}
 
         public DesignerItem SelectedItem
         {
-            get { return (DesignerItem)GetValue(SelectedItemProperty); }
-            set { SetValue(SelectedItemProperty, value); }
+            get; 
+            set;
         }
-
+        
         #endregion
 
-        //public static readonly DependencyProperty ToolBarControlTemplateProperty = DependencyProperty.Register(
-        //    "ToolBarControlTemplate", typeof(ControlTemplate), typeof(DiagramControl), new PropertyMetadata(default(ControlTemplate)));
+        public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
+            "SelectedItems", typeof(List<DesignerItem>), typeof(DiagramControl), new PropertyMetadata(default(List<DesignerItem>)));
 
-        //public ControlTemplate ToolBarControlTemplate
-        //{
-        //    get { return (ControlTemplate)GetValue(ToolBarControlTemplateProperty); }
-        //    set { SetValue(ToolBarControlTemplateProperty, value); }
-        //}
+        public List<DesignerItem> SelectedItems
+        {
+            get { return (List<DesignerItem>)GetValue(SelectedItemsProperty); }
+            set { SetValue(SelectedItemsProperty, value); }
+        }
 
         #endregion
 
         #region Constructors
-
-        void GetDataInfo()
-        {
-            var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
-            DataInfo = string.Format("Changed:{0},Added:{1},Removed:{2},Total:{3}",
-                         list.Count(x => x.Changed),
-                         list.Count(x => x.Added),
-                         list.Count(x => x.Removed),
-                         list.Count(x => !x.Removed));
-        }
-
         public DiagramControl()
         {
             DesignerItems = new ObservableCollection<DesignerItem>();
@@ -147,7 +151,6 @@ namespace DiagramDesigner.Controls
             this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, ExcuteCopy));
             this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, ExcutePaste));
         }
-
         private void ExcutePaste(object sender, ExecutedRoutedEventArgs e)
         {
             PasteCommand.Execute(null);
@@ -156,6 +159,16 @@ namespace DiagramDesigner.Controls
         private void ExcuteCopy(object sender, ExecutedRoutedEventArgs e)
         {
             CopyCommand.Execute(null);
+        }
+
+        void GetDataInfo()
+        {
+            var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
+            DataInfo = string.Format("Changed:{0},Added:{1},Removed:{2},Total:{3}",
+                         list.Count(x => x.Changed),
+                         list.Count(x => x.Added),
+                         list.Count(x => x.Removed),
+                         list.Count(x => !x.Removed));
         }
         #endregion
 
@@ -177,7 +190,7 @@ namespace DiagramDesigner.Controls
             if (!roots.Any()) InitData();/*创建DesignerItems*/
             BindData();/*将DesignerItems放到画布上，并且创建连线*/
             SelectedItem = roots.FirstOrDefault();
-            DiagramManager.HighlightSelected(SelectedItem);
+            //DiagramManager.HighlightSelected(SelectedItem);
             Suppress = false;
             GetDataInfo();
         }
@@ -186,14 +199,14 @@ namespace DiagramDesigner.Controls
         {
             var designer = Designer;
             if (designer == null) return;
-            designer.Children.Clear();
-            var items = DiagramManager.GetDesignerItems(designer);
-            if (items == null) return;
+
             var designerItems = DiagramManager.GenerateItems(designer, DesignerItems);
             if (designerItems == null) return;
             if (!designerItems.Any()) return;
             DiagramManager.ArrangeWithRootItems(designer);
-
+            Suppress = true;
+            var items = DiagramManager.GetDesignerItems(designer);
+            if (items == null) return;
             items.ForEach(x => x.Data.DiagramControl = this);
             items.ForEach(x =>
             {
@@ -203,6 +216,7 @@ namespace DiagramDesigner.Controls
                     DiagramManager.Edit(Designer, SelectedItem, _itemTextEditor);
                 };
             });
+            Suppress = false;
         }
 
         #endregion
@@ -216,7 +230,7 @@ namespace DiagramDesigner.Controls
             DesignerItems.Add(newitem);
 
             SelectedItem = newitem;
-            DiagramManager.HighlightSelected(SelectedItem);
+            //DiagramManager.HighlightSelected(SelectedItem);
         }
 
         public void AddSibling(DesignerItem designerItem)
@@ -231,7 +245,7 @@ namespace DiagramDesigner.Controls
             var newitem = new DesignerItem(n5, new CustomItemData(n5, parent.ID, GetText(), "", true, false, 0, double.MaxValue));
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
-            DiagramManager.HighlightSelected(SelectedItem);
+            //DiagramManager.HighlightSelected(SelectedItem);
             GetDataInfo();
         }
         public void AddAfter(DesignerItem parentDesignerItem)
@@ -244,7 +258,7 @@ namespace DiagramDesigner.Controls
                 new CustomItemData(n5, parentDesignerItem.ID, GetText(), "", true, false, 0, double.MaxValue));
             DesignerItems.Add(newitem);
             SelectedItem = newitem;
-            DiagramManager.HighlightSelected(SelectedItem);
+            //DiagramManager.HighlightSelected(SelectedItem);
             GetDataInfo();
         }
         public void Delete(DesignerItem d)
@@ -408,17 +422,6 @@ namespace DiagramDesigner.Controls
                 return new RelayCommand(() => { DiagramManager.ExpandAll(Designer); });
             }
         }
-        //public ICommand GetDataCommand
-        //{
-        //    get
-        //    {
-        //        return new RelayCommand(() =>
-        //           {
-        //               var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
-        //               MessageBox.Show(string.Format("Changed:{0}\nAdded:{1}\nRemoved:{2}\nTotal:{3}", list.Count(x => x.Changed), list.Count(x => x.Added), list.Count(x => x.Removed), list.Count(x => !x.Removed)));
-        //           });
-        //    }
-        //}
         public ICommand ReloadCommand
         {
             get
@@ -439,7 +442,6 @@ namespace DiagramDesigner.Controls
                     });
             }
         }
-
         public ICommand PasteCommand
         {
             get
@@ -455,15 +457,11 @@ namespace DiagramDesigner.Controls
                 });
             }
         }
-
         public ICommand SaveCommand
         {
             get
             {
-                return new RelayCommand(() =>
-                {
-                    SaveData();
-                });
+                return new RelayCommand(SaveData);
             }
         }
         void SaveData()
@@ -490,10 +488,23 @@ namespace DiagramDesigner.Controls
             if (designer != null)
             {
                 Designer = designer;
+                designer.PreviewMouseMove += (s, e) =>
+                {
+                    if (SelectedItems != null && SelectedItems.Count() != 0)
+                    {
+                        SelectionInfo = "Selected:" + SelectedItems.Count.ToString();
+                    }
+                    else
+                    {
+                        SelectionInfo = "Selected:0";
+                    }
+                };
+
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
             BindData();
+
 
         }
 

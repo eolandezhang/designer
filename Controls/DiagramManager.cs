@@ -36,6 +36,7 @@ namespace DiagramDesigner
 
         public static List<DesignerItem>/*根节点*/ GenerateItems(Canvas canvas, IList<DesignerItem> dataSource/*数据源*/)
         {
+            canvas.Children.Clear();
             if (dataSource.Count == 0) return null;
             var roots = dataSource.Where(x => x.Data.ParentId.Equals(Guid.Empty)).ToList();
             //if (roots == null) return null;
@@ -104,29 +105,37 @@ namespace DiagramDesigner
         }
         public static void HighlightParent/*拖动时高亮父节点*/(DesignerItem designerItem, Canvas designer)
         {
+            List<DesignerItem> subItems = new List<DesignerItem>();
+            GetAllSubItems(designerItem, subItems);
 
             foreach (var item in GetDesignerItems(designer)
                 .Where(item => item.IsShadow == false && !item.Equals(designerItem)))
             {
-                SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness),
-                    DefaultBackgroundBrush);
+                if (!subItems.Contains(item))
+                    SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness),
+                        DefaultBackgroundBrush);
+                else
+                {
+                    SetItemBorderStyle(item, ShadowBackgroundBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
+                    SetItemFontColor(item, ShadowFontColorBrush);
+                }
             }
             var parent = GetTopSibling(designerItem);
             if (parent != null)
             {
                 SetItemBorderStyle(parent, HighlightBorderBrush, new Thickness(HighlightBorderThickness),
                     DefaultBackgroundBrush);
-                SetDragItemStyle(designerItem);
+                //SetDragItemStyle(designerItem);
             }
-            ShadowChildItemsBrushBorderFontStyle(designerItem);
+            //ShadowChildItemsBrushBorderFontStyle(designerItem);
 
         }
         public static void HighlightSelected/*高亮选中*/(DesignerItem item)
         {
-            if (item == null) return;
-            var canvas = item.Parent as Canvas;
-            if (canvas == null) return;
-            ResetBrushBorderFontStyle(canvas, item);/*重置所有节点样式*/
+            //if (item == null) return;
+            //var canvas = item.Parent as Canvas;
+            //if (canvas == null) return;
+            //ResetBrushBorderFontStyle(canvas, item);/*重置所有节点样式*/
             SetItemBorderStyle(item, SelectedBorderBrush, new Thickness(HighlightBorderThickness), HighlightBackgroundBrush);
             SetItemFontColor(item, DefaultFontColorBrush);
         }
@@ -218,7 +227,7 @@ namespace DiagramDesigner
                 item.IsExpanded = false;
             }
         }
-        protected static List<DesignerItem> GetRootItem/*取得画布上的根节点*/(Canvas canvas)
+        private static List<DesignerItem> GetRootItem/*取得画布上的根节点*/(Canvas canvas)
         {
             return (from designerItem in GetDesignerItems(canvas)
                     let sink = GetItemConnector(designerItem, "Left")
@@ -229,14 +238,14 @@ namespace DiagramDesigner
         {
             return item.Width.Equals(0) ? 30 : (item.Width * 0.1 + LeftOffset);
         }
-        protected static Connector GetItemConnector/*根据名称，取得元素连接点*/(DesignerItem item, string name)
+        private static Connector GetItemConnector/*根据名称，取得元素连接点*/(DesignerItem item, string name)
         {
             var itemConnectorDecorator = item.Template.FindName("PART_ConnectorDecorator", item) as Control;
             if (itemConnectorDecorator == null) return null;
             var itemConnector = itemConnectorDecorator.Template.FindName(name, itemConnectorDecorator) as Connector;
             return itemConnector;
         }
-        public static List<Connector> GetItemConnectors/*取得所有连接点*/(DesignerItem item)
+        private static List<Connector> GetItemConnectors/*取得所有连接点*/(DesignerItem item)
         {
             var connectors = new List<Connector>();
 
@@ -264,7 +273,7 @@ namespace DiagramDesigner
             }
             return connections;
         }
-        protected static Border GetBorder/*元素边框控件*/(DesignerItem item)
+        private static Border GetBorder/*元素边框控件*/(DesignerItem item)
         {
             var border = item.Content as Border;
             return border;
@@ -273,13 +282,13 @@ namespace DiagramDesigner
             //if (parentContent.Content == null) return null;
             //return parentContent.Content as Border;
         }
-        protected static TextBlock GetTextBlock/*元素文字控件*/(DesignerItem item)
+        private static TextBlock GetTextBlock/*元素文字控件*/(DesignerItem item)
         {
             var border = GetBorder(item);
             if (border == null) return null;
             return border.Child as TextBlock;
         }
-        protected static string GetItemText/*取得元素文字内容*/(DesignerItem item)
+        private static string GetItemText/*取得元素文字内容*/(DesignerItem item)
         {
             var textBlock = GetTextBlock(item);
             if (textBlock == null) return string.Empty;
@@ -291,13 +300,13 @@ namespace DiagramDesigner
             if (textBlock == null) return;
             textBlock.SetValue(TextBlock.TextProperty, text);
         }
-        protected static void SetItemFontColor/*设定元素文字颜色*/(DesignerItem item, SolidColorBrush fontColorBrush)
+        private static void SetItemFontColor/*设定元素文字颜色*/(DesignerItem item, SolidColorBrush fontColorBrush)
         {
             var textBlock = GetTextBlock(item);
             if (textBlock == null) return;
             textBlock.SetValue(TextBlock.ForegroundProperty, fontColorBrush);
         }
-        protected static void SetItemBorderStyle/*设定边框样式*/(DesignerItem item, SolidColorBrush borderColor, Thickness borderThickness, SolidColorBrush backgroundbrBrush)
+        private static void SetItemBorderStyle/*设定边框样式*/(DesignerItem item, SolidColorBrush borderColor, Thickness borderThickness, SolidColorBrush backgroundbrBrush)
         {
             var border = GetBorder(item);
             if (border == null) return;
@@ -305,7 +314,7 @@ namespace DiagramDesigner
             border.BorderThickness = borderThickness;
             border.Background = backgroundbrBrush;
         }
-        protected static DesignerItem CreateDesignerItem/*创建元素*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset, SolidColorBrush borderBrush = null/*节点边框颜色*/)
+        private static DesignerItem CreateDesignerItem/*创建元素*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset, SolidColorBrush borderBrush = null/*节点边框颜色*/)
         {
             var newItem = item;
             if (newItem.Data == null) return null;
@@ -320,7 +329,7 @@ namespace DiagramDesigner
             canvas.Measure(Size.Empty);
             return newItem;
         }
-        protected static void CreateDesignerItemContent/*创建元素内容，固定结构*/(DesignerItem item, SolidColorBrush borderBrush = null)
+        private static void CreateDesignerItemContent/*创建元素内容，固定结构*/(DesignerItem item, SolidColorBrush borderBrush = null)
         {
             if (item == null) return;
             if (item.Data != null && item.Data.Text == (GetItemText(item))) { return; }
@@ -474,7 +483,7 @@ namespace DiagramDesigner
         //    }
         //}
 
-        protected static void SendConnectionsToBack(Canvas canvas)
+        private static void SendConnectionsToBack(Canvas canvas)
         {
             var childrens = canvas.Children;
             var connectionList = childrens.OfType<Connection>().ToList();
@@ -502,7 +511,29 @@ namespace DiagramDesigner
             }
         }
 
-        protected static DesignerItem GetTopSibling/*取得元素上方最接近的元素*/(DesignerItem item)
+        public static void SetSelectionsBorder(DesignerCanvas canvas)
+        {
+
+            //foreach (var item in GetDesignerItems(canvas))
+            //{
+            //    if (item.IsShadow) continue;
+            //    SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
+            //    SetItemFontColor(item, DefaultFontColorBrush);
+            //}
+
+            var selectedItems = canvas.SelectionService.CurrentSelection;
+            foreach (var selectedItem in selectedItems)
+            {
+                var item = selectedItem as DesignerItem;
+                if (item != null)
+                {
+                    SetItemBorderStyle(item, HighlightBorderBrush, new Thickness(DefaultBorderThickness),
+                        HighlightBackgroundBrush);
+                }
+            }
+        }
+
+        private static DesignerItem GetTopSibling/*取得元素上方最接近的元素*/(DesignerItem item)
         {
             var canvas = item.Parent as Canvas;
             if (canvas == null) return null;
@@ -528,7 +559,7 @@ namespace DiagramDesigner
             var parent = list.OrderByDescending(x => x.Data.YIndex).First();
             return parent;
         }
-        protected static void ChangeParent(DesignerItem item)
+        private static void ChangeParent(DesignerItem item)
         {
             var canvas = item.Parent as Canvas;
             if (canvas == null) return;
@@ -609,7 +640,7 @@ namespace DiagramDesigner
             }
 
         }
-        protected static void ShowItemConnection/*元素所有连线恢复显示*/(DesignerItem item)
+        private static void ShowItemConnection/*元素所有连线恢复显示*/(DesignerItem item)
         {
             foreach (var connection in GetItemConnections(item))
             {
@@ -631,7 +662,7 @@ namespace DiagramDesigner
             }
 
         }
-        protected static void RemoveShadows(Canvas canvas)
+        private static void RemoveShadows(Canvas canvas)
         {
             var list = GetDesignerItems(canvas).Where(x => x.IsShadow);
             foreach (var designerItem in list)
@@ -639,12 +670,8 @@ namespace DiagramDesigner
                 canvas.Children.Remove(designerItem);
             }
         }
-        protected static void SetDragItemStyle(DesignerItem item)
-        {
-            SetItemBorderStyle(item, ShadowBackgroundBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
-            SetItemFontColor(item, ShadowFontColorBrush);
-        }
-        protected static DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item, double left, double top)
+        
+        private static DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item, double left, double top)
         {
             var copy = new DesignerItem { IsExpanderVisible = false, IsShadow = true };
             CreateDesignerItemContent(copy);
@@ -657,17 +684,17 @@ namespace DiagramDesigner
             Panel.SetZIndex(copy, -100);
             return copy;
         }
-        protected static void ShadowChildItemsBrushBorderFontStyle/*拖拽时，子元素变灰色*/(DesignerItem item)
-        {
-            List<DesignerItem> subItems = new List<DesignerItem>();
-            GetAllSubItems(item, subItems);
-            foreach (var designerItem in subItems)
-            {
-                SetItemBorderStyle(designerItem, ShadowBackgroundBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
-                SetItemFontColor(designerItem, ShadowFontColorBrush);
-            }
-        }
-        protected static void CreateItems(Canvas canvas, IList<DesignerItem> dataSource, DesignerItem parentItem, IList<DesignerItem> designerItems)
+        //private static void ShadowChildItemsBrushBorderFontStyle/*拖拽时，子元素变灰色*/(DesignerItem item)
+        //{
+        //    List<DesignerItem> subItems = new List<DesignerItem>();
+        //    GetAllSubItems(item, subItems);
+        //    foreach (var designerItem in subItems)
+        //    {
+        //        SetItemBorderStyle(designerItem, ShadowBackgroundBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
+        //        SetItemFontColor(designerItem, ShadowFontColorBrush);
+        //    }
+        //}
+        private static void CreateItems(Canvas canvas, IList<DesignerItem> dataSource, DesignerItem parentItem, IList<DesignerItem> designerItems)
         {
             if (parentItem == null) return;
             if (designerItems == null) return;
@@ -705,7 +732,7 @@ namespace DiagramDesigner
                 CreateItems(canvas, dataSource, childItem, designerItems);
             }
         }
-        protected static DesignerItem CreateRoot/*创建根节点*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset)
+        private static DesignerItem CreateRoot/*创建根节点*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset)
         {
             var root = CreateDesignerItem(canvas, item, topOffset, leftOffset);
             SetItemFontColor(root, DefaultFontColorBrush);
@@ -713,7 +740,7 @@ namespace DiagramDesigner
             root.IsExpanderVisible = false;
             return root;
         }
-        protected static DesignerItem CreateChild(DesignerItem parent, DesignerItem childItem)
+        private static DesignerItem CreateChild(DesignerItem parent, DesignerItem childItem)
         {
             if (parent == null) return null;
 

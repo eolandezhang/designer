@@ -42,18 +42,27 @@
 
                                         <StatusBar DockPanel.Dock="Bottom" Background="White">
                                             <StatusBarItem  DataContext="{Binding ElementName=Diagram}">
-                                                <Label Content="{Binding DataInfo}"></Label>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Label Content="{Binding DataInfo}"></Label>
+                                                    <Label Content="{Binding SelectionInfo}"></Label>
+                                                </StackPanel>
                                             </StatusBarItem>
                                         </StatusBar>
-                                        <c:DiagramControl
+                                        <!--<c:DiagramControl
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
                                             SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
-                                           />
-
-
+                                            SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
+                                            />-->
+                                        <c:DiagramControl
+                                            x:Name="Diagram" 
+                                            DiagramHeader="树状图" 
+                                            ZoomBoxControl="{Binding ElementName=ZoomBox}"
+                                            ItemDatas="{Binding ItemDatas}"
+                                            SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
+                                            />
                                     </DockPanel>
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>

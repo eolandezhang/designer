@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows.Media;
 using System.Xml;
 using DiagramDesigner.Controls;
 
@@ -15,7 +16,7 @@ namespace DiagramDesigner
 {
     public partial class DesignerCanvas : Canvas
     {
-        //private Point? rubberbandSelectionStartPoint = null;
+        private Point? rubberbandSelectionStartPoint = null;
 
         private SelectionService selectionService;
         internal SelectionService SelectionService
@@ -36,7 +37,7 @@ namespace DiagramDesigner
             {
                 // in case that this click is the start of a 
                 // drag operation we cache the start point
-                //this.rubberbandSelectionStartPoint = new Point?(e.GetPosition(this));
+                this.rubberbandSelectionStartPoint = new Point?(e.GetPosition(this));
 
                 // if you click directly on the canvas all 
                 // selected items are 'de-selected'
@@ -46,34 +47,46 @@ namespace DiagramDesigner
                 var x = this.TemplatedParent as DiagramControl;
                 x.SelectedItem = null;
                 DiagramManager.ResetBrushBorderFontStyle(this);
+
+                var diagramControl = TemplatedParent as DiagramControl;
+                if (diagramControl != null)
+                {
+                    selectionService.CurrentSelection.Clear();
+                    diagramControl.SelectedItems = null;
+                }
             }
         }
 
-        //protected override void OnMouseMove(MouseEventArgs e)
-        //{
-        //    base.OnMouseMove(e);
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
 
-        //    // if mouse button is not pressed we have no drag operation, ...
-        //    if (e.LeftButton != MouseButtonState.Pressed)
-        //        this.rubberbandSelectionStartPoint = null;
+            // if mouse button is not pressed we have no drag operation, ...
+            if (e.LeftButton != MouseButtonState.Pressed)
+                this.rubberbandSelectionStartPoint = null;
 
-        //    // ... but if mouse button is pressed and start
-        //    // point value is set we do have one
-        //    if (this.rubberbandSelectionStartPoint.HasValue)
-        //    {
-        //        // create rubberband adorner
-        //        AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
-        //        if (adornerLayer != null)
-        //        {
-        //            RubberbandAdorner adorner = new RubberbandAdorner(this, rubberbandSelectionStartPoint);
-        //            if (adorner != null)
-        //            {
-        //                adornerLayer.Add(adorner);
-        //            }
-        //        }
-        //    }
-        //    e.Handled = true;
-        //}
+            // ... but if mouse button is pressed and start
+            // point value is set we do have one
+            if (this.rubberbandSelectionStartPoint.HasValue)
+            {
+                // create rubberband adorner
+                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
+                if (adornerLayer != null)
+                {
+                    RubberbandAdorner adorner = new RubberbandAdorner(this, rubberbandSelectionStartPoint);
+                    if (adorner != null)
+                    {
+                        adornerLayer.Add(adorner);
+                    }
+                }
+
+            }
+            e.Handled = true;
+        }
+
+
+        
+
 
         protected override void OnDrop(DragEventArgs e)
         {
@@ -113,7 +126,6 @@ namespace DiagramDesigner
                     //update selection
                     this.SelectionService.SelectItem(newItem);
                     newItem.Focus();
-
 
                 }
 

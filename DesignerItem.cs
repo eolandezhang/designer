@@ -16,6 +16,8 @@ namespace DiagramDesigner
     [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
     public class DesignerItem : ContentControl, ISelectable, IGroupable, ICloneable
     {
+        public double oldx;
+        public double oldy;
         private ItemDataBase _data;
         public ItemDataBase Data
         {
@@ -132,12 +134,17 @@ namespace DiagramDesigner
         #region IsExpanded
 
         public static readonly DependencyProperty IsExpandedProperty = DependencyProperty.Register(
-            "IsExpanded", typeof(bool), typeof(DesignerItem), new PropertyMetadata(true, OnPropertyChangedCallback));
-
-        private static void OnPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            DiagramManager.HideOrExpandChildItems((DesignerItem)d);
-        }
+            "IsExpanded", typeof(bool), typeof(DesignerItem),
+            new PropertyMetadata(true, (d, e) =>
+            {
+                var designerItem = d as DesignerItem;
+                if (designerItem != null)
+                {
+                    var canvas = designerItem.Parent as DesignerCanvas;
+                    var diagramControl = canvas.TemplatedParent as DiagramControl;
+                    diagramControl.DiagramManager.HideOrExpandChildItems(designerItem);
+                }
+            }));
 
 
         public bool IsExpanded
@@ -228,7 +235,10 @@ namespace DiagramDesigner
                     {
                         designer.SelectionService.AddToSelection(this);
                     }
-                else if (!IsSelected) { designer.SelectionService.SelectItem(this); }
+                else if (!IsSelected)
+                {
+                    designer.SelectionService.SelectItem(this);
+                }
                 Focus();
                 //if (DiagramControl != null) { DiagramControl.SelectedItem = this; }
             }

@@ -61,7 +61,6 @@
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
-                                            SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
                                             />
                                     </DockPanel>
                                 </xcad:LayoutDocument>

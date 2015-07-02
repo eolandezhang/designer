@@ -46,13 +46,13 @@ namespace DiagramDesigner
                 e.Handled = true;
                 var x = this.TemplatedParent as DiagramControl;
                 x.SelectedItem = null;
-                DiagramManager.ResetBrushBorderFontStyle(this);
+                x.DiagramManager.ResetBrushBorderFontStyle(this);
 
                 var diagramControl = TemplatedParent as DiagramControl;
                 if (diagramControl != null)
                 {
                     selectionService.CurrentSelection.Clear();
-                    diagramControl.SelectedItems = null;
+                    SelectionService.ClearSelection();
                 }
             }
         }

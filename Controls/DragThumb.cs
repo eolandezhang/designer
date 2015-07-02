@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -9,15 +10,15 @@ namespace DiagramDesigner.Controls
 {
     public class DragThumb : Thumb
     {
-        double _originalLeft;
-        double _originalTop;
+        //double _originalLeft;
+        //double _originalTop;
 
         public DragThumb()
         {
             DragDelta += DragThumb_DragDelta;
         }
 
-        private DesignerItem _shadow = null;
+        private List<DesignerItem> _shadows = null;
         void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var designerItem = DataContext as DesignerItem;
@@ -59,12 +60,23 @@ namespace DiagramDesigner.Controls
                 e.Handled = true;
 
                 #region 为元素产生影子，并且高亮父节点
-                if (_shadow == null)
-                    _shadow = DiagramManager.GenerateShadow(designerItem, _originalLeft, _originalTop);
-                DiagramManager.HighlightParent(designerItem, designer);/*拖动节点时，高亮父节点*/
+
+                if (designerItem != null)
+                {
+
+                    var diagramControl = designer.TemplatedParent as DiagramControl;
+                    if (diagramControl != null)
+                    {
+
+                        _shadows = diagramControl.DiagramManager.CreateShadows(designerItems);
+                        diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
+                    }
+                }
+
+
             }
 
-            #endregion
+                #endregion
 
             designerItem.Data.YIndex = Canvas.GetTop(designerItem);
         }
@@ -75,20 +87,39 @@ namespace DiagramDesigner.Controls
             var designerItem = DataContext as DesignerItem;
             if (designerItem != null)
             {
-                _originalLeft = (double)designerItem.GetValue(Canvas.LeftProperty);
-                _originalTop = (double)designerItem.GetValue(Canvas.TopProperty);
+                var canvas = designerItem.Parent as DesignerCanvas;
+                var selectedItems = canvas.SelectionService.CurrentSelection.ConvertAll((x) => x as DesignerItem);
+                foreach (var item in selectedItems)
+                {
+                    item.oldx = Canvas.GetLeft(item);
+                    item.oldy = Canvas.GetTop(item);
+                }
             }
         }
-
+        DiagramControl DiagramControl()
+        {
+            var designerItem = DataContext as DesignerItem;
+            if (designerItem != null)
+            {
+                var designer = designerItem.Parent as DesignerCanvas;
+                if (designer == null) return null;
+                var diagramControl = designer.TemplatedParent as DiagramControl;
+                if (diagramControl == null) return null;
+                return diagramControl;
+            }
+            return null;
+        }
 
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             var designerItem = DataContext as DesignerItem;
             if (designerItem != null)
             {
-                DiagramManager.FinishDraging(designerItem, _originalLeft, _originalTop);
+                var diagramControl = DiagramControl();
+                if (diagramControl != null)
+                    diagramControl.DiagramManager.FinishDraging(designerItem);
             }
-            _shadow = null;
+            _shadows = null;
         }
 
 

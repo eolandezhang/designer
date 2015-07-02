@@ -79,7 +79,8 @@ namespace DiagramDesigner
                 Rect itemRect = VisualTreeHelper.GetDescendantBounds(item);
                 Rect itemBounds = item.TransformToAncestor(designerCanvas).TransformBounds(itemRect);
 
-                if (rubberBand.Contains(itemBounds))
+                //rubberBand.IntersectsWith
+                if (rubberBand.IntersectsWith(itemBounds))
                 {
                     if (item is Connection)
                         designerCanvas.SelectionService.AddToSelection(item as ISelectable);

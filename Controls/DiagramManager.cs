@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DiagramDesigner.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -17,6 +18,12 @@ namespace DiagramDesigner
 
     public class DiagramManager
     {
+        DiagramControl _diagramControl;
+        public DiagramManager(DiagramControl diagramControl)
+        {
+            _diagramControl = diagramControl;
+        }
+
         #region Setters
         private const double ChildTopOffset = 35;
         private const double LeftOffset = 20;
@@ -34,23 +41,306 @@ namespace DiagramDesigner
         private static readonly SolidColorBrush DefaultFontColorBrush = Brushes.Black;
         #endregion
 
-        public static List<DesignerItem>/*根节点*/ GenerateItems(Canvas canvas, IList<DesignerItem> dataSource/*数据源*/)
+        #region Get
+
+        private List<DesignerItem> GetRootItem/*取得画布上的根节点*/()
         {
-            canvas.Children.Clear();
-            if (dataSource.Count == 0) return null;
-            var roots = dataSource.Where(x => x.Data.ParentId.Equals(Guid.Empty)).ToList();
-            //if (roots == null) return null;
+            return (from designerItem in GetDesignerItems()
+                    let sink = GetItemConnector(designerItem, "Left")
+                    where sink != null && sink.Connections.Count == 0
+                    select designerItem).ToList();
+        }
+        private Connector GetItemConnector/*根据名称，取得元素连接点*/(DesignerItem item, string name)
+        {
+            var itemConnectorDecorator = item.Template.FindName("PART_ConnectorDecorator", item) as Control;
+            if (itemConnectorDecorator == null) return null;
+            var itemConnector = itemConnectorDecorator.Template.FindName(name, itemConnectorDecorator) as Connector;
+            return itemConnector;
+        }
+        private List<Connector> GetItemConnectors/*取得所有连接点*/(DesignerItem designerItem)
+        {
+            var connectors = new List<Connector>();
+
+            var leftItemConnector = GetItemConnector(designerItem, "Left");
+            if (leftItemConnector != null) connectors.Add(leftItemConnector);
+
+            var bottomItemConnector = GetItemConnector(designerItem, "Bottom");
+            if (bottomItemConnector != null) connectors.Add(bottomItemConnector);
+
+            var topItemConnector = GetItemConnector(designerItem, "Top");
+            if (topItemConnector != null) connectors.Add(topItemConnector);
+
+            var rightItemConnector = GetItemConnector(designerItem, "Right");
+            if (rightItemConnector != null) connectors.Add(rightItemConnector);
+            return connectors;
+        }
+        public IEnumerable<Connection> GetItemConnections/*取得所有连线*/(DesignerItem designerItem)
+        {
+            var connections = new List<Connection>();
+            var list = GetItemConnectors(designerItem);
+            if (list.Count == 0) return connections;
+            foreach (var c in list.Select(connector => connector.Connections.Where(x => x.Source != null && x.Sink != null)).Where(c => c.Any()))
+            {
+                connections.AddRange(c);
+            }
+            return connections;
+        }
+        public List<DesignerItem> GetDesignerItems/*取得画布所有元素*/()
+        {
+            var list = new List<DesignerItem>();
+
+            var itemCount = VisualTreeHelper.GetChildrenCount(_diagramControl.Designer);
+            if (itemCount == 0) return list;
+            for (int n = 0; n < itemCount; n++)
+            {
+                var c = VisualTreeHelper.GetChild(_diagramControl.Designer, n);
+                var child = c as DesignerItem;
+                if (child != null) list.Add(child);
+            }
+            return list;
+        }
+        private List<DesignerItem> GetDirectSubItems/*取得直接子节点*/(DesignerItem item)
+        {
+            var connections = GetItemConnections(item);
+            var list = (from itemConnection in connections
+                        where Equals(itemConnection.Source.ParentDesignerItem, item)
+                        && itemConnection.Source != null && itemConnection.Sink != null
+                        select itemConnection.Sink.ParentDesignerItem).OrderBy(x => x.Data.YIndex).ToList();
+            item.IsExpanderVisible = list.Any(x => x.Data.Removed == false);
+            if (item.Equals(GetRootItem()))
+                item.IsExpanderVisible = false;
+            return list;
+        }
+        public void GetAllSubItems/*取得直接及间接的子节点*/(DesignerItem item/*某个节点*/, List<DesignerItem> subitems/*其所有子节点*/)
+        {
+            var child = new List<DesignerItem>();
+            foreach (var subItem in
+                (from itemConnection in GetItemConnections(item)
+                 where Equals(itemConnection.Source.ParentDesignerItem, item)
+                 && itemConnection.Sink.ParentDesignerItem.Data.Removed == false
+                 select itemConnection.Sink.ParentDesignerItem).OrderBy(x => x.Data.YIndex))
+            {
+                if (subitems.Contains(subItem)) continue;
+                child.Add(subItem);
+                subitems.Add(subItem);
+                foreach (var designerItem in child)
+                {
+                    GetAllSubItems(designerItem, subitems);
+                }
+            }
+        }
+        private DesignerItem GetParentItem/*父节点*/(DesignerItem item)
+        {
+            var connector = GetItemConnector(item, "Left");
+            var connection = connector.Connections.FirstOrDefault(x => x.Sink != null && x.Source != null);
+            if (connection != null)
+            {
+                return connection.Source.ParentDesignerItem;
+            }
+            return null;
+        }
+        public DesignerItem GetSelectedItem()
+        {
+            List<DesignerItem> selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll((a) => a as DesignerItem);
+            if (selectedItems != null && selectedItems.Count == 1)
+            {
+                return selectedItems.FirstOrDefault();
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region Set
+
+        public void SetSelectItem(DesignerItem designerItem)
+        {
+            _diagramControl.Designer.SelectionService.ClearSelection();
+            _diagramControl.Designer.SelectionService.SelectItem(designerItem);
+        }
+
+        #endregion
+
+        #region Create
+        public List<DesignerItem>/*根节点*/ GenerateItems()
+        {
+            _diagramControl.Designer.Children.Clear();
+            if (_diagramControl.DesignerItems.Count == 0) return null;
+            var roots = _diagramControl.DesignerItems.Where(x => x.Data.ParentId.Equals(Guid.Empty)).ToList();
             foreach (var root in roots)
             {
                 IList<DesignerItem> designerItems = new List<DesignerItem>();
-                CreateItems(canvas, dataSource, root, designerItems);
+                CreateItems(root, designerItems);
             }
             return roots;
         }
-
-        public static void ArrangeWithRootItems(Canvas canvas)
+        private void CreateItems(DesignerItem parentItem, IList<DesignerItem> designerItems)
         {
-            var items = GetDesignerItems(canvas);
+            if (parentItem == null) return;
+            if (designerItems == null) return;
+            DesignerItem parentDesignerItem = null;
+
+            if (designerItems.All(x => !x.ID.Equals(parentItem.ID)))
+            {
+                if (parentItem.Data.ParentId.Equals(Guid.Empty)) //是根节点？
+                {
+                    parentDesignerItem = CreateRoot(parentItem, parentItem.Data.YIndex, parentItem.Data.XIndex);
+                    if (parentDesignerItem != null)
+                    {
+                        designerItems.Add(parentDesignerItem);
+                    }
+                }
+            }
+            else
+            {
+                parentDesignerItem = designerItems.FirstOrDefault(x => x.ID.Equals(parentItem.ID));
+            }
+
+            var childs = _diagramControl.DesignerItems.Where(x => x.Data.ParentId.Equals(parentItem.ID));
+
+            foreach (var childItem in childs)
+            {
+                DesignerItem childDesignerItem;
+                if (designerItems.All(x => !x.ID.Equals(childItem.ID)))
+                {
+                    childDesignerItem = CreateChild(parentDesignerItem, childItem);
+                    if (childDesignerItem != null)
+                    {
+                        designerItems.Add(childDesignerItem);
+                    }
+                }
+                CreateItems(childItem, designerItems);
+            }
+        }
+        private DesignerItem CreateRoot/*创建根节点*/(DesignerItem item, double topOffset, double leftOffset)
+        {
+            var root = CreateDesignerItem(item, topOffset, leftOffset);
+            SetItemFontColor(root, DefaultFontColorBrush);
+            root.CanCollapsed = false;
+            root.IsExpanderVisible = false;
+            return root;
+        }
+        private DesignerItem CreateChild(DesignerItem parent, DesignerItem childItem)
+        {
+            if (parent == null) return null;
+
+            #region 起点 Connector
+
+            var parentConnectorDecorator = parent.Template.FindName("PART_ConnectorDecorator", parent) as Control;
+            if (parentConnectorDecorator == null) return null;
+            var source = parentConnectorDecorator.Template.FindName("Bottom", parentConnectorDecorator) as Connector;
+
+            #endregion
+
+            #region 终点 Connector
+
+            var child = CreateDesignerItem(
+                childItem,
+                Canvas.GetTop(parent) + ChildTopOffset,
+                Canvas.GetLeft(parent) + GetOffset(parent),
+                DefaultBorderBrush);/*创建子节点*/
+
+            var childConnectorDecorator = child.Template.FindName("PART_ConnectorDecorator", child) as Control;
+            if (childConnectorDecorator == null) return null;
+            var sink = childConnectorDecorator.Template.FindName("Left", childConnectorDecorator) as Connector;
+
+            #endregion
+
+            #region 创建连线
+
+            if (source == null || sink == null) return null;
+
+            var connections = GetItemConnections(parent).ToList();
+            var c = connections.Where(connection => connection.Source.Equals(source) && connection.Sink.Equals(sink)).ToList();
+            //var c = connections.Where(x => x.Source.Equals(source) && x.Sink.Equals(sink)).ToList();
+            if (c.Count == 0 || c.FirstOrDefault() == null)
+            {
+                var conn = new Connection(source, sink); /*创建连线*/
+                if (!childItem.Data.Removed)
+                {
+                    _diagramControl.Designer.Children.Add(conn); /*放到画布上*/
+                }
+            }
+            else if (c.Count == 1)
+            {
+                var cn = c.FirstOrDefault();
+                if (cn != null)
+                {
+                    if (!childItem.Data.Removed)
+                    {
+                        _diagramControl.Designer.Children.Add(cn);
+                    }
+                }
+            }
+            else if (c.Count > 1)//正常情况不会发生
+            {
+                foreach (var connection in c)
+                {
+                    connection.Source = null;
+                    connection.Sink = null;
+                    var conn = new Connection(source, sink); /*创建连线*/
+                    if (!childItem.Data.Removed)
+                    {
+                        _diagramControl.Designer.Children.Add(conn); /*放到画布上*/
+                    }
+                }
+            }
+            #endregion
+
+            child.CanCollapsed = true;
+            return child;/*返回创建的子节点*/
+        }
+
+        private DesignerItem CreateDesignerItem/*创建元素*/(DesignerItem item, double topOffset, double leftOffset, SolidColorBrush borderBrush = null/*节点边框颜色*/)
+        {
+            var newItem = item;
+            if (newItem.Data == null) return null;
+            CreateDesignerItemContent(item, borderBrush);
+            item.Width = MinItemWidth;
+            newItem.SetValue(Canvas.TopProperty, topOffset);
+            newItem.SetValue(Canvas.LeftProperty, leftOffset);
+            if (!newItem.Data.Removed)
+            {
+                _diagramControl.Designer.Children.Add(newItem);
+            }
+            _diagramControl.Designer.Measure(Size.Empty);
+            return newItem;
+        }
+        private void CreateDesignerItemContent/*创建元素内容，固定结构*/(DesignerItem item, SolidColorBrush borderBrush = null)
+        {
+            if (item == null) return;
+            if (item.Data != null && item.Data.Text == (GetItemText(item))) { return; }
+            if (borderBrush == null) borderBrush = DefaultBorderBrush;
+            var border = new Border()
+            {
+                BorderThickness = new Thickness(DefaultBorderThickness),
+                BorderBrush = borderBrush,
+                Background = DefaultBackgroundBrush,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                IsHitTestVisible = false
+            };
+            var textblock = new TextBlock()
+            {
+                Name = "Text",
+                Text = item.Data == null ? "" : item.Data.Text,
+                IsHitTestVisible = false,
+                VerticalAlignment = VerticalAlignment.Center,
+                Padding = new Thickness(5, 2, 5, 2),
+                FontFamily = new FontFamily("Arial"),
+                FontSize = 12d
+            };
+            border.Child = textblock;
+            item.Content = border;
+        }
+
+        #endregion
+
+        #region Arrange
+
+        public void ArrangeWithRootItems()
+        {
+            var items = GetDesignerItems();
             if (items == null) return;
             var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
             foreach (var root in roots)
@@ -61,8 +351,7 @@ namespace DiagramDesigner
                 }
             }
         }
-
-        static void ArrangeWithRootItems/*给定根节点，重新布局*/(DesignerItem rootItem/*根节点*/)
+        void ArrangeWithRootItems/*给定根节点，重新布局*/(DesignerItem rootItem/*根节点*/)
         {
             if (rootItem == null) return;
             var directSubItems = GetDirectSubItems(rootItem);
@@ -93,22 +382,25 @@ namespace DiagramDesigner
                 SetItemFontColor(rootSubItems.ElementAt(i), DefaultFontColorBrush);
                 ArrangeWithRootItems(rootSubItems.ElementAt(i));
             }
-            var designer = rootItem.Parent as Canvas;
-            if (designer == null) return;
-            SendConnectionsToBack(designer);
+
+            SendConnectionsToBack(_diagramControl.Designer);
         }
-        static void ArrangeItems/*拖动其中一个控件，重新布局*/(DesignerItem designerItem)
+        private double GetOffset(FrameworkElement item)
         {
-            var designer = designerItem.Parent as Canvas;
-            if (designer == null) return;
-            ArrangeWithRootItems(designer);
+            return item.Width.Equals(0) ? 30 : (item.Width * 0.1 + LeftOffset);
         }
-        public static void HighlightParent/*拖动时高亮父节点*/(DesignerItem designerItem, Canvas designer)
+        #endregion
+
+        #region Style
+
+        #region Highlight
+
+        public void HighlightParent/*拖动时高亮父节点*/(DesignerItem designerItem)
         {
             List<DesignerItem> subItems = new List<DesignerItem>();
             GetAllSubItems(designerItem, subItems);
 
-            foreach (var item in GetDesignerItems(designer)
+            foreach (var item in GetDesignerItems()
                 .Where(item => item.IsShadow == false && !item.Equals(designerItem)))
             {
                 if (!subItems.Contains(item))
@@ -125,21 +417,105 @@ namespace DiagramDesigner
             {
                 SetItemBorderStyle(parent, HighlightBorderBrush, new Thickness(HighlightBorderThickness),
                     DefaultBackgroundBrush);
-                //SetDragItemStyle(designerItem);
-            }
-            //ShadowChildItemsBrushBorderFontStyle(designerItem);
 
+            }
         }
-        public static void HighlightSelected/*高亮选中*/(DesignerItem item)
+        public void HighlightSelected/*高亮选中*/(DesignerItem item)
         {
-            //if (item == null) return;
-            //var canvas = item.Parent as Canvas;
-            //if (canvas == null) return;
-            //ResetBrushBorderFontStyle(canvas, item);/*重置所有节点样式*/
             SetItemBorderStyle(item, SelectedBorderBrush, new Thickness(HighlightBorderThickness), HighlightBackgroundBrush);
             SetItemFontColor(item, DefaultFontColorBrush);
         }
-        public static void HideOrExpandChildItems/*展开折叠*/(DesignerItem item)
+
+        #endregion
+
+        #region Get Visual Item
+        private Border GetBorder/*元素边框控件*/(DesignerItem item)
+        {
+            return item.Content as Border;
+        }
+        private TextBlock GetTextBlock/*元素文字控件*/(DesignerItem item)
+        {
+            var border = GetBorder(item);
+            if (border == null) return null;
+            return border.Child as TextBlock;
+        }
+        private string GetItemText/*取得元素文字内容*/(DesignerItem item)
+        {
+            var textBlock = GetTextBlock(item);
+            if (textBlock == null) return string.Empty;
+            return textBlock.GetValue(TextBlock.TextProperty).ToString();
+        }
+        #endregion
+
+        #region Set Visual Item
+
+        public void SetItemText/*设定元素文字*/(DesignerItem item, string text)
+        {
+            var textBlock = GetTextBlock(item);
+            if (textBlock == null) return;
+            textBlock.SetValue(TextBlock.TextProperty, text);
+        }
+        private void SetItemFontColor/*设定元素文字颜色*/(DesignerItem item, SolidColorBrush fontColorBrush)
+        {
+            var textBlock = GetTextBlock(item);
+            if (textBlock == null) return;
+            textBlock.SetValue(TextBlock.ForegroundProperty, fontColorBrush);
+        }
+        private void SetItemBorderStyle/*设定边框样式*/(DesignerItem item, SolidColorBrush borderColor, Thickness borderThickness, SolidColorBrush backgroundbrBrush)
+        {
+            var border = GetBorder(item);
+            if (border == null) return;
+            border.BorderBrush = borderColor;
+            border.BorderThickness = borderThickness;
+            border.Background = backgroundbrBrush;
+        }
+
+        #endregion
+
+        #region Reset Style
+
+        private void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer, DesignerItem selectedItem)
+        {
+            foreach (var item in GetDesignerItems().Where(item => !item.Equals(selectedItem)))
+            {
+                if (item.IsShadow) continue;
+                SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
+                SetItemFontColor(item, DefaultFontColorBrush);
+            }
+        }
+        public void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer)
+        {
+            foreach (var item in GetDesignerItems())
+            {
+                if (item.IsShadow) continue;
+                SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
+                SetItemFontColor(item, DefaultFontColorBrush);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Expand & Collapse
+
+        public void ExpandAll/*展开所有*/()
+        {
+            var items = GetDesignerItems();
+            foreach (var item in items)
+            {
+                item.IsExpanded = true;
+            }
+        }
+        public void CollapseAll/*折叠所有，除了根节点*/()
+        {
+            var items = GetDesignerItems();
+            foreach (var item in items.Where(item => item.CanCollapsed))
+            {
+                item.IsExpanded = false;
+            }
+        }
+        public void HideOrExpandChildItems/*展开折叠*/(DesignerItem item)
         {
             var isExpanded = (bool)item.GetValue(DesignerItem.IsExpandedProperty);
             if (isExpanded == false)/*hide*/
@@ -171,257 +547,33 @@ namespace DiagramDesigner
                     designerItem.Visibility = Visibility.Visible;
                 }
             }
-            ArrangeItems(item);
+            ArrangeWithRootItems();
         }
-        public static DesignerItem GenerateShadow/*拖拽时产生影子*/(DesignerItem designerItem, double originalLeft, double originalTop)
-        {
-            var canvas = VisualTreeHelper.GetParent(designerItem) as DesignerCanvas;
-            DesignerItem shadow = null;
-            if (canvas != null)
-            {
-                shadow = CreateShadow(designerItem, originalLeft, originalTop);
-                canvas.Children.Add(shadow);
-                //隐藏折叠按钮
-                designerItem.IsExpanderVisible = false;
-            }
-            HideItemConnection(designerItem, originalLeft, originalTop);/*拖动时隐藏连线*/
-            BringToFront(designerItem);
+        #endregion
 
-            return shadow;
-        }
-        public static void FinishDraging/*改变父节点，移除影子，显示连线，重新布局*/(DesignerItem designerItem, double originalLeft, double originalTop)
+        #region Drag
+
+        public void FinishDraging/*改变父节点，移除影子，显示连线，重新布局*/(DesignerItem designerItem)
         {
             if (designerItem == null) return;
-            var canvas = VisualTreeHelper.GetParent(designerItem) as DesignerCanvas;
-            if (canvas == null) return;
-            RemoveShadows(canvas);/*移除影子*/
 
-            var left = (double)designerItem.GetValue(Canvas.LeftProperty);
-            var top = (double)designerItem.GetValue(Canvas.TopProperty);
-            if (!left.Equals(originalLeft) && !top.Equals(originalTop)) /*位置不变，则不改变父节点*/
-            {
-                ChangeParent(designerItem);/*改变父节点*/
-            }
-            ShowItemConnection(designerItem);/*拖动完毕，显示连线*/
-            ResetBrushBorderFontStyle(canvas, designerItem);/*恢复边框字体样式*/
+            RemoveShadows(_diagramControl.Designer);/*移除影子*/
+
+
+
+            ChangeParent(designerItem);/*改变父节点*/
+
+            var diagramControl = _diagramControl.Designer.TemplatedParent as DiagramControl;
+            var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll((a) => a as DesignerItem);
+            ShowItemConnection(selectedItems);/*拖动完毕，显示连线*/
+            ResetBrushBorderFontStyle(_diagramControl.Designer, designerItem);/*恢复边框字体样式*/
 
             designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
             designerItem.Data.YIndex = Canvas.GetTop(designerItem);
 
-            ArrangeWithRootItems(canvas);/*重新布局*/
+            ArrangeWithRootItems();/*重新布局*/
         }
-        public static void ExpandAll/*展开所有*/(Canvas canvas)
-        {
-            var items = GetDesignerItems(canvas);
-            foreach (var item in items)
-            {
-                item.IsExpanded = true;
-            }
-        }
-        public static void CollapseAll/*折叠所有，除了根节点*/(Canvas canvas)
-        {
-            if (canvas == null) return;
-            var items = GetDesignerItems(canvas);
-            foreach (var item in items.Where(item => item.CanCollapsed))
-            {
-                item.IsExpanded = false;
-            }
-        }
-        private static List<DesignerItem> GetRootItem/*取得画布上的根节点*/(Canvas canvas)
-        {
-            return (from designerItem in GetDesignerItems(canvas)
-                    let sink = GetItemConnector(designerItem, "Left")
-                    where sink != null && sink.Connections.Count == 0
-                    select designerItem).ToList();
-        }
-        private static double GetOffset(FrameworkElement item)
-        {
-            return item.Width.Equals(0) ? 30 : (item.Width * 0.1 + LeftOffset);
-        }
-        private static Connector GetItemConnector/*根据名称，取得元素连接点*/(DesignerItem item, string name)
-        {
-            var itemConnectorDecorator = item.Template.FindName("PART_ConnectorDecorator", item) as Control;
-            if (itemConnectorDecorator == null) return null;
-            var itemConnector = itemConnectorDecorator.Template.FindName(name, itemConnectorDecorator) as Connector;
-            return itemConnector;
-        }
-        private static List<Connector> GetItemConnectors/*取得所有连接点*/(DesignerItem item)
-        {
-            var connectors = new List<Connector>();
-
-            var leftItemConnector = GetItemConnector(item, "Left");
-            if (leftItemConnector != null) connectors.Add(leftItemConnector);
-
-            var bottomItemConnector = GetItemConnector(item, "Bottom");
-            if (bottomItemConnector != null) connectors.Add(bottomItemConnector);
-
-            var topItemConnector = GetItemConnector(item, "Top");
-            if (topItemConnector != null) connectors.Add(topItemConnector);
-
-            var rightItemConnector = GetItemConnector(item, "Right");
-            if (rightItemConnector != null) connectors.Add(rightItemConnector);
-            return connectors;
-        }
-        public static IEnumerable<Connection> GetItemConnections/*取得所有连线*/(DesignerItem item)
-        {
-            var connections = new List<Connection>();
-            var list = GetItemConnectors(item);
-            if (list.Count == 0) return connections;
-            foreach (var c in list.Select(connector => connector.Connections.Where(x => x.Source != null && x.Sink != null)).Where(c => c.Any()))
-            {
-                connections.AddRange(c);
-            }
-            return connections;
-        }
-        private static Border GetBorder/*元素边框控件*/(DesignerItem item)
-        {
-            var border = item.Content as Border;
-            return border;
-            //var parentContent = item.Content as ContentControl;
-            //if (parentContent == null) return null;
-            //if (parentContent.Content == null) return null;
-            //return parentContent.Content as Border;
-        }
-        private static TextBlock GetTextBlock/*元素文字控件*/(DesignerItem item)
-        {
-            var border = GetBorder(item);
-            if (border == null) return null;
-            return border.Child as TextBlock;
-        }
-        private static string GetItemText/*取得元素文字内容*/(DesignerItem item)
-        {
-            var textBlock = GetTextBlock(item);
-            if (textBlock == null) return string.Empty;
-            return textBlock.GetValue(TextBlock.TextProperty).ToString();
-        }
-        public static void SetItemText/*设定元素文字*/(DesignerItem item, string text)
-        {
-            var textBlock = GetTextBlock(item);
-            if (textBlock == null) return;
-            textBlock.SetValue(TextBlock.TextProperty, text);
-        }
-        private static void SetItemFontColor/*设定元素文字颜色*/(DesignerItem item, SolidColorBrush fontColorBrush)
-        {
-            var textBlock = GetTextBlock(item);
-            if (textBlock == null) return;
-            textBlock.SetValue(TextBlock.ForegroundProperty, fontColorBrush);
-        }
-        private static void SetItemBorderStyle/*设定边框样式*/(DesignerItem item, SolidColorBrush borderColor, Thickness borderThickness, SolidColorBrush backgroundbrBrush)
-        {
-            var border = GetBorder(item);
-            if (border == null) return;
-            border.BorderBrush = borderColor;
-            border.BorderThickness = borderThickness;
-            border.Background = backgroundbrBrush;
-        }
-        private static DesignerItem CreateDesignerItem/*创建元素*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset, SolidColorBrush borderBrush = null/*节点边框颜色*/)
-        {
-            var newItem = item;
-            if (newItem.Data == null) return null;
-            CreateDesignerItemContent(item, borderBrush);
-            item.Width = MinItemWidth;
-            newItem.SetValue(Canvas.TopProperty, topOffset);
-            newItem.SetValue(Canvas.LeftProperty, leftOffset);
-            if (!newItem.Data.Removed)
-            {
-                canvas.Children.Add(newItem);
-            }
-            canvas.Measure(Size.Empty);
-            return newItem;
-        }
-        private static void CreateDesignerItemContent/*创建元素内容，固定结构*/(DesignerItem item, SolidColorBrush borderBrush = null)
-        {
-            if (item == null) return;
-            if (item.Data != null && item.Data.Text == (GetItemText(item))) { return; }
-            if (borderBrush == null) borderBrush = DefaultBorderBrush;
-            var border = new Border()
-            {
-                BorderThickness = new Thickness(DefaultBorderThickness),
-                BorderBrush = borderBrush,
-                Background = DefaultBackgroundBrush,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                IsHitTestVisible = false
-            };
-            var textblock = new TextBlock()
-            {
-                Name = "Text",
-                Text = item.Data == null ? "" : item.Data.Text,
-                IsHitTestVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Padding = new Thickness(5, 2, 5, 2),
-                FontFamily = new FontFamily("Arial"),
-                FontSize = 12d
-            };
-            border.Child = textblock;
-            //var contentControl = new ContentControl
-            //{
-            //    Content = border,
-            //    IsHitTestVisible = false,
-            //    HorizontalAlignment = HorizontalAlignment.Stretch
-            //};
-            item.Content = border;// contentControl;
-        }
-
-        public static List<DesignerItem> GetDesignerItems/*取得画布所有元素*/(Canvas canvas)
-        {
-            var list = new List<DesignerItem>();
-
-            var itemCount = VisualTreeHelper.GetChildrenCount(canvas);
-            if (itemCount == 0) return list;
-            for (int n = 0; n < itemCount; n++)
-            {
-                var c = VisualTreeHelper.GetChild(canvas, n);
-                var child = c as DesignerItem;
-                if (child != null) list.Add(child);
-            }
-            return list;
-        }
-        private static List<DesignerItem> GetDirectSubItems/*取得直接子节点*/(DesignerItem item)
-        {
-            var canvas = item.Parent as Canvas;
-            if (canvas == null) return null;
-            var connections = GetItemConnections(item);
-            var list = (from itemConnection in connections
-                        where Equals(itemConnection.Source.ParentDesignerItem, item)
-                        && itemConnection.Source != null && itemConnection.Sink != null
-                        select itemConnection.Sink.ParentDesignerItem).OrderBy(x => x.Data.YIndex).ToList();
-            item.IsExpanderVisible = list.Any(x => x.Data.Removed == false);
-            if (item.Equals(GetRootItem(canvas)))
-                item.IsExpanderVisible = false;
-            return list;
-        }
-        public static void GetAllSubItems/*取得直接及间接的子节点*/(DesignerItem item/*某个节点*/, List<DesignerItem> subitems/*其所有子节点*/)
-        {
-            var canvas = item.Parent as Canvas;
-            if (canvas == null) return;
-            var child = new List<DesignerItem>();
-            foreach (var subItem in
-                (from itemConnection in GetItemConnections(item)
-                 where Equals(itemConnection.Source.ParentDesignerItem, item)
-                 && itemConnection.Sink.ParentDesignerItem.Data.Removed == false
-                 select itemConnection.Sink.ParentDesignerItem).OrderBy(x => x.Data.YIndex))
-            {
-                if (subitems.Contains(subItem)) continue;
-                child.Add(subItem);
-                subitems.Add(subItem);
-                foreach (var designerItem in child)
-                {
-                    GetAllSubItems(designerItem, subitems);
-                }
-            }
-        }
-        private static DesignerItem GetParentItem/*父节点*/(DesignerItem item)
-        {
-            var connector = GetItemConnector(item, "Left");
-            var connection = connector.Connections.FirstOrDefault(x => x.Sink != null && x.Source != null);
-            if (connection != null)
-            {
-                return connection.Source.ParentDesignerItem;
-            }
-            return null;
-        }
-        private static void BringToFront/*将制定元素移到最前面*/(DesignerItem designerItem)
+        private void BringToFront/*将制定元素移到最前面*/(DesignerItem designerItem)
         {
 
             var canvas = designerItem.Parent as Canvas;
@@ -447,7 +599,7 @@ namespace DiagramDesigner
                 }
             }
         }
-        private static void BringToFront/*将制定元素移到最前面*/(Canvas canvas, UIElement element)
+        private void BringToFront/*将制定元素移到最前面*/(Canvas canvas, UIElement element)
         {
             List<UIElement> childrenSorted =
                 (from UIElement item in canvas.Children
@@ -469,21 +621,7 @@ namespace DiagramDesigner
                 }
             }
         }
-        //public static void UpdateXYIndex/*按照Top位置排序*/(Canvas canvas)
-        //{
-        //    var designerItems = new List<DesignerItem>();
-        //    var root = GetRootItem(canvas);
-        //    root.Data.XIndex = Canvas.GetLeft(root);
-        //    root.Data.YIndex = Canvas.GetTop(root);
-        //    GetAllSubItems(root, designerItems);
-        //    foreach (var item in designerItems)
-        //    {
-        //        item.Data.YIndex = Canvas.GetTop(item);
-        //        item.Data.XIndex = Canvas.GetLeft(item);
-        //    }
-        //}
-
-        private static void SendConnectionsToBack(Canvas canvas)
+        private void SendConnectionsToBack(Canvas canvas)
         {
             var childrens = canvas.Children;
             var connectionList = childrens.OfType<Connection>().ToList();
@@ -492,48 +630,7 @@ namespace DiagramDesigner
                 Panel.SetZIndex(uiElement, -10000);
             }
         }
-        private static void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer, DesignerItem selectedItem)
-        {
-            foreach (var item in GetDesignerItems(designer).Where(item => !item.Equals(selectedItem)))
-            {
-                if (item.IsShadow) continue;
-                SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
-                SetItemFontColor(item, DefaultFontColorBrush);
-            }
-        }
-        public static void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer)
-        {
-            foreach (var item in GetDesignerItems(designer))
-            {
-                if (item.IsShadow) continue;
-                SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
-                SetItemFontColor(item, DefaultFontColorBrush);
-            }
-        }
-
-        public static void SetSelectionsBorder(DesignerCanvas canvas)
-        {
-
-            //foreach (var item in GetDesignerItems(canvas))
-            //{
-            //    if (item.IsShadow) continue;
-            //    SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
-            //    SetItemFontColor(item, DefaultFontColorBrush);
-            //}
-
-            var selectedItems = canvas.SelectionService.CurrentSelection;
-            foreach (var selectedItem in selectedItems)
-            {
-                var item = selectedItem as DesignerItem;
-                if (item != null)
-                {
-                    SetItemBorderStyle(item, HighlightBorderBrush, new Thickness(DefaultBorderThickness),
-                        HighlightBackgroundBrush);
-                }
-            }
-        }
-
-        private static DesignerItem GetTopSibling/*取得元素上方最接近的元素*/(DesignerItem item)
+        private DesignerItem GetTopSibling/*取得元素上方最接近的元素*/(DesignerItem item)
         {
             var canvas = item.Parent as Canvas;
             if (canvas == null) return null;
@@ -542,7 +639,7 @@ namespace DiagramDesigner
             var subitems = new List<DesignerItem>();
             GetAllSubItems(item, subitems);
 
-            var pre = GetDesignerItems(canvas).Where(x => x.Visibility.Equals(Visibility.Visible));
+            var pre = GetDesignerItems().Where(x => x.Visibility.Equals(Visibility.Visible));
             var list = (from designerItem in pre
                         let top = Canvas.GetTop(designerItem)
                         let left = Canvas.GetLeft(designerItem)
@@ -559,7 +656,7 @@ namespace DiagramDesigner
             var parent = list.OrderByDescending(x => x.Data.YIndex).First();
             return parent;
         }
-        private static void ChangeParent(DesignerItem item)
+        private void ChangeParent(DesignerItem item)
         {
             var canvas = item.Parent as Canvas;
             if (canvas == null) return;
@@ -607,7 +704,7 @@ namespace DiagramDesigner
                     }
 
                 }
-                ArrangeWithRootItems(canvas);
+                ArrangeWithRootItems();
             }
             else
             {
@@ -628,11 +725,11 @@ namespace DiagramDesigner
                 }
             }
         }
-        protected static void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item, double left, double top)
+        protected void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item)
         {
             var itemTop = (double)item.GetValue(Canvas.TopProperty);
             var itemLeft = (double)item.GetValue(Canvas.LeftProperty);
-            if (itemTop.Equals(top) && itemLeft.Equals(left)) return;
+            if (itemTop.Equals(item.oldy) && itemLeft.Equals(item.oldx)) return;
 
             foreach (var connection in GetItemConnections(item))
             {
@@ -640,184 +737,73 @@ namespace DiagramDesigner
             }
 
         }
-        private static void ShowItemConnection/*元素所有连线恢复显示*/(DesignerItem item)
+        private void ShowItemConnection/*元素所有连线恢复显示*/(List<DesignerItem> items)
         {
-            foreach (var connection in GetItemConnections(item))
+            foreach (var item in items)
             {
-                //如果连线以此元素为起点，且此元素设置为【展开】，则显示连线
-                if (connection.Source.ParentDesignerItem.Equals(item) && item.IsExpanded)
-                    connection.Visibility = Visibility.Visible;
-                //此元素有父节点，则处理与父节点之间的连线
-                var parent = GetParentItem(item);
-                if (parent != null)
+                foreach (var connection in GetItemConnections(item))
                 {
-                    //如果父元素被设置为【折叠】，则不处理。
-                    if (!parent.IsExpanded) continue;
-                    //如果连线以父元素为起点，则需要显示连线
-                    if (connection.Source.ParentDesignerItem.Equals(parent))
-                    {
+                    //如果连线以此元素为起点，且此元素设置为【展开】，则显示连线
+                    if (connection.Source.ParentDesignerItem.Equals(item) && item.IsExpanded)
                         connection.Visibility = Visibility.Visible;
+                    //此元素有父节点，则处理与父节点之间的连线
+                    var parent = GetParentItem(item);
+                    if (parent != null)
+                    {
+                        //如果父元素被设置为【折叠】，则不处理。
+                        if (!parent.IsExpanded) continue;
+                        //如果连线以父元素为起点，则需要显示连线
+                        if (connection.Source.ParentDesignerItem.Equals(parent))
+                        {
+                            connection.Visibility = Visibility.Visible;
+                        }
                     }
                 }
             }
-
         }
-        private static void RemoveShadows(Canvas canvas)
+        public List<DesignerItem> CreateShadows/*拖拽时产生影子*/(List<DesignerItem> designerItems)
         {
-            var list = GetDesignerItems(canvas).Where(x => x.IsShadow);
-            foreach (var designerItem in list)
+            var shadows = new List<DesignerItem>();
+            foreach (var designerItem in designerItems)
             {
-                canvas.Children.Remove(designerItem);
+                DesignerItem shadow = null;
+                if (_diagramControl.Designer != null)
+                {
+                    shadow = CreateShadow(designerItem);
+                    _diagramControl.Designer.Children.Add(shadow);
+                    //隐藏折叠按钮
+                    designerItem.IsExpanderVisible = false;
+                }
+                HideItemConnection(designerItem);/*拖动时隐藏连线*/
+                BringToFront(designerItem);
+                shadows.Add(shadow);
             }
+            return shadows;
         }
-        
-        private static DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item, double left, double top)
+        private DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item)
         {
             var copy = new DesignerItem { IsExpanderVisible = false, IsShadow = true };
             CreateDesignerItemContent(copy);
             SetItemText(copy, GetItemText(item));
             SetItemBorderStyle(copy, ShadowBorderBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
             SetItemFontColor(copy, ShadowFontColorBrush);
-            copy.SetValue(Canvas.LeftProperty, left);
-            copy.SetValue(Canvas.TopProperty, top);
+            copy.SetValue(Canvas.LeftProperty, item.oldx);
+            copy.SetValue(Canvas.TopProperty, item.oldy);
             copy.Width = item.Width;
             Panel.SetZIndex(copy, -100);
             return copy;
         }
-        //private static void ShadowChildItemsBrushBorderFontStyle/*拖拽时，子元素变灰色*/(DesignerItem item)
-        //{
-        //    List<DesignerItem> subItems = new List<DesignerItem>();
-        //    GetAllSubItems(item, subItems);
-        //    foreach (var designerItem in subItems)
-        //    {
-        //        SetItemBorderStyle(designerItem, ShadowBackgroundBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
-        //        SetItemFontColor(designerItem, ShadowFontColorBrush);
-        //    }
-        //}
-        private static void CreateItems(Canvas canvas, IList<DesignerItem> dataSource, DesignerItem parentItem, IList<DesignerItem> designerItems)
+        private void RemoveShadows(Canvas canvas)
         {
-            if (parentItem == null) return;
-            if (designerItems == null) return;
-            DesignerItem parentDesignerItem = null;
-
-            if (designerItems.All(x => !x.ID.Equals(parentItem.ID)))
+            foreach (var designerItem in GetDesignerItems().Where(x => x.IsShadow))
             {
-                if (parentItem.Data.ParentId.Equals(Guid.Empty)) //是根节点？
-                {
-                    parentDesignerItem = CreateRoot(canvas, parentItem, parentItem.Data.YIndex, parentItem.Data.XIndex);
-                    if (parentDesignerItem != null)
-                    {
-                        designerItems.Add(parentDesignerItem);
-                    }
-                }
-            }
-            else
-            {
-                parentDesignerItem = designerItems.FirstOrDefault(x => x.ID.Equals(parentItem.ID));
-            }
-
-            var childs = dataSource.Where(x => x.Data.ParentId.Equals(parentItem.ID));
-
-            foreach (var childItem in childs)
-            {
-                DesignerItem childDesignerItem;
-                if (designerItems.All(x => !x.ID.Equals(childItem.ID)))
-                {
-                    childDesignerItem = CreateChild(parentDesignerItem, childItem);
-                    if (childDesignerItem != null)
-                    {
-                        designerItems.Add(childDesignerItem);
-                    }
-                }
-                CreateItems(canvas, dataSource, childItem, designerItems);
+                canvas.Children.Remove(designerItem);
             }
         }
-        private static DesignerItem CreateRoot/*创建根节点*/(Canvas canvas, DesignerItem item, double topOffset, double leftOffset)
-        {
-            var root = CreateDesignerItem(canvas, item, topOffset, leftOffset);
-            SetItemFontColor(root, DefaultFontColorBrush);
-            root.CanCollapsed = false;
-            root.IsExpanderVisible = false;
-            return root;
-        }
-        private static DesignerItem CreateChild(DesignerItem parent, DesignerItem childItem)
-        {
-            if (parent == null) return null;
 
-            var canvas = parent.Parent as Canvas;
-            if (canvas == null) return null;
+        #endregion
 
-            #region 起点 Connector
-
-            var parentConnectorDecorator = parent.Template.FindName("PART_ConnectorDecorator", parent) as Control;
-            if (parentConnectorDecorator == null) return null;
-            var source = parentConnectorDecorator.Template.FindName("Bottom", parentConnectorDecorator) as Connector;
-
-            #endregion
-
-            #region 终点 Connector
-
-            var child = CreateDesignerItem(
-                canvas,
-                childItem,
-                Canvas.GetTop(parent) + ChildTopOffset,
-                Canvas.GetLeft(parent) + GetOffset(parent),
-                DefaultBorderBrush);/*创建子节点*/
-
-            var childConnectorDecorator = child.Template.FindName("PART_ConnectorDecorator", child) as Control;
-            if (childConnectorDecorator == null) return null;
-            var sink = childConnectorDecorator.Template.FindName("Left", childConnectorDecorator) as Connector;
-
-            #endregion
-
-            #region 创建连线
-
-            if (source == null || sink == null) return null;
-
-            var connections = GetItemConnections(parent).ToList();
-            var c = connections.Where(connection => connection.Source.Equals(source) && connection.Sink.Equals(sink)).ToList();
-            //var c = connections.Where(x => x.Source.Equals(source) && x.Sink.Equals(sink)).ToList();
-            if (c.Count == 0 || c.FirstOrDefault() == null)
-            {
-                var conn = new Connection(source, sink); /*创建连线*/
-                if (!childItem.Data.Removed)
-                {
-                    canvas.Children.Add(conn); /*放到画布上*/
-                }
-            }
-            else if (c.Count == 1)
-            {
-                var cn = c.FirstOrDefault();
-                if (cn != null)
-                {
-                    if (!childItem.Data.Removed)
-                    {
-                        canvas.Children.Add(cn);
-                    }
-                }
-            }
-            else if (c.Count > 1)//正常情况不会发生
-            {
-                foreach (var connection in c)
-                {
-                    connection.Source = null;
-                    connection.Sink = null;
-                    var conn = new Connection(source, sink); /*创建连线*/
-                    if (!childItem.Data.Removed)
-                    {
-                        canvas.Children.Add(conn); /*放到画布上*/
-                    }
-                }
-            }
-            #endregion
-
-            child.CanCollapsed = true;
-            return child;/*返回创建的子节点*/
-        }
-
-
-
-        public static void Edit(Canvas designer, DesignerItem item, TextBox textBox)
+        public void Edit(Canvas designer, DesignerItem item, TextBox textBox)
         {
             designer.Children.Remove(textBox);
             var left = Canvas.GetLeft(item);
@@ -831,5 +817,18 @@ namespace DiagramDesigner
             textBox.Focus();
             textBox.SelectAll();
         }
+
+        //private static void ShadowChildItemsBrushBorderFontStyle/*拖拽时，子元素变灰色*/(DesignerItem item)
+        //{
+        //    List<DesignerItem> subItems = new List<DesignerItem>();
+        //    GetAllSubItems(item, subItems);
+        //    foreach (var designerItem in subItems)
+        //    {
+        //        SetItemBorderStyle(designerItem, ShadowBackgroundBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
+        //        SetItemFontColor(designerItem, ShadowFontColorBrush);
+        //    }
+        //}
+
+
     }
 }

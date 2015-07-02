@@ -9,10 +9,6 @@ namespace DiagramDesigner
     internal class SelectionService
     {
         private DesignerCanvas designerCanvas;
-
-        //private DesignerItem _selectedItem;
-        //public DesignerItem SelectedItem { get { return _selectedItem; } }
-
         private List<ISelectable> _currentSelection;
         internal List<ISelectable> CurrentSelection
         {
@@ -20,7 +16,6 @@ namespace DiagramDesigner
             {
                 if (_currentSelection == null)
                     _currentSelection = new List<ISelectable>();
-
                 return _currentSelection;
             }
         }
@@ -33,9 +28,6 @@ namespace DiagramDesigner
 
         internal void SelectItem(ISelectable item)
         {
-            //var x = item as DesignerItem;
-            //_selectedItem = x;
-
             this.ClearSelection();
             this.AddToSelection(item);
         }
@@ -47,7 +39,14 @@ namespace DiagramDesigner
             {
                 CurrentSelection.Add(item);
                 x.IsSelected = true;
-                DiagramManager.HighlightSelected(x);
+                var canvas = x.Parent as DesignerCanvas;
+                var diagramControl = canvas.TemplatedParent as DiagramControl;
+                diagramControl.DiagramManager.ResetBrushBorderFontStyle(designerCanvas);
+                foreach (DesignerItem selectedItem in CurrentSelection)
+                {
+                    diagramControl.DiagramManager.HighlightSelected(selectedItem);
+                }
+
                 //var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
                 //if (diagramControl != null)
                 //{

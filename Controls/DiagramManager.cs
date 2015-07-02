@@ -128,7 +128,7 @@ namespace DiagramDesigner
             if (canvas == null) return;
             ResetBrushBorderFontStyle(canvas, item);/*重置所有节点样式*/
             SetItemBorderStyle(item, SelectedBorderBrush, new Thickness(HighlightBorderThickness), HighlightBackgroundBrush);
-
+            SetItemFontColor(item, DefaultFontColorBrush);
         }
         public static void HideOrExpandChildItems/*展开折叠*/(DesignerItem item)
         {
@@ -196,6 +196,9 @@ namespace DiagramDesigner
             ShowItemConnection(designerItem);/*拖动完毕，显示连线*/
             ResetBrushBorderFontStyle(canvas, designerItem);/*恢复边框字体样式*/
 
+            designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
+            designerItem.Data.YIndex = Canvas.GetTop(designerItem);
+
             ArrangeWithRootItems(canvas);/*重新布局*/
         }
         public static void ExpandAll/*展开所有*/(Canvas canvas)
@@ -233,7 +236,7 @@ namespace DiagramDesigner
             var itemConnector = itemConnectorDecorator.Template.FindName(name, itemConnectorDecorator) as Connector;
             return itemConnector;
         }
-        protected static List<Connector> GetItemConnectors/*取得所有连接点*/(DesignerItem item)
+        public static List<Connector> GetItemConnectors/*取得所有连接点*/(DesignerItem item)
         {
             var connectors = new List<Connector>();
 
@@ -535,7 +538,8 @@ namespace DiagramDesigner
             var parent = GetTopSibling(item);
             if (parent != null)
             {
-                var source = GetItemConnector(parent, "Bottom"); ;
+                var source = GetItemConnector(parent, "Bottom");
+                ;
                 if (source != null)
                 {
                     //如果父节点折叠，则展开它
@@ -544,14 +548,52 @@ namespace DiagramDesigner
                         source.ParentDesignerItem.IsExpanded = true;
                     }
                     // 取得当前节点的连接线
-                    var sink = GetItemConnector(item, "Left"); ;
+                    var sink = GetItemConnector(item, "Left");
                     if (sink == null) return;
                     if (source.Equals(sink)) return;
                     var connections = sink.Connections.Where(x => x.Source != null && x.Sink != null).ToList();
-                    if (!connections.Any()) return;
-                    var connection = connections.First();
-                    connection.Source = source;
-                    item.Data.ParentId = parent.ID;
+                    if (!connections.Any())
+                    {
+                        sink.Connections.Clear();
+                        var conn = new Connection(source, sink);
+                        if (!source.Connections.Contains(conn))
+                        {
+                            source.Connections.Add(conn);
+                        }
+                        if (!sink.Connections.Contains(conn))
+                        {
+                            sink.Connections.Add(conn);
+                        }
+                        canvas.Children.Add(conn);
+                        item.Data.ParentId = parent.ID;
+                        canvas.Measure(Size.Empty);
+                    }
+                    else
+                    {
+                        var connection = connections.First();
+                        connection.Source = source;
+                        item.Data.ParentId = parent.ID;
+                    }
+
+                }
+                ArrangeWithRootItems(canvas);
+            }
+            else
+            {
+                //如果没有找到父节点
+                //则将其与原父节点的连线删除
+                //将其父节点设定为无
+                var sink = GetItemConnector(item, "Left");/*左连接点*/
+                if (sink != null)
+                {
+                    var connections = sink.Connections;
+                    foreach (var connection in connections)
+                    {
+                        connection.Source.Connections.Remove(connection);
+                        canvas.Children.Remove(connection);
+                    }
+                    sink.Connections.Clear();
+                    item.Data.ParentId = Guid.Empty;
                 }
             }
         }

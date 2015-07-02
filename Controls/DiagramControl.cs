@@ -5,11 +5,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace DiagramDesigner.Controls
 {
@@ -189,12 +187,13 @@ namespace DiagramDesigner.Controls
             var designer = Designer;
             if (designer == null) return;
             designer.Children.Clear();
+            var items = DiagramManager.GetDesignerItems(designer);
+            if (items == null) return;
             var designerItems = DiagramManager.GenerateItems(designer, DesignerItems);
             if (designerItems == null) return;
             if (!designerItems.Any()) return;
             DiagramManager.ArrangeWithRootItems(designer);
-            var items = DiagramManager.GetDesignerItems(designer);
-            if (items == null) return;
+
             items.ForEach(x => x.Data.DiagramControl = this);
             items.ForEach(x =>
             {
@@ -409,17 +408,17 @@ namespace DiagramDesigner.Controls
                 return new RelayCommand(() => { DiagramManager.ExpandAll(Designer); });
             }
         }
-        public ICommand GetDataCommand
-        {
-            get
-            {
-                return new RelayCommand(() =>
-                   {
-                       var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
-                       MessageBox.Show(string.Format("Changed:{0}\nAdded:{1}\nRemoved:{2}\nTotal:{3}", list.Count(x => x.Changed), list.Count(x => x.Added), list.Count(x => x.Removed), list.Count(x => !x.Removed)));
-                   });
-            }
-        }
+        //public ICommand GetDataCommand
+        //{
+        //    get
+        //    {
+        //        return new RelayCommand(() =>
+        //           {
+        //               var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
+        //               MessageBox.Show(string.Format("Changed:{0}\nAdded:{1}\nRemoved:{2}\nTotal:{3}", list.Count(x => x.Changed), list.Count(x => x.Added), list.Count(x => x.Removed), list.Count(x => !x.Removed)));
+        //           });
+        //    }
+        //}
         public ICommand ReloadCommand
         {
             get
@@ -475,8 +474,9 @@ namespace DiagramDesigner.Controls
             {
                 ItemDatas.Add(item.Data);
             }
-
+            BindData();
             Suppress = false;
+
         }
         #endregion
 

@@ -3,6 +3,7 @@ using DiagramDesigner.MVVM;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -79,12 +80,52 @@ namespace DiagramDesigner.Controls
                 {
                     var diagramControl = (DiagramControl)d;
                     var n = e.NewValue as ObservableCollection<ItemDataBase>;
-                    if (n != null) n.CollectionChanged += (sender, arg) =>
+                    if (n != null)
                     {
-                        diagramControl.DiagramManager.GenerateDesignerItems();
-                    };
-                    if (diagramControl.Suppress) return;
-                    if (diagramControl.ItemDatas != null) { diagramControl.DiagramManager.GenerateDesignerItems(); }
+                        n.CollectionChanged += (sender, arg) =>
+                            {
+                                if (arg.Action == NotifyCollectionChangedAction.Add)
+                                {
+                                    var items = arg.NewItems.Cast<ItemDataBase>();
+                                    var f = items.FirstOrDefault();
+                                    if (f != null)
+                                        diagramControl.DiagramManager.GenerateDesignerItems(f.Id);
+                                }
+                                if (arg.Action == NotifyCollectionChangedAction.Remove)
+                                {
+                                    var items = arg.OldItems.Cast<ItemDataBase>();
+                                    var f = items.FirstOrDefault();
+                                    if (f != null)
+                                    {
+                                        Guid id;
+                                        var sibling = diagramControl.ItemDatas
+                                            .Where(x => x.ParentId == f.ParentId
+                                            && x.Id != f.Id).ToList();
+                                        if (sibling.Any())
+                                        {
+                                            var designeritems =
+                                                from x in diagramControl.DesignerItems
+                                                where sibling.Contains(x.Data)
+                                                select x;
+                                            id =
+                                                designeritems.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b).ID;
+                                        }
+                                        else
+                                        {
+                                            id = f.ParentId;
+                                        }
+                                        diagramControl.DiagramManager.GenerateDesignerItems(id);
+                                    }
+                                }
+                            };
+                        if (diagramControl.Suppress) return;
+                        if (diagramControl.ItemDatas != null)
+                        {
+                            var y = n.FirstOrDefault(x => x.ParentId == Guid.Empty);
+                            if (y != null)
+                                diagramControl.DiagramManager.GenerateDesignerItems(y.Id);
+                        }
+                    }
                 }));
 
         public ObservableCollection<ItemDataBase> ItemDatas
@@ -112,7 +153,19 @@ namespace DiagramDesigner.Controls
 
         public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
            "SelectedItems", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl),
-           new FrameworkPropertyMetadata(new ObservableCollection<DesignerItem>()));
+           new FrameworkPropertyMetadata(new ObservableCollection<DesignerItem>(),
+               (d, e) =>
+               {
+                   var diagramControl = (DiagramControl)d;
+                   var n = e.NewValue as ObservableCollection<DesignerItem>;
+                   if (n != null)
+                   {
+                       n.CollectionChanged += (a, b) =>
+                       {
+                           //MessageBox.Show(n.Count().ToString());
+                       };
+                   }
+               }));
 
         public ObservableCollection<DesignerItem> SelectedItems
         {

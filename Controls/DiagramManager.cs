@@ -35,8 +35,8 @@ namespace DiagramDesigner
         static readonly SolidColorBrush DefaultBorderBrush = Brushes.SkyBlue;
         static readonly SolidColorBrush SelectedBorderBrush = Brushes.DeepSkyBlue;
         static readonly SolidColorBrush HighlightBorderBrush = Brushes.IndianRed;
-        private static readonly SolidColorBrush HighlightBackgroundBrush = Brushes.DeepSkyBlue;
-        private static readonly SolidColorBrush DefaultBackgroundBrush = Brushes.SkyBlue;
+        private static readonly SolidColorBrush HighlightBackgroundBrush = Brushes.LightSkyBlue;//Brushes.DeepSkyBlue;
+        private static readonly SolidColorBrush DefaultBackgroundBrush = Brushes.Transparent; //Brushes.SkyBlue;
         static readonly SolidColorBrush ShadowBorderBrush = Brushes.LightGray;
         private static readonly SolidColorBrush ShadowBackgroundBrush = Brushes.LightGray;
         private static readonly SolidColorBrush ShadowFontColorBrush = Brushes.Gray;
@@ -373,16 +373,16 @@ namespace DiagramDesigner
             _diagramControl.Suppress = false;
         }
 
-        public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/()
+        public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/(Guid id)
         {
             _diagramControl.Suppress = true;/*利用数据源创建节点时不执行CollectionChange事件*/
-
             var roots = InitDesignerItems();
             if (roots == null) return;
             if (!roots.Any()) InitData();/*创建DesignerItems*/
             BindData();/*将DesignerItems放到画布上，并且创建连线*/
             _diagramControl.Suppress = false;
-            //_diagramControl.DiagramManager.SetSelectItem(roots.FirstOrDefault());
+            if (id != Guid.Empty)
+                _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == id));
             _diagramControl.GetDataInfo();
         }
 
@@ -624,7 +624,7 @@ namespace DiagramDesigner
             ChangeParent(designerItem);/*改变父节点*/
             var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll((a) => a as DesignerItem);
             ShowItemConnection(selectedItems);/*拖动完毕，显示连线*/
-            ResetBrushBorderFontStyle(_diagramControl.Designer, designerItem);/*恢复边框字体样式*/
+            //ResetBrushBorderFontStyle(_diagramControl.Designer, designerItem);/*恢复边框字体样式*/
             designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
             designerItem.Data.YIndex = Canvas.GetTop(designerItem);
             ArrangeWithRootItems();/*重新布局*/
@@ -737,7 +737,7 @@ namespace DiagramDesigner
             {
                 item.Data.ParentId = Guid.Empty;
             }
-            GenerateDesignerItems();
+            GenerateDesignerItems(item.ID);
             //ArrangeWithRootItems();
         }
         protected void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item)
@@ -857,8 +857,9 @@ namespace DiagramDesigner
             var d = GetSelectedItem();
             if (d != null)
             {
+                var p = _diagramControl.DesignerItems.FirstOrDefault(x => x.Data.Id == d.Data.ParentId);
                 _diagramControl.ItemDatas.Remove(d.Data);
-                GenerateDesignerItems();
+                GenerateDesignerItems(p.ID);
 
                 //if (d.Data.ParentId == Guid.Empty) return;
                 //if (d.Data == null) return;

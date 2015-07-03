@@ -40,26 +40,21 @@ namespace DiagramDesigner
             {
                 CurrentSelection.Add(item);
                 x.IsSelected = true;
-                var canvas = x.Parent as DesignerCanvas;
-                if (canvas != null)
+
+                var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
+                if (diagramControl != null)
                 {
-                    var diagramControl = canvas.TemplatedParent as DiagramControl;
-                    if (diagramControl != null)
+                    diagramControl.DiagramManager.ResetBrushBorderFontStyle(designerCanvas);
+                    diagramControl.SelectedItems.Clear();
+
+                    ObservableCollection<DesignerItem> selectedItems = new ObservableCollection<DesignerItem>();
+                    foreach (var designerItem in CurrentSelection.ConvertAll((a) => a as DesignerItem))
                     {
-                        diagramControl.DiagramManager.ResetBrushBorderFontStyle(designerCanvas);
-                        foreach (var selectable in CurrentSelection)
-                        {
-                            var selectedItem = (DesignerItem)selectable;
-                            diagramControl.DiagramManager.HighlightSelected(selectedItem);
-                            diagramControl.SelectedItems.Clear();
-                            var x1 = new ObservableCollection<DesignerItem>();
-                            foreach (var s in CurrentSelection)
-                            {
-                                x1.Add(s as DesignerItem);
-                            }
-                            diagramControl.SelectedItems = x1;
-                        }
+                        selectedItems.Add(designerItem);
                     }
+
+                    diagramControl.SelectedItems = selectedItems;
+                    diagramControl.DiagramManager.HighlightSelected(x);
                 }
 
                 //var diagramControl = designerCanvas.TemplatedParent as DiagramControl;

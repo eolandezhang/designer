@@ -27,9 +27,9 @@
                                         <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
                                             <ToolBar>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=AddSiblingCommand}"/>
-                                                <!--<Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=DiagramManager.CommandManager.AddAfterCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=DiagramManager.CommandManager.RemoveCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=DiagramManager.CommandManager.CollapseCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=AddAfterCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=DeleteCommand}"/>
+                                                <!--<Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=DiagramManager.CommandManager.CollapseCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=DiagramManager.CommandManager.ExpandCommand}"/>
                                                 <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="保存" Command="{Binding Path=DiagramManager.CommandManager.SaveCommand}"/>
                                                 <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=DiagramManager.CommandManager.ReloadCommand}"/>-->
@@ -48,7 +48,7 @@
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
-                                            ItemDatas="{Binding ItemDatas,Mode=Default}"
+                                            ItemDatas="{Binding ItemDatas}"
                                             SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
                                             />
                                     </DockPanel>

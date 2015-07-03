@@ -3,6 +3,7 @@ using DiagramDesigner.MVVM;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 
 namespace DiagramDesigner
@@ -50,6 +51,7 @@ namespace DiagramDesigner
                         SelectedItem = x;
                     }
                     _selectedItems = value;
+
                     OnPropertyChanged("SelectedItems");
                 }
             }
@@ -58,6 +60,7 @@ namespace DiagramDesigner
         public MainViewModel()
         {
             InitData();
+
         }
 
         //可用框架中的消息实现
@@ -77,20 +80,65 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                 {
-                    if (SelectedItems != null)
+                    if (SelectedItems != null
+                        && SelectedItems.Count == 1)
                     {
-                        if (SelectedItems.Count == 1)
+                        var selectedItem = SelectedItems.FirstOrDefault();
+                        if (selectedItem != null)
                         {
-                            var selectedItem = SelectedItems.FirstOrDefault();
-                            if (selectedItem != null)
-                            {
-                                ItemDatas.Add(new CustomItemData(Guid.NewGuid(), selectedItem.ID, "new", "", true, false, 0, 0));
-                            }
+                            var parentId = selectedItem.Data.ParentId;
+                            var id = parentId.Equals(Guid.Empty) ? selectedItem.ID : parentId;
+                            ItemDatas.Add(new CustomItemData(Guid.NewGuid(), id, GetText(), "", true, false, 0, double.MaxValue));
                         }
+
                     }
                 });
             }
         }
+
+        public ICommand AddAfterCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (SelectedItems != null
+                        && SelectedItems.Count == 1)
+                    {
+                        var selectedItem = SelectedItems.FirstOrDefault();
+                        if (selectedItem != null)
+                        {
+                            ItemDatas.Add(new CustomItemData(Guid.NewGuid(), selectedItem.ID, GetText(), "", true, false, 0, double.MaxValue));
+                        }
+
+                    }
+                });
+            }
+        }
+
+        public ICommand DeleteCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (SelectedItems != null
+                        && SelectedItems.Count == 1)
+                    {
+                        var selectedItem = SelectedItems.FirstOrDefault();
+                        if (selectedItem != null)
+                        {
+                            var item = selectedItem.Data;
+                            if (item != null&&item.ParentId!=Guid.Empty)
+                                ItemDatas.Remove(item);
+                        }
+
+                    }
+                });
+            }
+        }
+
+        private string GetText() { return "Item-" + ItemDatas.Count(); }
 
         //public ICommand AddAfterCommand { get { return new RelayCommand(_diagramManager.AddAfter); } }
         //public ICommand RemoveCommand { get { return new RelayCommand(_diagramManager.Remove); } }

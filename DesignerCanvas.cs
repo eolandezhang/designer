@@ -45,7 +45,7 @@ namespace DiagramDesigner
                 Focus();
                 e.Handled = true;
                 var x = this.TemplatedParent as DiagramControl;
-                x.DiagramManager.ResetBrushBorderFontStyle(this);
+                //x.DiagramManager.ResetBrushBorderFontStyle(this);
 
                 var diagramControl = TemplatedParent as DiagramControl;
                 if (diagramControl != null)

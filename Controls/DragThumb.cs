@@ -61,24 +61,19 @@ namespace DiagramDesigner.Controls
 
                 #region 为元素产生影子，并且高亮父节点
 
-                if (designerItem != null)
+                var diagramControl = designer.TemplatedParent as DiagramControl;
+                if (diagramControl != null)
                 {
 
-                    var diagramControl = designer.TemplatedParent as DiagramControl;
-                    if (diagramControl != null)
-                    {
-
-                        _shadows = diagramControl.DiagramManager.CreateShadows(designerItems);
-                        diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
-                    }
+                    _shadows = diagramControl.DiagramManager.CreateShadows(designerItems);
+                    diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
                 }
-
+                #endregion
+                designerItem.Data.YIndex = Canvas.GetTop(designerItem);
 
             }
 
-                #endregion
 
-            designerItem.Data.YIndex = Canvas.GetTop(designerItem);
         }
 
         //拖动前保存元素位置
@@ -88,11 +83,14 @@ namespace DiagramDesigner.Controls
             if (designerItem != null)
             {
                 var canvas = designerItem.Parent as DesignerCanvas;
-                var selectedItems = canvas.SelectionService.CurrentSelection.ConvertAll((x) => x as DesignerItem);
-                foreach (var item in selectedItems)
+                if (canvas != null)
                 {
-                    item.oldx = Canvas.GetLeft(item);
-                    item.oldy = Canvas.GetTop(item);
+                    var selectedItems = canvas.SelectionService.CurrentSelection.ConvertAll((x) => x as DesignerItem);
+                    foreach (var item in selectedItems)
+                    {
+                        item.oldx = Canvas.GetLeft(item);
+                        item.oldy = Canvas.GetTop(item);
+                    }
                 }
             }
         }
@@ -104,7 +102,6 @@ namespace DiagramDesigner.Controls
                 var designer = designerItem.Parent as DesignerCanvas;
                 if (designer == null) return null;
                 var diagramControl = designer.TemplatedParent as DiagramControl;
-                if (diagramControl == null) return null;
                 return diagramControl;
             }
             return null;

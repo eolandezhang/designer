@@ -31,7 +31,7 @@ namespace DiagramDesigner.Data
                 OnPropertyChanged("Desc");
                 if (DiagramControl != null)
                 {
-                    DiagramControl.BindData();
+                    DiagramControl.DiagramManager.BindData();
                 }
                 if (_desc != "")
                 {
@@ -42,6 +42,7 @@ namespace DiagramDesigner.Data
 
         #region Constructors
         public CustomItemData(Guid id)
+            : base(id)
         {
             Id = id;
         }
@@ -54,16 +55,9 @@ namespace DiagramDesigner.Data
             bool removed,
             double xIndex,
             double yIndex)
+            : base(id, parentId, text, added, removed, xIndex, yIndex)
         {
-            Id = id;
-            ParentId = parentId;
-            Text = text;
             Desc = desc;
-            XIndex = xIndex;
-            YIndex = yIndex;
-            Changed = false;
-            Added = added;
-            Removed = removed;
         }
 
         public CustomItemData(

@@ -26,17 +26,13 @@
                                     <DockPanel Background="White">
                                         <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
                                             <ToolBar DataContext="{Binding ElementName=Diagram}">
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(独立)" Command="{Binding Path=AddRootDesignerItemCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=AddSiblingCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=AddAfterCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=RemoveCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=CollapseCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=ExpandCommand}"/>
-                                                <!--<Button Margin="4,0,4,0" Padding="5,4,5,4"   Content="数据信息" Command="{Binding Path=GetDataCommand}"/>-->
-
-                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="保存" Command="{Binding Path=SaveCommand}"/>
-
-                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=ReloadCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=DiagramManager.CommandManager.AddSiblingCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=DiagramManager.CommandManager.AddAfterCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=DiagramManager.CommandManager.RemoveCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=DiagramManager.CommandManager.CollapseCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=DiagramManager.CommandManager.ExpandCommand}"/>
+                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="保存" Command="{Binding Path=DiagramManager.CommandManager.SaveCommand}"/>
+                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=DiagramManager.CommandManager.ReloadCommand}"/>
                                             </ToolBar>
                                         </ToolBarTray>
 
@@ -48,14 +44,6 @@
                                                 </StackPanel>
                                             </StatusBarItem>
                                         </StatusBar>
-                                        <!--<c:DiagramControl
-                                            x:Name="Diagram" 
-                                            DiagramHeader="树状图" 
-                                            ZoomBoxControl="{Binding ElementName=ZoomBox}"
-                                            ItemDatas="{Binding ItemDatas}"
-                                            SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
-                                            SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
-                                            />-->
                                         <c:DiagramControl
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 

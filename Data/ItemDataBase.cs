@@ -37,7 +37,7 @@ namespace DiagramDesigner.Data
                 OnPropertyChanged("Text");
                 if (DiagramControl != null)
                 {
-                    DiagramControl.BindData();
+                    DiagramControl.DiagramManager.BindData();
                 }
                 if (_text != "")//初始化时，不标记为更改
                 {
@@ -81,6 +81,32 @@ namespace DiagramDesigner.Data
                 OnPropertyChanged("YIndex");
             }
         }
+
+
+        public ItemDataBase(Guid id)
+        {
+            Id = id;
+        }
+        public ItemDataBase() : this(Guid.NewGuid()) { }
+        public ItemDataBase(
+            Guid id,
+            Guid parentId,
+            string text,
+            bool added,
+            bool removed,
+            double xIndex,
+            double yIndex)
+        {
+            Id = id;
+            ParentId = parentId;
+            Text = text;
+            XIndex = xIndex;
+            YIndex = yIndex;
+            Changed = false;
+            Added = added;
+            Removed = removed;
+        }
+
 
 
         #region INotifyPropertyChanged

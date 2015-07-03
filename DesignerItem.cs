@@ -141,8 +141,12 @@ namespace DiagramDesigner
                 if (designerItem != null)
                 {
                     var canvas = designerItem.Parent as DesignerCanvas;
-                    var diagramControl = canvas.TemplatedParent as DiagramControl;
-                    diagramControl.DiagramManager.HideOrExpandChildItems(designerItem);
+                    if (canvas != null)
+                    {
+                        var diagramControl = canvas.TemplatedParent as DiagramControl;
+                        if (diagramControl != null)
+                            diagramControl.DiagramManager.HideOrExpandChildItems(designerItem);
+                    }
                 }
             }));
 
@@ -159,7 +163,7 @@ namespace DiagramDesigner
         #region IsExpanderVisible
 
         public static readonly DependencyProperty IsExpanderVisibleProperty = DependencyProperty.Register(
-            "IsExpanderVisible", typeof(bool), typeof(DesignerItem), new FrameworkPropertyMetadata(true));
+            "IsExpanderVisible", typeof(bool), typeof(DesignerItem), new FrameworkPropertyMetadata(false));
 
         public bool IsExpanderVisible
         {

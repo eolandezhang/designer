@@ -40,11 +40,18 @@ namespace DiagramDesigner
                 CurrentSelection.Add(item);
                 x.IsSelected = true;
                 var canvas = x.Parent as DesignerCanvas;
-                var diagramControl = canvas.TemplatedParent as DiagramControl;
-                diagramControl.DiagramManager.ResetBrushBorderFontStyle(designerCanvas);
-                foreach (DesignerItem selectedItem in CurrentSelection)
+                if (canvas != null)
                 {
-                    diagramControl.DiagramManager.HighlightSelected(selectedItem);
+                    var diagramControl = canvas.TemplatedParent as DiagramControl;
+                    if (diagramControl != null)
+                    {
+                        diagramControl.DiagramManager.ResetBrushBorderFontStyle(designerCanvas);
+                        foreach (var selectable in CurrentSelection)
+                        {
+                            var selectedItem = (DesignerItem) selectable;
+                            diagramControl.DiagramManager.HighlightSelected(selectedItem);
+                        }
+                    }
                 }
 
                 //var diagramControl = designerCanvas.TemplatedParent as DiagramControl;

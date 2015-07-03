@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Design;
 using System.Linq;
 using DiagramDesigner.Controls;
@@ -48,8 +49,15 @@ namespace DiagramDesigner
                         diagramControl.DiagramManager.ResetBrushBorderFontStyle(designerCanvas);
                         foreach (var selectable in CurrentSelection)
                         {
-                            var selectedItem = (DesignerItem) selectable;
+                            var selectedItem = (DesignerItem)selectable;
                             diagramControl.DiagramManager.HighlightSelected(selectedItem);
+                            diagramControl.SelectedItems.Clear();
+                            var x1 = new ObservableCollection<DesignerItem>();
+                            foreach (var s in CurrentSelection)
+                            {
+                                x1.Add(s as DesignerItem);
+                            }
+                            diagramControl.SelectedItems = x1;
                         }
                     }
                 }

@@ -25,14 +25,14 @@
                                 <xcad:LayoutDocument ContentId="document1" Title="Diagram" >
                                     <DockPanel Background="White">
                                         <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
-                                            <ToolBar DataContext="{Binding ElementName=Diagram}">
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=DiagramManager.CommandManager.AddSiblingCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=DiagramManager.CommandManager.AddAfterCommand}"/>
+                                            <ToolBar>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=AddSiblingCommand}"/>
+                                                <!--<Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=DiagramManager.CommandManager.AddAfterCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=DiagramManager.CommandManager.RemoveCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=DiagramManager.CommandManager.CollapseCommand}"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=DiagramManager.CommandManager.ExpandCommand}"/>
                                                 <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="保存" Command="{Binding Path=DiagramManager.CommandManager.SaveCommand}"/>
-                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=DiagramManager.CommandManager.ReloadCommand}"/>
+                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=DiagramManager.CommandManager.ReloadCommand}"/>-->
                                             </ToolBar>
                                         </ToolBarTray>
 
@@ -48,7 +48,8 @@
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
-                                            ItemDatas="{Binding ItemDatas}"
+                                            ItemDatas="{Binding ItemDatas,Mode=OneWay}"
+                                            SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
                                             />
                                     </DockPanel>
                                 </xcad:LayoutDocument>

@@ -72,7 +72,7 @@ namespace DiagramDesigner.Controls
         #region ItemDatasProperty 数据源
 
         public static readonly DependencyProperty ItemDatasProperty = DependencyProperty.Register(
-            "ItemDatas", typeof(ObservableCollection<ItemDataBase>), typeof(DiagramControl), new PropertyMetadata(new ObservableCollection<ItemDataBase>(),
+            "ItemDatas", typeof(ObservableCollection<ItemDataBase>), typeof(DiagramControl), new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
 
@@ -81,15 +81,11 @@ namespace DiagramDesigner.Controls
                     if (diagramControl.Suppress) return;
                     if (diagramControl.ItemDatas != null) { diagramControl.DiagramManager.GenerateDesignerItems(); }
                 }));
-
+        [Bindable(true)]
         public ObservableCollection<ItemDataBase> ItemDatas
         {
             get { return (ObservableCollection<ItemDataBase>)GetValue(ItemDatasProperty); }
-            set
-            {
-                ItemDatas.Clear();
-                SetValue(ItemDatasProperty, value);
-            }
+            set { SetValue(ItemDatasProperty, value); }
         }
 
         #endregion
@@ -107,21 +103,29 @@ namespace DiagramDesigner.Controls
 
         #endregion
 
-        #region SelectedItem 选中项
+        #region SelectedItems 选中项
 
-        //public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
-        //   "SelectedItem", typeof(DesignerItem), typeof(DiagramControl), new PropertyMetadata(default(DesignerItem)));
+        public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
+           "SelectedItems", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl),
+           new FrameworkPropertyMetadata(
+               new ObservableCollection<DesignerItem>(),
+               //FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+               (d, e) =>
+               {
+                   //MessageBox.Show("SelectedItemsProperty");
+                   //var ctl = d as DiagramControl;
+                   //MessageBox.Show(ctl.SelectedItems.Count().ToString());
+                   //var items = (e.NewValue as ObservableCollection<DesignerItem>);
+                   //if (items != null)
+                   //    MessageBox.Show(items.Count().ToString());
+               }
+               )
+           );
 
-        //public DesignerItem SelectedItem
-        //{
-        //    get { return (DesignerItem)GetValue(SelectedItemProperty); }
-        //    set { SetValue(SelectedItemProperty, value); }
-        //}
-
-        public DesignerItem SelectedItem
+        public ObservableCollection<DesignerItem> SelectedItems
         {
-            get;
-            set;
+            get { return (ObservableCollection<DesignerItem>)GetValue(SelectedItemsProperty); }
+            set { SetValue(SelectedItemsProperty, value); }
         }
 
         #endregion
@@ -138,6 +142,7 @@ namespace DiagramDesigner.Controls
         #endregion
 
         #region Constructors
+
         public DiagramControl()
         {
             DiagramManager = new DiagramManager(this);
@@ -150,6 +155,15 @@ namespace DiagramDesigner.Controls
                     GetDataInfo();
                 }
             };
+
+            ItemDatas.CollectionChanged += (s, e) =>
+            {
+                if (!Suppress)
+                {
+                    MessageBox.Show("ok");
+                }
+            };
+
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, (sender, e) => { DiagramManager.Copy(); }));
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, (sender, e) => { DiagramManager.Paste(); }));
         }

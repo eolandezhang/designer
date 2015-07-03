@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -76,12 +77,16 @@ namespace DiagramDesigner.Controls
             new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
-                    var diagramControl = d as DiagramControl;
-                    if (diagramControl == null) return;
+                    var diagramControl = (DiagramControl)d;
+                    var n = e.NewValue as ObservableCollection<ItemDataBase>;
+                    if (n != null) n.CollectionChanged += (sender, arg) =>
+                    {
+                        diagramControl.DiagramManager.GenerateDesignerItems();
+                    };
                     if (diagramControl.Suppress) return;
                     if (diagramControl.ItemDatas != null) { diagramControl.DiagramManager.GenerateDesignerItems(); }
                 }));
-        [Bindable(true)]
+
         public ObservableCollection<ItemDataBase> ItemDatas
         {
             get { return (ObservableCollection<ItemDataBase>)GetValue(ItemDatasProperty); }
@@ -107,19 +112,7 @@ namespace DiagramDesigner.Controls
 
         public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
            "SelectedItems", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl),
-           new FrameworkPropertyMetadata(
-               new ObservableCollection<DesignerItem>(),
-               (d, e) =>
-               {
-                   //MessageBox.Show("SelectedItemsProperty");
-                   //var ctl = d as DiagramControl;
-                   //MessageBox.Show(ctl.SelectedItems.Count().ToString());
-                   //var items = (e.NewValue as ObservableCollection<DesignerItem>);
-                   //if (items != null)
-                   //    MessageBox.Show(items.Count().ToString());
-               }
-               )
-           );
+           new FrameworkPropertyMetadata(new ObservableCollection<DesignerItem>()));
 
         public ObservableCollection<DesignerItem> SelectedItems
         {
@@ -128,15 +121,6 @@ namespace DiagramDesigner.Controls
         }
 
         #endregion
-
-        //public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
-        //    "SelectedItems", typeof(List<DesignerItem>), typeof(DiagramControl), new PropertyMetadata(default(List<DesignerItem>)));
-
-        //public List<DesignerItem> SelectedItems
-        //{
-        //    get { return (List<DesignerItem>)GetValue(SelectedItemsProperty); }
-        //    set { SetValue(SelectedItemsProperty, value); }
-        //}
 
         #endregion
 
@@ -155,8 +139,17 @@ namespace DiagramDesigner.Controls
                 }
             };
 
+            ItemDatas.CollectionChanged += ItemDatas_CollectionChanged;
+
+            InputBindings.Add(new KeyBinding() { Key = Key.Insert, Command = new RelayCommand(DiagramManager.Remove) });
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, (sender, e) => { DiagramManager.Copy(); }));
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, (sender, e) => { DiagramManager.Paste(); }));
+            CommandBindings.Add(new CommandBinding(ApplicationCommands.Delete, (sender, e) => { DiagramManager.Remove(); }));
+        }
+
+        void ItemDatas_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            MessageBox.Show(ItemDatas.Count().ToString());
         }
 
         public void GetDataInfo()

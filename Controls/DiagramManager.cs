@@ -217,10 +217,9 @@ namespace DiagramDesigner
 
             foreach (var childItem in childs)
             {
-                DesignerItem childDesignerItem;
                 if (designerItems.All(x => !x.ID.Equals(childItem.ID)))
                 {
-                    childDesignerItem = CreateChild(parentDesignerItem, childItem);
+                    var childDesignerItem = CreateChild(parentDesignerItem, childItem);
                     if (childDesignerItem != null)
                     {
                         designerItems.Add(childDesignerItem);
@@ -383,7 +382,7 @@ namespace DiagramDesigner
             if (!roots.Any()) InitData();/*创建DesignerItems*/
             BindData();/*将DesignerItems放到画布上，并且创建连线*/
             _diagramControl.Suppress = false;
-            _diagramControl.DiagramManager.SetSelectItem(roots.FirstOrDefault());
+            //_diagramControl.DiagramManager.SetSelectItem(roots.FirstOrDefault());
             _diagramControl.GetDataInfo();
         }
 
@@ -858,45 +857,56 @@ namespace DiagramDesigner
             var d = GetSelectedItem();
             if (d != null)
             {
-                if (d.Data.ParentId == Guid.Empty) return;
-                if (d.Data == null) return;
-                var item = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == d.ID);
-                if (item == null) return;
-                _diagramControl.Suppress = true;
-                var list = new List<DesignerItem>();
-                //删除子节点
-                GetAllSubItems(d, list);
-                foreach (var designerItem in list)
-                {
-                    designerItem.Data.Removed = true;
-                    designerItem.Visibility = Visibility.Collapsed;
-                }
-                item.Data.Removed = true;
-                item.Visibility = Visibility.Collapsed;
-                _diagramControl.Suppress = false;
+                _diagramControl.ItemDatas.Remove(d.Data);
+                GenerateDesignerItems();
 
-                #region 移除连线
-                var connections = GetItemConnections(d);
-                var sink = connections.Where(x => x.Sink.ParentDesignerItem.Equals(d));
-                foreach (var connection in sink)
-                {
-                    _diagramControl.Designer.Children.Remove(connection);
-                    connection.Visibility = Visibility.Collapsed;
-                }
-                if (!_diagramControl.Suppress)
-                    BindData();
+                //if (d.Data.ParentId == Guid.Empty) return;
+                //if (d.Data == null) return;
+                //var item = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == d.ID);
+                //if (item == null) return;
+                //_diagramControl.Suppress = true;
+                //var list = new List<DesignerItem>();
+                ////删除子节点
+                //GetAllSubItems(d, list);
+                //foreach (var designerItem in list)
+                //{
+                //    designerItem.Data.Removed = true;
+                //    designerItem.Visibility = Visibility.Collapsed;
+                //}
+                //item.Data.Removed = true;
+                //item.Visibility = Visibility.Collapsed;
+                //_diagramControl.Suppress = false;
+
+                //#region 移除连线
+                //var connections = GetItemConnections(d);
+                //var sink = connections.Where(x => x.Sink.ParentDesignerItem.Equals(d));
+                //foreach (var connection in sink)
+                //{
+                //    _diagramControl.Designer.Children.Remove(connection);
+                //    connection.Visibility = Visibility.Collapsed;
+                //}
+                //if (!_diagramControl.Suppress)
+                //    BindData();
+                //#endregion
                 if (d.Data.ParentId != Guid.Empty)
                 {
                     var topSibling = GetTopItem(d);
-                    if (topSibling != null) SetSelectItem(topSibling);
+                    if (topSibling != null)
+                    {
+                        SetSelectItem(topSibling);
+                    }
                     else
                     {
                         var parent = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == d.Data.ParentId);
-                        SetSelectItem(parent);
+                        if (parent != null)
+                            SetSelectItem(parent);
                     }
                 }
-                #endregion
+
                 _diagramControl.GetDataInfo();
+                //var selected=GetSelectedItem();
+                _diagramControl.Focus();
+                //MessageBox.Show(selected.Data.Text);
             }
         }
         public void Copy()

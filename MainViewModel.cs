@@ -1,7 +1,6 @@
 ﻿using DiagramDesigner.Data;
 using DiagramDesigner.MVVM;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -48,7 +47,6 @@ namespace DiagramDesigner
                     var x = value.FirstOrDefault();
                     if (x != null)
                     {
-                        //MessageBox.Show("count:" + x.Data.Text);
                         SelectedItem = x;
                     }
                     _selectedItems = value;
@@ -59,8 +57,6 @@ namespace DiagramDesigner
 
         public MainViewModel()
         {
-            //ItemDatas = new ObservableCollection<ItemDataBase>();
-            //SelectedItems = new ObservableCollection<DesignerItem>();
             InitData();
         }
 
@@ -88,19 +84,14 @@ namespace DiagramDesigner
                             var selectedItem = SelectedItems.FirstOrDefault();
                             if (selectedItem != null)
                             {
-                                ItemDatas = new ObservableCollection<ItemDataBase>(){
-                                    new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",false,false,5d,5d),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,0,2),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,0,1),
-                                    new CustomItemData(Guid.NewGuid(),selectedItem.ID,"new","",true,false,0,0)
-                                };
-
+                                ItemDatas.Add(new CustomItemData(Guid.NewGuid(), selectedItem.ID, "new", "", true, false, 0, 0));
                             }
                         }
                     }
                 });
             }
         }
+
         //public ICommand AddAfterCommand { get { return new RelayCommand(_diagramManager.AddAfter); } }
         //public ICommand RemoveCommand { get { return new RelayCommand(_diagramManager.Remove); } }
         //public ICommand CollapseCommand { get { return new RelayCommand(_diagramManager.CollapseAll); } }

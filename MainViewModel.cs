@@ -60,7 +60,7 @@ namespace DiagramDesigner
         public MainViewModel()
         {
             InitData();
-
+            
         }
 
         //可用框架中的消息实现
@@ -140,6 +140,9 @@ namespace DiagramDesigner
 
         private string GetText() { return "Item-" + ItemDatas.Count(); }
 
+        
+        
+        
         //public ICommand AddAfterCommand { get { return new RelayCommand(_diagramManager.AddAfter); } }
         //public ICommand RemoveCommand { get { return new RelayCommand(_diagramManager.Remove); } }
         //public ICommand CollapseCommand { get { return new RelayCommand(_diagramManager.CollapseAll); } }

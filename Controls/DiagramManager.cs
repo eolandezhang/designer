@@ -820,126 +820,126 @@ namespace DiagramDesigner
 
         #region Item Operation
 
-        public void AddSibling()
-        {
-            var designerItem = GetSelectedItem();
-            if (designerItem != null)
-            {
-                if (designerItem.Data == null) return;
-                if (designerItem.Data.ParentId.Equals(Guid.Empty)) { AddAfter(); return; }
-                var n5 = Guid.NewGuid();
-                if (_diagramControl.DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
-                var parent = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == designerItem.Data.ParentId);
-                if (parent == null) return;
-                var newitem = new DesignerItem(n5, new ItemDataBase(n5, parent.ID, GetText(), true, false, 0, double.MaxValue));
-                _diagramControl.DesignerItems.Add(newitem);
-                SetSelectItem(newitem);
-                _diagramControl.GetDataInfo();
-            }
-        }
-        public void AddAfter()
-        {
-            var parentDesignerItem = GetSelectedItem();
-            if (parentDesignerItem != null)
-            {
-                if (parentDesignerItem.Data == null) return;
-                var n5 = Guid.NewGuid();
-                if (_diagramControl.DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
-                var newitem = new DesignerItem(n5, parentDesignerItem.ID,
-                    new ItemDataBase(n5, parentDesignerItem.ID, GetText(), true, false, 0, double.MaxValue));
-                _diagramControl.DesignerItems.Add(newitem);
-                SetSelectItem(newitem);
-                _diagramControl.GetDataInfo();
-            }
-        }
-        public void Remove()
-        {
-            var d = GetSelectedItem();
-            if (d != null)
-            {
-                var p = _diagramControl.DesignerItems.FirstOrDefault(x => x.Data.Id == d.Data.ParentId);
-                _diagramControl.ItemDatas.Remove(d.Data);
-                GenerateDesignerItems(p.ID);
+        //public void AddSibling()
+        //{
+        //    var designerItem = GetSelectedItem();
+        //    if (designerItem != null)
+        //    {
+        //        if (designerItem.Data == null) return;
+        //        if (designerItem.Data.ParentId.Equals(Guid.Empty)) { AddAfter(); return; }
+        //        var n5 = Guid.NewGuid();
+        //        if (_diagramControl.DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
+        //        var parent = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == designerItem.Data.ParentId);
+        //        if (parent == null) return;
+        //        var newitem = new DesignerItem(n5, new ItemDataBase(n5, parent.ID, GetText(), true, false, 0, double.MaxValue));
+        //        _diagramControl.DesignerItems.Add(newitem);
+        //        SetSelectItem(newitem);
+        //        _diagramControl.GetDataInfo();
+        //    }
+        //}
+        //public void AddAfter()
+        //{
+        //    var parentDesignerItem = GetSelectedItem();
+        //    if (parentDesignerItem != null)
+        //    {
+        //        if (parentDesignerItem.Data == null) return;
+        //        var n5 = Guid.NewGuid();
+        //        if (_diagramControl.DesignerItems.Any(x => x.ID.Equals(n5))) { return; }
+        //        var newitem = new DesignerItem(n5, parentDesignerItem.ID,
+        //            new ItemDataBase(n5, parentDesignerItem.ID, GetText(), true, false, 0, double.MaxValue));
+        //        _diagramControl.DesignerItems.Add(newitem);
+        //        SetSelectItem(newitem);
+        //        _diagramControl.GetDataInfo();
+        //    }
+        //}
+        //public void Remove()
+        //{
+        //    var d = GetSelectedItem();
+        //    if (d != null)
+        //    {
+        //        var p = _diagramControl.DesignerItems.FirstOrDefault(x => x.Data.Id == d.Data.ParentId);
+        //        _diagramControl.ItemDatas.Remove(d.Data);
+        //        GenerateDesignerItems(p.ID);
 
-                //if (d.Data.ParentId == Guid.Empty) return;
-                //if (d.Data == null) return;
-                //var item = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == d.ID);
-                //if (item == null) return;
-                //_diagramControl.Suppress = true;
-                //var list = new List<DesignerItem>();
-                ////删除子节点
-                //GetAllSubItems(d, list);
-                //foreach (var designerItem in list)
-                //{
-                //    designerItem.Data.Removed = true;
-                //    designerItem.Visibility = Visibility.Collapsed;
-                //}
-                //item.Data.Removed = true;
-                //item.Visibility = Visibility.Collapsed;
-                //_diagramControl.Suppress = false;
+        //        //if (d.Data.ParentId == Guid.Empty) return;
+        //        //if (d.Data == null) return;
+        //        //var item = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == d.ID);
+        //        //if (item == null) return;
+        //        //_diagramControl.Suppress = true;
+        //        //var list = new List<DesignerItem>();
+        //        ////删除子节点
+        //        //GetAllSubItems(d, list);
+        //        //foreach (var designerItem in list)
+        //        //{
+        //        //    designerItem.Data.Removed = true;
+        //        //    designerItem.Visibility = Visibility.Collapsed;
+        //        //}
+        //        //item.Data.Removed = true;
+        //        //item.Visibility = Visibility.Collapsed;
+        //        //_diagramControl.Suppress = false;
 
-                //#region 移除连线
-                //var connections = GetItemConnections(d);
-                //var sink = connections.Where(x => x.Sink.ParentDesignerItem.Equals(d));
-                //foreach (var connection in sink)
-                //{
-                //    _diagramControl.Designer.Children.Remove(connection);
-                //    connection.Visibility = Visibility.Collapsed;
-                //}
-                //if (!_diagramControl.Suppress)
-                //    BindData();
-                //#endregion
-                if (d.Data.ParentId != Guid.Empty)
-                {
-                    var topSibling = GetTopItem(d);
-                    if (topSibling != null)
-                    {
-                        SetSelectItem(topSibling);
-                    }
-                    else
-                    {
-                        var parent = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == d.Data.ParentId);
-                        if (parent != null)
-                            SetSelectItem(parent);
-                    }
-                }
+        //        //#region 移除连线
+        //        //var connections = GetItemConnections(d);
+        //        //var sink = connections.Where(x => x.Sink.ParentDesignerItem.Equals(d));
+        //        //foreach (var connection in sink)
+        //        //{
+        //        //    _diagramControl.Designer.Children.Remove(connection);
+        //        //    connection.Visibility = Visibility.Collapsed;
+        //        //}
+        //        //if (!_diagramControl.Suppress)
+        //        //    BindData();
+        //        //#endregion
+        //        if (d.Data.ParentId != Guid.Empty)
+        //        {
+        //            var topSibling = GetTopItem(d);
+        //            if (topSibling != null)
+        //            {
+        //                SetSelectItem(topSibling);
+        //            }
+        //            else
+        //            {
+        //                var parent = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == d.Data.ParentId);
+        //                if (parent != null)
+        //                    SetSelectItem(parent);
+        //            }
+        //        }
 
-                _diagramControl.GetDataInfo();
-                //var selected=GetSelectedItem();
-                _diagramControl.Focus();
-                //MessageBox.Show(selected.Data.Text);
-            }
-        }
-        public void Copy()
-        {
-            var selectedItem = GetSelectedItem();
-            if (selectedItem != null)
-                _diagramControl.Copy = (DesignerItem)selectedItem.Clone();
-        }
-        public void Paste()
-        {
-            if (_diagramControl.Copy != null)
-            {
-                var selectedItem = GetSelectedItem();
-                if (selectedItem != null)
-                {
-                    _diagramControl.Copy.Data.ParentId = selectedItem.ID;
-                    _diagramControl.DesignerItems.Add(_diagramControl.Copy);
-                    _diagramControl.Copy = null;
-                }
-            }
-        }
-        public void Save()
-        {
-            _diagramControl.Suppress = true;
-            _diagramControl.ItemDatas.Clear();
-            foreach (var item in _diagramControl.DesignerItems)
-            {
-                _diagramControl.ItemDatas.Add(item.Data);
-            }
-            BindData();
-            _diagramControl.Suppress = false;
-        }
+        //        _diagramControl.GetDataInfo();
+        //        //var selected=GetSelectedItem();
+        //        _diagramControl.Focus();
+        //        //MessageBox.Show(selected.Data.Text);
+        //    }
+        //}
+        //public void Copy()
+        //{
+        //    var selectedItem = GetSelectedItem();
+        //    if (selectedItem != null)
+        //        _diagramControl.Copy = (DesignerItem)selectedItem.Clone();
+        //}
+        //public void Paste()
+        //{
+        //    if (_diagramControl.Copy != null)
+        //    {
+        //        var selectedItem = GetSelectedItem();
+        //        if (selectedItem != null)
+        //        {
+        //            _diagramControl.Copy.Data.ParentId = selectedItem.ID;
+        //            _diagramControl.DesignerItems.Add(_diagramControl.Copy);
+        //            _diagramControl.Copy = null;
+        //        }
+        //    }
+        //}
+        //public void Save()
+        //{
+        //    _diagramControl.Suppress = true;
+        //    _diagramControl.ItemDatas.Clear();
+        //    foreach (var item in _diagramControl.DesignerItems)
+        //    {
+        //        _diagramControl.ItemDatas.Add(item.Data);
+        //    }
+        //    BindData();
+        //    _diagramControl.Suppress = false;
+        //}
         private string GetText() { return "Item-" + _diagramControl.DesignerItems.Count(); }
         public void Edit(Canvas designer, DesignerItem item)
         {

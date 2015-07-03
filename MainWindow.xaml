@@ -12,6 +12,11 @@
     <Window.DataContext>
         <s:MainViewModel/>
     </Window.DataContext>
+    <Window.InputBindings>
+        <KeyBinding Key="Enter" Command="{Binding AddSiblingCommand}"/>
+        <KeyBinding Key="Tab" Command="{Binding AddAfterCommand}"/>
+        <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"></KeyBinding>
+    </Window.InputBindings>
     <Grid Background="White">
         <xcad:DockingManager x:Name="dockManager" AllowMixedOrientation="True" >
             <xcad:DockingManager.Theme>

@@ -67,9 +67,9 @@ namespace DiagramDesigner.Controls
 
                     _shadows = diagramControl.DiagramManager.CreateShadows(designerItems);
                     diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
-                   
                 }
                 #endregion
+                designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
                 designerItem.Data.YIndex = Canvas.GetTop(designerItem);
 
             }
@@ -77,7 +77,7 @@ namespace DiagramDesigner.Controls
 
         }
 
-       
+
 
         //拖动前保存元素位置
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -88,12 +88,14 @@ namespace DiagramDesigner.Controls
                 var canvas = designerItem.Parent as DesignerCanvas;
                 if (canvas != null)
                 {
-                    var selectedItems = canvas.SelectionService.CurrentSelection.ConvertAll((x) => x as DesignerItem);
-                    foreach (var item in selectedItems)
-                    {
-                        item.oldx = Canvas.GetLeft(item);
-                        item.oldy = Canvas.GetTop(item);
-                    }
+                    var control = canvas.TemplatedParent as DiagramControl;
+
+                    if (control != null)
+                        foreach (var item in control.DiagramManager.GetDesignerItems())
+                        {
+                            item.oldx = Canvas.GetLeft(item);
+                            item.oldy = Canvas.GetTop(item);
+                        }
                 }
             }
         }

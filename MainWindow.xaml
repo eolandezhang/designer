@@ -48,7 +48,7 @@
                                             x:Name="Diagram" 
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
-                                            ItemDatas="{Binding ItemDatas,Mode=OneWay}"
+                                            ItemDatas="{Binding ItemDatas,Mode=Default}"
                                             SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
                                             />
                                     </DockPanel>

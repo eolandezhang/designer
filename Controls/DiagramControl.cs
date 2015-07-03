@@ -72,10 +72,10 @@ namespace DiagramDesigner.Controls
         #region ItemDatasProperty 数据源
 
         public static readonly DependencyProperty ItemDatasProperty = DependencyProperty.Register(
-            "ItemDatas", typeof(ObservableCollection<ItemDataBase>), typeof(DiagramControl), new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
+            "ItemDatas", typeof(ObservableCollection<ItemDataBase>), typeof(DiagramControl),
+            new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
-
                     var diagramControl = d as DiagramControl;
                     if (diagramControl == null) return;
                     if (diagramControl.Suppress) return;
@@ -109,7 +109,6 @@ namespace DiagramDesigner.Controls
            "SelectedItems", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl),
            new FrameworkPropertyMetadata(
                new ObservableCollection<DesignerItem>(),
-               //FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                (d, e) =>
                {
                    //MessageBox.Show("SelectedItemsProperty");
@@ -153,14 +152,6 @@ namespace DiagramDesigner.Controls
                 {
                     DiagramManager.BindData();
                     GetDataInfo();
-                }
-            };
-
-            ItemDatas.CollectionChanged += (s, e) =>
-            {
-                if (!Suppress)
-                {
-                    MessageBox.Show("ok");
                 }
             };
 

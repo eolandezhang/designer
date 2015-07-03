@@ -313,13 +313,14 @@ namespace DiagramDesigner
             if (newItem.Data == null) return null;
             CreateDesignerItemContent(item, borderBrush);
             item.Width = MinItemWidth;
-            newItem.SetValue(Canvas.TopProperty, topOffset);
-            newItem.SetValue(Canvas.LeftProperty, leftOffset);
+
             if (!newItem.Data.Removed)
             {
                 _diagramControl.Designer.Children.Add(newItem);
             }
             _diagramControl.Designer.Measure(Size.Empty);
+            newItem.SetValue(Canvas.TopProperty, topOffset);
+            newItem.SetValue(Canvas.LeftProperty, leftOffset);
             return newItem;
         }
         private void CreateDesignerItemContent/*创建元素内容，固定结构*/(DesignerItem item, SolidColorBrush borderBrush = null)
@@ -383,7 +384,6 @@ namespace DiagramDesigner
             BindData();/*将DesignerItems放到画布上，并且创建连线*/
             _diagramControl.Suppress = false;
             _diagramControl.DiagramManager.SetSelectItem(roots.FirstOrDefault());
-
             _diagramControl.GetDataInfo();
         }
 
@@ -463,7 +463,7 @@ namespace DiagramDesigner
                     SetItemFontColor(item, ShadowFontColorBrush);
                 }
             }
-            var parent = getNewParentdDesignerItem(designerItem);
+            var parent = GetNewParentdDesignerItem(designerItem);
             if (parent != null)
             {
                 SetItemBorderStyle(parent, HighlightBorderBrush, new Thickness(HighlightBorderThickness),
@@ -701,7 +701,7 @@ namespace DiagramDesigner
         }
 
 
-        private DesignerItem getNewParentdDesignerItem/*取得元素上方最接近的元素*/(DesignerItem item)
+        private DesignerItem GetNewParentdDesignerItem/*取得元素上方最接近的元素*/(DesignerItem item)
         {
             //取得所有子节点，让parent不能为子节点
             var subitems = new List<DesignerItem>();
@@ -729,82 +729,17 @@ namespace DiagramDesigner
             //找到上方最接近的节点，取得其下方的连接点
             if (item.Data.XIndex.Equals(item.oldx) && item.Data.YIndex.Equals(item.oldy)) return;
 
-            var parent = getNewParentdDesignerItem(item);
+            var parent = GetNewParentdDesignerItem(item);
             if (parent != null)
             {
-                var source = GetItemConnector(parent, "Bottom");
-                if (source != null)
-                {
-                    //如果父节点折叠，则展开它
-                    if (source.ParentDesignerItem.IsExpanded == false)
-                    {
-                        source.ParentDesignerItem.IsExpanded = true;
-                    }
-                    // 取得当前节点的连接线
-                    var sink = GetItemConnector(item, "Left");
-                    if (sink == null) return;
-                    if (source.Equals(sink)) return;
-                    var connections = sink.Connections.Where(x => x.Source != null && x.Sink != null).ToList();
-                    if (!connections.Any())
-                    {
-                        sink.Connections.Clear();//从终点中移除所有连线
-                        var conn = new Connection(source, sink);
-                        if (!source.Connections.Contains(conn))
-                        {
-                            source.Connections.Add(conn);
-                        }
-                        if (!sink.Connections.Contains(conn))
-                        {
-                            sink.Connections.Add(conn);
-                        }
-                        _diagramControl.Designer.Children.Add(conn);
-                        item.Data.ParentId = parent.ID;
-                        _diagramControl.Designer.Measure(Size.Empty);
-                    }
-                    else
-                    {
-                        foreach (var c in connections)
-                        {
-                            c.Source.Connections.Remove(c);//从起点中移除此连线
-                            var originalParent = c.Source.ParentDesignerItem;
-                            var childs = GetDirectSubItems(originalParent);
-
-                            if (childs.Count == 0 || childs.Any(x => x.Data.Removed == false))
-                            {
-                                originalParent.IsExpanderVisible = false;
-                            }
-                            else
-                            {
-                                originalParent.IsExpanderVisible = true;
-                            }
-                        }
-
-                        var connection = connections.First();
-                        connection.Source = source;
-                        item.Data.ParentId = parent.ID;
-                    }
-
-                }
-                ArrangeWithRootItems();
+                item.Data.ParentId = parent.ID;
             }
             else
             {
-                //如果没有找到父节点
-                //则将其与原父节点的连线删除
-                //将其父节点设定为无
-                var sink = GetItemConnector(item, "Left");/*左连接点*/
-                if (sink != null)
-                {
-                    var connections = sink.Connections;
-                    foreach (var connection in connections)
-                    {
-                        connection.Source.Connections.Remove(connection);
-                        _diagramControl.Designer.Children.Remove(connection);
-                    }
-                    sink.Connections.Clear();
-                    item.Data.ParentId = Guid.Empty;
-                }
+                item.Data.ParentId = Guid.Empty;
             }
+            GenerateDesignerItems();
+            //ArrangeWithRootItems();
         }
         protected void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item)
         {

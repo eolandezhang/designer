@@ -41,7 +41,7 @@ namespace DiagramDesigner.Controls
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
-            DiagramManager.BindData();
+            //DiagramManager.BindData();
         }
 
         #endregion
@@ -188,19 +188,7 @@ namespace DiagramDesigner.Controls
 
         public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
             "SelectedItems", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl),
-            new FrameworkPropertyMetadata(new ObservableCollection<DesignerItem>(),
-                (d, e) =>
-                {
-                    var diagramControl = (DiagramControl)d;
-                    var n = e.NewValue as ObservableCollection<DesignerItem>;
-                    if (n != null)
-                    {
-                        n.CollectionChanged += (a, b) =>
-                        {
-                            //MessageBox.Show(n.Count().ToString());
-                        };
-                    }
-                }));
+            new FrameworkPropertyMetadata(new ObservableCollection<DesignerItem>()));
 
         public ObservableCollection<DesignerItem> SelectedItems
         {
@@ -222,12 +210,11 @@ namespace DiagramDesigner.Controls
             {
                 if (!Suppress)
                 {
-                    DiagramManager.BindData();
                     GetDataInfo();
                 }
             };
 
-            ItemDatas.CollectionChanged += ItemDatas_CollectionChanged;
+
             //InputBindings.Add(new KeyBinding { Key = Key.Enter, Command = new RelayCommand(DiagramManager.AddAfter) });
             //InputBindings.Add(new KeyBinding { Key = Key.Insert, Command = new RelayCommand(DiagramManager.AddAfter) });
             //InputBindings.Add(new KeyBinding { Key = Key.Tab, Command = new RelayCommand(DiagramManager.AddSibling) });
@@ -237,10 +224,7 @@ namespace DiagramDesigner.Controls
             //    (sender, e) => { DiagramManager.Remove(); }));
         }
 
-        private void ItemDatas_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            MessageBox.Show(ItemDatas.Count().ToString());
-        }
+
 
         public void GetDataInfo()
         {

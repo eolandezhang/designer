@@ -60,12 +60,19 @@ namespace DiagramDesigner
         public MainViewModel()
         {
             InitData();
-            
         }
 
         //可用框架中的消息实现
         public void InitData()
         {
+            //if (ItemDatas == null)
+            //{
+            //    var id = Guid.NewGuid();
+            //    ItemDatas = new ObservableCollection<ItemDataBase>()
+            //    {
+            //        new ItemDataBase(id, Guid.Empty, GetText(), false, false, 5d, 5d)
+            //    };
+            //}
             ItemDatas = new ObservableCollection<ItemDataBase>()
             {
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",false,false,5d,5d),
@@ -129,7 +136,7 @@ namespace DiagramDesigner
                         if (selectedItem != null)
                         {
                             var item = selectedItem.Data;
-                            if (item != null&&item.ParentId!=Guid.Empty)
+                            if (item != null && item.ParentId != Guid.Empty)
                                 ItemDatas.Remove(item);
                         }
 
@@ -138,11 +145,11 @@ namespace DiagramDesigner
             }
         }
 
-        private string GetText() { return "Item-" + ItemDatas.Count(); }
+        private string GetText() { return "Item-" + ((ItemDatas == null) ? "0" : (ItemDatas.Count().ToString())); }
 
-        
-        
-        
+
+
+
         //public ICommand AddAfterCommand { get { return new RelayCommand(_diagramManager.AddAfter); } }
         //public ICommand RemoveCommand { get { return new RelayCommand(_diagramManager.Remove); } }
         //public ICommand CollapseCommand { get { return new RelayCommand(_diagramManager.CollapseAll); } }

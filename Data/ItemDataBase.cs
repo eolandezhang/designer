@@ -1,6 +1,7 @@
 ﻿using DiagramDesigner.Controls;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 namespace DiagramDesigner.Data
@@ -34,15 +35,18 @@ namespace DiagramDesigner.Data
             {
                 if (_text == value) return;
                 _text = value;
-                OnPropertyChanged("Text");
+
                 if (DiagramControl != null)
                 {
-                    DiagramControl.DiagramManager.BindData();
+                    var item = DiagramControl.DesignerItems.FirstOrDefault(x => x.ID == Id);
+                    if (item != null)
+                        DiagramControl.DiagramManager.SetItemText(item, value);
                 }
                 if (_text != "")//初始化时，不标记为更改
                 {
                     Changed = true;
                 }
+                OnPropertyChanged("Text");
             }
         }
         private bool _changed;

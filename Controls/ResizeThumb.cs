@@ -72,7 +72,7 @@ namespace DiagramDesigner.Controls
                 }
                 e.Handled = true;
                 var diagramControl = designer.TemplatedParent as DiagramControl;
-                diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
+                if (diagramControl != null) diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
             }
         }
 

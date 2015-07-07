@@ -27,7 +27,7 @@
                     <xcad:LayoutPanel Orientation="Horizontal">
                         <xcad:LayoutDocumentPaneGroup>
                             <xcad:LayoutDocumentPane>
-                                <xcad:LayoutDocument ContentId="document1" Title="Diagram" >
+                                <xcad:LayoutDocument ContentId="document1" Title="Diagram" CanClose="False" >
                                     <DockPanel Background="White">
                                         <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
                                             <ToolBar>
@@ -60,15 +60,10 @@
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>
                         </xcad:LayoutDocumentPaneGroup>
-                        <xcad:LayoutAnchorablePaneGroup DockWidth="320" DockMinWidth="320">
+                        <xcad:LayoutAnchorablePaneGroup DockWidth="330" DockMinWidth="330" Orientation="Vertical" >
                             <xcad:LayoutAnchorablePane>
-                                <xcad:LayoutAnchorable ContentId="toolWindow1" Title="Attributes" AutoHideWidth="320">
+                                <xcad:LayoutAnchorable CanHide="False" ContentId="toolWindow1" Title="Attributes" AutoHideWidth="330" >
                                     <Grid Column="1">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition/>
-                                            <RowDefinition Height="200"/>
-                                        </Grid.RowDefinitions>
-                                        <!--<c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataSource="{Binding EditorDataSource}">-->
                                         <c:DiagramDataEditorControl x:Name="DiagramDataEditor" Header="属性" DataContext="{Binding SelectedItem.Data}"  >
                                             <c:DiagramDataEditorControl.Content>
                                                 <Grid>
@@ -109,8 +104,13 @@
                                                 </Grid>
                                             </c:DiagramDataEditorControl.Content>
                                         </c:DiagramDataEditorControl>
-                                        <s:ZoomBoxControl Grid.Row="1" x:Name="ZoomBox"/>
+                                        
                                     </Grid>
+                                </xcad:LayoutAnchorable>
+                            </xcad:LayoutAnchorablePane>
+                            <xcad:LayoutAnchorablePane>
+                                <xcad:LayoutAnchorable CanHide="False" Title="Zoom" AutoHideWidth="330" >
+                                    <s:ZoomBoxControl x:Name="ZoomBox" />
                                 </xcad:LayoutAnchorable>
                             </xcad:LayoutAnchorablePane>
                         </xcad:LayoutAnchorablePaneGroup>

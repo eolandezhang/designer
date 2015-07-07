@@ -9,12 +9,7 @@
 * @version 1.0 
 * ==============================================================================*/
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Windows.Controls;
-using DiagramDesigner.Controls;
 
 namespace DiagramDesigner.Data
 {
@@ -29,10 +24,7 @@ namespace DiagramDesigner.Data
                 if (_desc == value) return;
                 _desc = value;
                 OnPropertyChanged("Desc");
-                if (DiagramControl != null)
-                {
-                    DiagramControl.DiagramManager.BindData();
-                }
+                
                 if (_desc != "")
                 {
                     Changed = true;

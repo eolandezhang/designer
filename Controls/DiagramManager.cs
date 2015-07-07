@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -81,22 +82,7 @@ namespace DiagramDesigner
             }
             return connections;
         }
-        public List<DesignerItem> GetDesignerItems/*取得画布所有元素*/()
-        {
-            return _diagramControl.DesignerItems.ToList();
 
-            var list = new List<DesignerItem>();
-
-            var itemCount = VisualTreeHelper.GetChildrenCount(_diagramControl.Designer);
-            if (itemCount == 0) return list;
-            for (int n = 0; n < itemCount; n++)
-            {
-                var c = VisualTreeHelper.GetChild(_diagramControl.Designer, n);
-                var child = c as DesignerItem;
-                if (child != null) list.Add(child);
-            }
-            return list;
-        }
         private List<DesignerItem> GetDirectSubItems/*取得直接子节点*/(DesignerItem item)
         {
             var list =
@@ -361,8 +347,7 @@ namespace DiagramDesigner
 
         public void ArrangeWithRootItems()
         {
-            var items = GetDesignerItems();
-            if (items == null) return;
+            var items = _diagramControl.DesignerItems.ToList();
             var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
             foreach (var root in roots)
             {
@@ -418,7 +403,7 @@ namespace DiagramDesigner
             List<DesignerItem> subItems = new List<DesignerItem>();
             GetAllSubItems(designerItem, subItems);
 
-            foreach (var item in GetDesignerItems()
+            foreach (var item in _diagramControl.DesignerItems
                 .Where(item => item.IsShadow == false && !item.Equals(designerItem)))
             {
                 if (!subItems.Contains(item))
@@ -439,7 +424,7 @@ namespace DiagramDesigner
             }
         }
 
-       
+
 
         public void HighlightSelected/*高亮选中*/(DesignerItem item)
         {
@@ -497,7 +482,7 @@ namespace DiagramDesigner
 
         public void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer)
         {
-            foreach (var item in GetDesignerItems().Where(item => !item.IsShadow))
+            foreach (var item in _diagramControl.DesignerItems.Where(item => !item.IsShadow))
             {
                 SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness), DefaultBackgroundBrush);
                 SetItemFontColor(item, DefaultFontColorBrush);
@@ -512,7 +497,7 @@ namespace DiagramDesigner
 
         public void ExpandAll/*展开所有*/()
         {
-            var items = GetDesignerItems();
+            var items = _diagramControl.DesignerItems;
             foreach (var item in items)
             {
                 item.IsExpanded = true;
@@ -520,7 +505,7 @@ namespace DiagramDesigner
         }
         public void CollapseAll/*折叠所有，除了根节点*/()
         {
-            var items = GetDesignerItems();
+            var items = _diagramControl.DesignerItems;
             foreach (var item in items.Where(item => item.CanCollapsed))
             {
                 item.IsExpanded = false;
@@ -691,24 +676,22 @@ namespace DiagramDesigner
                 }
             }
         }
-        public List<DesignerItem> CreateShadows/*拖拽时产生影子*/(List<DesignerItem> designerItems)
+        public DesignerItem CreateShadows/*拖拽时产生影子*/(DesignerItem designerItem)
         {
-            var shadows = new List<DesignerItem>();
-            foreach (var designerItem in designerItems)
+            DesignerItem shadow = null;
+
+
+            if (_diagramControl.Designer != null)
             {
-                DesignerItem shadow = null;
-                if (_diagramControl.Designer != null)
-                {
-                    shadow = CreateShadow(designerItem);
-                    _diagramControl.Designer.Children.Add(shadow);
-                    //隐藏折叠按钮
-                    designerItem.IsExpanderVisible = false;
-                }
-                HideItemConnection(designerItem);/*拖动时隐藏连线*/
-                BringToFront(designerItem);
-                shadows.Add(shadow);
+                shadow = CreateShadow(designerItem);
+                _diagramControl.Designer.Children.Add(shadow);
+                //隐藏折叠按钮
+                designerItem.IsExpanderVisible = false;
             }
-            return shadows;
+            HideItemConnection(designerItem);/*拖动时隐藏连线*/
+            BringToFront(designerItem);
+
+            return shadow;
         }
         private DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item)
         {
@@ -728,6 +711,20 @@ namespace DiagramDesigner
             {
                 canvas.Children.Remove(designerItem);
             }
+        }
+        public List<DesignerItem> GetDesignerItems/*取得画布所有元素*/()
+        {
+            var list = new List<DesignerItem>();
+
+            var itemCount = VisualTreeHelper.GetChildrenCount(_diagramControl.Designer);
+            if (itemCount == 0) return list;
+            for (int n = 0; n < itemCount; n++)
+            {
+                var c = VisualTreeHelper.GetChild(_diagramControl.Designer, n);
+                var child = c as DesignerItem;
+                if (child != null) list.Add(child);
+            }
+            return list;
         }
 
         #endregion
@@ -759,6 +756,53 @@ namespace DiagramDesigner
                 _diagramControl.GetDataInfo();
             };
         }
+        #region Remove
+        public void RemoveDesignerItem(ItemDataBase itemDataBase)
+        {
+            var child = GetAllChildItemDataBase(itemDataBase.Id);
+            _diagramControl.RemovedItemDataBase.AddRange(child);
+            _diagramControl.RemovedItemDataBase.Add(itemDataBase);
+            child.ForEach(c =>
+            {
+                RemoveItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == c.Id));
+            });
+            RemoveItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.Id));
+            _diagramControl.Designer.Measure(Size.Empty);
+            
+            ArrangeWithRootItems();
+        }
+        void RemoveItem(DesignerItem item)
+        {
+            var connections = GetItemConnections(item).ToList();
+            connections.ForEach(x => { _diagramControl.Designer.Children.Remove(x); });
+            var connectors = GetItemConnectors(item);
+            connectors.ForEach(x => { x.Connections.Clear(); });
+            _diagramControl.Designer.Children.Remove(item);
+            _diagramControl.DesignerItems.Remove(item);
+        }
+        #endregion
+        #region Add
+
+        public void AddDesignerItem(ItemDataBase item)
+        {
+            var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
+            var designerItem = new DesignerItem(item.Id, item.ParentId, item);
+            _diagramControl.DesignerItems.Add(designerItem);
+            CreateChild(parentDesignerItem, designerItem);
+            ArrangeWithRootItems();
+        }
+        #endregion
+        public List<ItemDataBase> GetAllChildItemDataBase(Guid id)
+        {
+            List<ItemDataBase> result = new List<ItemDataBase>();
+            var child = _diagramControl.ItemDatas.Where(x => x.ParentId == id);
+            foreach (var itemDataBase in child)
+            {
+                result.Add(itemDataBase);
+                result.AddRange(GetAllChildItemDataBase(itemDataBase.Id));
+            }
+            return result;
+        }
 
         #endregion
 
@@ -767,8 +811,8 @@ namespace DiagramDesigner
         private List<DesignerItem> InitDesignerItems()
         {
             if (_diagramControl.ItemDatas == null) return null;
-            var roots = _diagramControl.ItemDatas.Where(x => x.ParentId == Guid.Empty);
-            if (roots == null || !roots.Any()) return null;
+            var roots = _diagramControl.ItemDatas.Where(x => x.ParentId == Guid.Empty).ToList();
+            if (!roots.Any()) return null;
             List<DesignerItem> rootDesignerItems = new List<DesignerItem>();
             _diagramControl.DesignerItems.Clear();
             foreach (var root in roots)

@@ -18,7 +18,7 @@ namespace DiagramDesigner.Controls
             DragDelta += DragThumb_DragDelta;
         }
 
-        private List<DesignerItem> _shadows = null;
+        private DesignerItem _shadow = null;
         void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var designerItem = DataContext as DesignerItem;
@@ -65,7 +65,7 @@ namespace DiagramDesigner.Controls
                 if (diagramControl != null)
                 {
 
-                    _shadows = diagramControl.DiagramManager.CreateShadows(designerItems);
+                    _shadow = diagramControl.DiagramManager.CreateShadows(designerItem);
                     diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
                 }
                 #endregion
@@ -89,9 +89,8 @@ namespace DiagramDesigner.Controls
                 if (canvas != null)
                 {
                     var control = canvas.TemplatedParent as DiagramControl;
-
                     if (control != null)
-                        foreach (var item in control.DiagramManager.GetDesignerItems())
+                        foreach (var item in control.DesignerItems)
                         {
                             item.oldx = Canvas.GetLeft(item);
                             item.oldy = Canvas.GetTop(item);
@@ -121,7 +120,7 @@ namespace DiagramDesigner.Controls
                 if (diagramControl != null)
                     diagramControl.DiagramManager.FinishDraging(designerItem);
             }
-            _shadows = null;
+            _shadow = null;
         }
 
 

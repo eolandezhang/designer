@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -49,6 +50,7 @@ namespace DiagramDesigner.Controls
         #region Fields & Properties
 
         public readonly ObservableCollection<DesignerItem> DesignerItems; /*节点元素*/
+        public List<ItemDataBase> RemovedItemDataBase = new List<ItemDataBase>();
         public DesignerCanvas Designer { get; set; }
         public bool Suppress /*阻止通知*/ { get; set; }
         public DesignerItem Copy;
@@ -66,7 +68,6 @@ namespace DiagramDesigner.Controls
         }
 
         private string _selectionInfo;
-
         public string SelectionInfo
         {
             get { return _selectionInfo; }
@@ -124,7 +125,11 @@ namespace DiagramDesigner.Controls
                                 var items = arg.NewItems.Cast<ItemDataBase>();
                                 var f = items.FirstOrDefault();
                                 if (f != null)
-                                    diagramControl.DiagramManager.GenerateDesignerItems(f.Id);
+                                {
+                                    //这里要修改，要改成在现有基础上，创建 DesignerItem
+                                    //diagramControl.DiagramManager.GenerateDesignerItems(f.Id);
+                                    diagramControl.DiagramManager.AddDesignerItem(f);
+                                }
                             }
                             if (arg.Action == NotifyCollectionChangedAction.Remove)
                             {
@@ -132,26 +137,36 @@ namespace DiagramDesigner.Controls
                                 var f = items.FirstOrDefault();
                                 if (f != null)
                                 {
-                                    Guid id;
-                                    var sibling = diagramControl.ItemDatas
-                                        .Where(x => x.ParentId == f.ParentId
-                                                    && x.Id != f.Id).ToList();
-                                    if (sibling.Any())
-                                    {
-                                        var designeritems =
-                                            from x in diagramControl.DesignerItems
-                                            where sibling.Contains(x.Data)
-                                            select x;
-                                        id =
-                                            designeritems.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b).ID;
-                                    }
-                                    else
-                                    {
-                                        id = f.ParentId;
-                                    }
-                                    diagramControl.DiagramManager.GenerateDesignerItems(id);
+                                    diagramControl.DiagramManager.RemoveDesignerItem(f);
                                 }
                             }
+
+                            //if (arg.Action == NotifyCollectionChangedAction.Remove)
+                            //{
+                            //    var items = arg.OldItems.Cast<ItemDataBase>();
+                            //    var f = items.FirstOrDefault();
+                            //    if (f != null)
+                            //    {
+                            //        Guid id;
+                            //        var sibling = diagramControl.ItemDatas
+                            //            .Where(x => x.ParentId == f.ParentId
+                            //                        && x.Id != f.Id).ToList();
+                            //        if (sibling.Any())
+                            //        {
+                            //            var designeritems =
+                            //                from x in diagramControl.DesignerItems
+                            //                where sibling.Contains(x.Data)
+                            //                select x;
+                            //            id =
+                            //                designeritems.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b).ID;
+                            //        }
+                            //        else
+                            //        {
+                            //            id = f.ParentId;
+                            //        }
+                            //        diagramControl.DiagramManager.GenerateDesignerItems(id);
+                            //    }
+                            //}
                         };
                         if (diagramControl.Suppress) return;
                         if (diagramControl.ItemDatas != null)
@@ -213,32 +228,16 @@ namespace DiagramDesigner.Controls
                     GetDataInfo();
                 }
             };
-
-
-            //InputBindings.Add(new KeyBinding { Key = Key.Enter, Command = new RelayCommand(DiagramManager.AddAfter) });
-            //InputBindings.Add(new KeyBinding { Key = Key.Insert, Command = new RelayCommand(DiagramManager.AddAfter) });
-            //InputBindings.Add(new KeyBinding { Key = Key.Tab, Command = new RelayCommand(DiagramManager.AddSibling) });
-            //CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, (sender, e) => { DiagramManager.Copy(); }));
-            //CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, (sender, e) => { DiagramManager.Paste(); }));
-            //CommandBindings.Add(new CommandBinding(ApplicationCommands.Delete,
-            //    (sender, e) => { DiagramManager.Remove(); }));
         }
-
-
-
         public void GetDataInfo()
         {
             var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
             DataInfo = string.Format("Changed:{0},Added:{1},Removed:{2},Total:{3}",
                 list.Count(x => x.Changed),
                 list.Count(x => x.Added),
-                list.Count(x => x.Removed),
+                RemovedItemDataBase.Count(x => x.Removed),
                 list.Count(x => !x.Removed));
         }
-
-        #endregion
-
-        #region Methods
 
         #endregion
 

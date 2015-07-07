@@ -65,18 +65,10 @@ namespace DiagramDesigner
         //可用框架中的消息实现
         public void InitData()
         {
-            //if (ItemDatas == null)
-            //{
-            //    var id = Guid.NewGuid();
-            //    ItemDatas = new ObservableCollection<ItemDataBase>()
-            //    {
-            //        new ItemDataBase(id, Guid.Empty, GetText(), false, false, 5d, 5d)
-            //    };
-            //}
             ItemDatas = new ObservableCollection<ItemDataBase>()
             {
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",false,false,5d,5d),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,0,2),
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,0,2),
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,0,1)
             };
         }
@@ -137,7 +129,14 @@ namespace DiagramDesigner
                         {
                             var item = selectedItem.Data;
                             if (item != null && item.ParentId != Guid.Empty)
+                            {
+                                //移除子节点
+
+                                //移除节点
                                 ItemDatas.Remove(item);
+                                
+
+                            }
                         }
 
                     }

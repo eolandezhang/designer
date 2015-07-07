@@ -767,10 +767,23 @@ namespace DiagramDesigner
                 RemoveItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == c.Id));
             });
             RemoveItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.Id));
-            _diagramControl.Designer.Measure(Size.Empty);
-            
+
             ArrangeWithRootItems();
+
+            var c1 = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == itemDataBase.ParentId).ToList();
+            if (c1.Any())
+            {
+                _diagramControl.DiagramManager.SetSelectItem(
+                    c1.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b));
+            }
+            else
+            {
+                _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.ParentId));
+            }
         }
+
+        
+
         void RemoveItem(DesignerItem item)
         {
             var connections = GetItemConnections(item).ToList();

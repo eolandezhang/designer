@@ -8,6 +8,7 @@
         Title="Diagram Designer"
         Height="720" Width="1000" Background="White"
         Icon="Resources/Images/tree_32.ico"
+         c:InputBindingsBehavior.TakesInputBindingPrecedence="True"
         >
     <Window.DataContext>
         <s:MainViewModel/>
@@ -16,7 +17,9 @@
         <KeyBinding Key="Enter" Command="{Binding AddSiblingCommand}"/>
         <KeyBinding Key="Tab" Command="{Binding AddAfterCommand}"/>
         <KeyBinding Key="Insert" Command="{Binding AddAfterCommand}"/>
-        <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"></KeyBinding>
+        <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"/>
+        <KeyBinding Key="Up" Command="{Binding UpCommand}"/>
+        <KeyBinding Key="Down" Command="{Binding DownCommand}"/>
     </Window.InputBindings>
     <Grid Background="White">
         <xcad:DockingManager x:Name="dockManager" AllowMixedOrientation="True" >
@@ -113,7 +116,7 @@
                                                 </Grid>
                                             </c:DiagramDataEditorControl.Content>
                                         </c:DiagramDataEditorControl>
-                                        
+
                                     </Grid>
                                 </xcad:LayoutAnchorable>
                             </xcad:LayoutAnchorablePane>

@@ -168,6 +168,45 @@ namespace DiagramDesigner
             }
         }
 
+        public ICommand UpCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                    {
+                        if (SelectedItems != null
+                        && SelectedItems.Count == 1)
+                        {
+                            var selectedItem = SelectedItems.FirstOrDefault();
+                            if (selectedItem != null)
+                            {
+                                selectedItem.DiagramControl.DiagramManager.SelectUp(selectedItem, true);
+                            }
+
+                        }
+                    });
+            }
+        }
+        public ICommand DownCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (SelectedItems != null
+                    && SelectedItems.Count == 1)
+                    {
+                        var selectedItem = SelectedItems.FirstOrDefault();
+                        if (selectedItem != null)
+                        {
+                            selectedItem.DiagramControl.DiagramManager.SelectUp(selectedItem, false);
+                        }
+
+                    }
+                });
+            }
+        }
+
         private string GetText() { return "Item-" + ((ItemDatas == null) ? "0" : (ItemDatas.Count().ToString())); }
 
 

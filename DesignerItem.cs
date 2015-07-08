@@ -252,6 +252,7 @@ namespace DiagramDesigner
             Data = new CustomItemData(id);
             Data.DiagramControl = diagramControl;
             DiagramControl = diagramControl;
+            Focusable = false;
         }
         public DesignerItem(DiagramControl diagramControl) : this(Guid.NewGuid(), diagramControl) { }
         public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl)

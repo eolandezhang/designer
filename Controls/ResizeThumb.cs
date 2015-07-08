@@ -25,7 +25,7 @@ namespace DiagramDesigner.Controls
                 double minLeft, minTop, minDeltaHorizontal, minDeltaVertical;
                 double dragDeltaVertical, dragDeltaHorizontal, scale;
 
-                IEnumerable<DesignerItem> selectedDesignerItems = designer.SelectionService.CurrentSelection.OfType<DesignerItem>();
+                IEnumerable<DesignerItem> selectedDesignerItems = designer.SelectionService.CurrentSelection.OfType<DesignerItem>().ToList();
 
                 CalculateDragLimits(selectedDesignerItems, out minLeft, out minTop,
                                     out minDeltaHorizontal, out minDeltaVertical);

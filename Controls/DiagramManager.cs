@@ -361,8 +361,7 @@ namespace DiagramDesigner
             List<DesignerItem> subItems = new List<DesignerItem>();
             GetAllSubItems(designerItem, subItems);
 
-            var selectedItems =
-                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var selectedItems = GetSelectedItems();
 
             foreach (var item in _diagramControl.DesignerItems)
             {
@@ -525,7 +524,7 @@ namespace DiagramDesigner
             var parent = GetNewParentdDesignerItem(designerItem);
 
             //ChangeParent(designerItem);/*改变父节点*/
-            var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll((a) => a as DesignerItem).ToList();
+            var selectedItems = GetSelectedItems();
 
             var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
             foreach (var item in itemsToChangeParent)
@@ -593,8 +592,7 @@ namespace DiagramDesigner
         }
         private DesignerItem GetNewParentdDesignerItem/*取得元素上方最接近的元素*/(DesignerItem item)
         {
-            var selectedItems =
-                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var selectedItems = GetSelectedItems();
             selectedItems.ForEach(BringToFront);
             var selectedItem = selectedItems.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
 
@@ -695,7 +693,7 @@ namespace DiagramDesigner
         }
         public void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item)
         {
-            var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var selectedItems = GetSelectedItems();
 
             foreach (var connection in selectedItems.SelectMany(GetItemConnections))
             {
@@ -729,8 +727,7 @@ namespace DiagramDesigner
         }
         public List<DesignerItem> CreateShadows/*拖拽时产生影子*/(DesignerItem designerItem)
         {
-            var selectedItems =
-                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var selectedItems = GetSelectedItems();
             var shadows = new List<DesignerItem>();
 
             foreach (var selectedItem in selectedItems)
@@ -747,8 +744,7 @@ namespace DiagramDesigner
 
         public void HideOthers()
         {
-            var selectedItems =
-                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var selectedItems = GetSelectedItems();
             var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
             var selectedItem = itemsToChangeParent.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
             selectedItem.IsExpanderVisible = false;
@@ -760,8 +756,7 @@ namespace DiagramDesigner
 
         public void ShowOthers()
         {
-            var selectedItems =
-                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var selectedItems = GetSelectedItems();
             foreach (var selectedItem in selectedItems)
             {
                 selectedItem.Visibility = Visibility.Visible;
@@ -864,9 +859,6 @@ namespace DiagramDesigner
             _diagramControl.DiagramManager.SetSelectItem(selectedDesignerItem);
             Scroll(selectedDesignerItem);
         }
-
-
-
         void RemoveItem(DesignerItem item)
         {
             var connections = GetItemConnections(item).ToList();
@@ -939,6 +931,80 @@ namespace DiagramDesigner
         { return new DesignerItem(itemData.Id, parentId, itemData, _diagramControl); }
 
         #endregion
+
+        public void SelectUp(DesignerItem selectedItem, bool selectUp)
+        {
+            if (selectedItem != null)
+            {
+                var siblingDesignerItems = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == selectedItem.Data.ParentId).ToList();
+                DesignerItem selectedDesignerItem = null;
+                if (siblingDesignerItems.Any())
+                {
+                    if (selectUp)
+                    {
+                        var top = siblingDesignerItems
+                            .Where(x => x.Data.YIndex < selectedItem.Data.YIndex).ToList();
+                        if (top.Any())
+                        {
+                            selectedDesignerItem =
+                                top.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);
+                        }
+                        else
+                        {
+                            var parent =
+                                _diagramControl.DesignerItems.Where(x => x.Data.Id == selectedItem.Data.ParentId).ToList();
+                            if (parent.Count() == 1)
+                                selectedDesignerItem = parent.FirstOrDefault();
+                        }
+                    }
+                    else //move down
+                    {
+                        var down = siblingDesignerItems
+                            .Where(x => x.Data.YIndex > selectedItem.Data.YIndex).ToList();
+                        if (down.Any())
+                        {
+                            selectedDesignerItem = down.Aggregate((a, b) => a.Data.YIndex < b.Data.YIndex ? a : b);
+                        }
+                        else
+                        {
+                            var parent =
+                                _diagramControl.DesignerItems.Where(x => x.Data.Id == selectedItem.Data.ParentId).ToList();
+                            if (parent.Count() == 1 && parent.FirstOrDefault() != null)
+                            {
+                                var parentSibling =
+                                    _diagramControl.DesignerItems.Where(
+                                        x => x.Data.ParentId == parent.FirstOrDefault().Data.ParentId
+                                        && x.Data.YIndex > parent.FirstOrDefault().Data.YIndex);
+                                if (parentSibling.Any())
+                                {
+                                    selectedDesignerItem =
+                                        parentSibling.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);
+
+                                }
+
+
+                            }
+                        }
+                    }
+
+                }
+                else
+                {
+
+                    selectedDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == selectedItem.Data.ParentId);
+
+                }
+
+                _diagramControl.DiagramManager.SetSelectItem(selectedDesignerItem);
+                //if (selectedDesignerItem != null) selectedDesignerItem.Focus();
+            }
+
+        }
+
+        List<DesignerItem> GetSelectedItems()
+        {
+            return _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+        }
 
         void Scroll(DesignerItem designerItem)
         {

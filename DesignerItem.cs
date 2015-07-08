@@ -250,11 +250,19 @@ namespace DiagramDesigner
             this.id = id;
             Loaded += DesignerItem_Loaded;
             Data = new CustomItemData(id);
+            Data.DiagramControl = diagramControl;
             DiagramControl = diagramControl;
         }
         public DesignerItem(DiagramControl diagramControl) : this(Guid.NewGuid(), diagramControl) { }
-        public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl) : this(id, diagramControl) { Data = itemData; }
-        public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData, DiagramControl diagramControl) : this(id, diagramControl) { Data.ParentId = parentItemId; Data = itemData; }
+        public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl)
+            : this(id, diagramControl)
+        {
+            Data = itemData;
+            itemData.DiagramControl = diagramControl;
+        }
+        public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData, DiagramControl diagramControl) : this(id, diagramControl) { Data.ParentId = parentItemId; Data = itemData;
+            itemData.DiagramControl = diagramControl;
+        }
 
 
 

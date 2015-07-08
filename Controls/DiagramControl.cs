@@ -209,17 +209,15 @@ namespace DiagramDesigner.Controls
             {
                 if (!Suppress)
                 {
-                    //GetDataInfo();
+                    GetDataInfo();
                     //DesignerItems.
                     if (e.Action == NotifyCollectionChangedAction.Add)
                     {
                         var items = e.NewItems.Cast<DesignerItem>().ToList();
-                        if (items.Any())
+                        if (!items.Any()) return;
+                        foreach (var designerItem in items)
                         {
-                            foreach (var designerItem in items)
-                            {
-                                designerItem.ContextMenu = DesignerItem.GetItemContextMenu(this);
-                            }
+                            designerItem.ContextMenu = DesignerItem.GetItemContextMenu(this);
                         }
                     }
                 }
@@ -228,11 +226,12 @@ namespace DiagramDesigner.Controls
         }
         public void GetDataInfo()
         {
+
             var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
             DataInfo = string.Format("Changed:{0},Added:{1},Removed:{2},Total:{3}",
                 list.Count(x => x.Changed),
                 list.Count(x => x.Added),
-                RemovedItemDataBase.Count(x => x.Removed),
+                RemovedItemDataBase.Count(),
                 list.Count(x => !x.Removed));
         }
 

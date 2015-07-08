@@ -26,23 +26,22 @@ namespace DiagramDesigner.Controls
             if (designer != null)
             {
                 Designer = designer;
-                designer.PreviewMouseMove += (s, e) =>
-                {
-                    var selectedItems =
-                        designer.SelectionService.CurrentSelection.ConvertAll(item => item as DesignerItem);
-                    if (selectedItems.Count() != 0)
-                    {
-                        SelectionInfo = "Selected:" + selectedItems.Count.ToString();
-                    }
-                    else
-                    {
-                        SelectionInfo = "Selected:0";
-                    }
-                };
+                //designer.PreviewMouseMove += (s, e) =>
+                //{
+                //    var selectedItems =
+                //        designer.SelectionService.CurrentSelection.ConvertAll(item => item as DesignerItem);
+                //    if (selectedItems.Count() != 0)
+                //    {
+                //        SelectionInfo = "Selected:" + selectedItems.Count.ToString();
+                //    }
+                //    else
+                //    {
+                //        SelectionInfo = "Selected:0";
+                //    }
+                //};
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
-            //DiagramManager.BindData();
         }
 
         #endregion
@@ -114,7 +113,9 @@ namespace DiagramDesigner.Controls
             new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
+
                     var diagramControl = (DiagramControl)d;
+
                     var n = e.NewValue as ObservableCollection<ItemDataBase>;
                     if (n != null)
                     {
@@ -126,8 +127,6 @@ namespace DiagramDesigner.Controls
                                 var f = items.FirstOrDefault();
                                 if (f != null)
                                 {
-                                    //这里要修改，要改成在现有基础上，创建 DesignerItem
-                                    //diagramControl.DiagramManager.GenerateDesignerItems(f.Id);
                                     diagramControl.DiagramManager.AddDesignerItem(f);
                                 }
                             }
@@ -141,32 +140,6 @@ namespace DiagramDesigner.Controls
                                 }
                             }
 
-                            //if (arg.Action == NotifyCollectionChangedAction.Remove)
-                            //{
-                            //    var items = arg.OldItems.Cast<ItemDataBase>();
-                            //    var f = items.FirstOrDefault();
-                            //    if (f != null)
-                            //    {
-                            //        Guid id;
-                            //        var sibling = diagramControl.ItemDatas
-                            //            .Where(x => x.ParentId == f.ParentId
-                            //                        && x.Id != f.Id).ToList();
-                            //        if (sibling.Any())
-                            //        {
-                            //            var designeritems =
-                            //                from x in diagramControl.DesignerItems
-                            //                where sibling.Contains(x.Data)
-                            //                select x;
-                            //            id =
-                            //                designeritems.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b).ID;
-                            //        }
-                            //        else
-                            //        {
-                            //            id = f.ParentId;
-                            //        }
-                            //        diagramControl.DiagramManager.GenerateDesignerItems(id);
-                            //    }
-                            //}
                         };
                         if (diagramControl.Suppress) return;
                         if (diagramControl.ItemDatas != null)
@@ -213,6 +186,17 @@ namespace DiagramDesigner.Controls
 
         #endregion
 
+        //public static readonly DependencyProperty ItemContextMenuProperty = DependencyProperty.Register(
+        //    "ItemContextMenu", typeof(ContextMenu), typeof(DiagramControl), new PropertyMetadata(null));
+
+        //public ContextMenu ItemContextMenu
+        //{
+        //    get { return (ContextMenu)GetValue(ItemContextMenuProperty); }
+        //    set { SetValue(ItemContextMenuProperty, value); }
+        //}
+
+
+
         #endregion
 
         #region Constructors
@@ -225,9 +209,22 @@ namespace DiagramDesigner.Controls
             {
                 if (!Suppress)
                 {
-                    GetDataInfo();
+                    //GetDataInfo();
+                    //DesignerItems.
+                    if (e.Action == NotifyCollectionChangedAction.Add)
+                    {
+                        var items = e.NewItems.Cast<DesignerItem>().ToList();
+                        if (items.Any())
+                        {
+                            foreach (var designerItem in items)
+                            {
+                                designerItem.ContextMenu = DesignerItem.GetItemContextMenu(this);
+                            }
+                        }
+                    }
                 }
             };
+
         }
         public void GetDataInfo()
         {

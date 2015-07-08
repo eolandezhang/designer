@@ -329,12 +329,12 @@ namespace DiagramDesigner
 
         public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/(Guid id)
         {
-            _diagramControl.Suppress = true;/*利用数据源创建节点时不执行CollectionChange事件*/
+            //_diagramControl.Suppress = true;/*利用数据源创建节点时不执行CollectionChange事件*/
             var roots = InitDesignerItems();
             if (roots == null) return;
             if (!roots.Any()) return;/*创建DesignerItems*/
             BindData();/*将DesignerItems放到画布上，并且创建连线*/
-            _diagramControl.Suppress = false;
+            //_diagramControl.Suppress = false;
             if (id != Guid.Empty)
                 _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == id));
             _diagramControl.GetDataInfo();
@@ -695,7 +695,7 @@ namespace DiagramDesigner
         }
         private DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item)
         {
-            var copy = new DesignerItem { IsExpanderVisible = false, IsShadow = true };
+            var copy = new DesignerItem(_diagramControl) { IsExpanderVisible = false, IsShadow = true };
             CreateDesignerItemContent(copy, ShadowFontColorBrush);
             SetItemText(copy, GetItemText(item));
             SetItemBorderStyle(copy, ShadowBorderBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
@@ -771,18 +771,22 @@ namespace DiagramDesigner
             ArrangeWithRootItems();
 
             var c1 = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == itemDataBase.ParentId).ToList();
+            DesignerItem selectedDesignerItem = null;
             if (c1.Any())
             {
-                _diagramControl.DiagramManager.SetSelectItem(
-                    c1.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b));
+                selectedDesignerItem = c1.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);
+
             }
             else
             {
-                _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.ParentId));
+                selectedDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.ParentId);
+
             }
+            _diagramControl.DiagramManager.SetSelectItem(selectedDesignerItem);
+            Scroll(selectedDesignerItem);
         }
 
-        
+
 
         void RemoveItem(DesignerItem item)
         {
@@ -799,10 +803,12 @@ namespace DiagramDesigner
         public void AddDesignerItem(ItemDataBase item)
         {
             var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
-            var designerItem = new DesignerItem(item.Id, item.ParentId, item);
+            var designerItem = new DesignerItem(item.Id, item.ParentId, item, _diagramControl);
             _diagramControl.DesignerItems.Add(designerItem);
             CreateChild(parentDesignerItem, designerItem);
             ArrangeWithRootItems();
+            SetSelectItem(designerItem);
+            Scroll(designerItem);
         }
         #endregion
         public List<ItemDataBase> GetAllChildItemDataBase(Guid id)
@@ -849,10 +855,17 @@ namespace DiagramDesigner
             }
         }
         private DesignerItem CreateRootItem(ItemDataBase itemData)
-        { return new DesignerItem(itemData.Id, itemData); }
+        { return new DesignerItem(itemData.Id, itemData, _diagramControl); }
         private DesignerItem CreateChildItem(Guid parentId, ItemDataBase itemData)
-        { return new DesignerItem(itemData.Id, parentId, itemData); }
+        { return new DesignerItem(itemData.Id, parentId, itemData, _diagramControl); }
 
         #endregion
+
+        void Scroll(DesignerItem designerItem)
+        {
+            var sv = (ScrollViewer)_diagramControl.Template.FindName("DesignerScrollViewer", _diagramControl);
+            sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem));
+            sv.ScrollToHorizontalOffset(Canvas.GetLeft(designerItem));
+        }
     }
 }

@@ -54,7 +54,11 @@ namespace DiagramDesigner
                     }
 
                     diagramControl.SelectedItems = selectedItems;
-                    diagramControl.DiagramManager.HighlightSelected(x);
+                    //diagramControl.DiagramManager.HighlightSelected(x);
+                    foreach (var selectedItem in selectedItems)
+                    {
+                        diagramControl.DiagramManager.HighlightSelected(selectedItem);
+                    }
                 }
 
                 //var diagramControl = designerCanvas.TemplatedParent as DiagramControl;

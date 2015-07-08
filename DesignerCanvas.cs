@@ -44,15 +44,16 @@ namespace DiagramDesigner
                 SelectionService.ClearSelection();
                 Focus();
                 e.Handled = true;
-                var x = this.TemplatedParent as DiagramControl;
+                //var x = this.TemplatedParent as DiagramControl;
                 //x.DiagramManager.ResetBrushBorderFontStyle(this);
 
-                var diagramControl = TemplatedParent as DiagramControl;
-                if (diagramControl != null)
-                {
-                    selectionService.CurrentSelection.Clear();
-                    SelectionService.ClearSelection();
-                }
+                //var diagramControl = TemplatedParent as DiagramControl;
+                //if (diagramControl != null)
+                //{
+                //    selectionService.CurrentSelection.Clear();
+                //    SelectionService.ClearSelection();
+                //    diagramControl.DiagramManager.ResetBrushBorderFontStyle(this);
+                //}
             }
         }
 
@@ -98,7 +99,8 @@ namespace DiagramDesigner
 
                 if (content != null)
                 {
-                    newItem = new DesignerItem();
+                    DiagramControl diagramControl = TemplatedParent as DiagramControl;
+                    newItem = new DesignerItem(diagramControl);
                     newItem.Content = content;
 
                     Point position = e.GetPosition(this);

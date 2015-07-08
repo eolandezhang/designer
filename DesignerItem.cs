@@ -187,6 +187,22 @@ namespace DiagramDesigner
 
         #endregion
 
+
+        #region 菜单
+        public static readonly DependencyProperty ItemContextMenuProperty =
+            DependencyProperty.RegisterAttached("ItemContextMenu", typeof(ContextMenu), typeof(DesignerItem));
+
+        public static ContextMenu GetItemContextMenu(UIElement element)
+        {
+            return (ContextMenu)element.GetValue(ItemContextMenuProperty);
+        }
+
+        public static void SetItemContextMenu(UIElement element, ContextMenu value)
+        {
+            element.SetValue(ItemContextMenuProperty, value);
+        }
+        #endregion
+
         public bool IsShadow { get; set; }
         static DesignerItem()
         {
@@ -194,16 +210,19 @@ namespace DiagramDesigner
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(DesignerItem), new FrameworkPropertyMetadata(typeof(DesignerItem)));
         }
-        private DiagramControl _diagramControl;
-        public DiagramControl DiagramControl
-        {
-            set { _diagramControl = value; }
-            get
-            {
-                _diagramControl = GetDiagramControl();
-                return _diagramControl;
-            }
-        }
+        //private DiagramControl _diagramControl;
+        //public DiagramControl DiagramControl
+        //{
+        //    set { _diagramControl = value; }
+        //    get
+        //    {
+        //        _diagramControl = GetDiagramControl();
+        //        return _diagramControl;
+        //    }
+        //}
+
+        public DiagramControl DiagramControl { get; set; }
+
         private DiagramControl GetDiagramControl()/*父控件*/
         {
             DesignerCanvas designer = VisualTreeHelper.GetParent(this) as DesignerCanvas;
@@ -214,15 +233,31 @@ namespace DiagramDesigner
             }
             return null;
         }
-        public DesignerItem(Guid id)
+
+
+        //public DesignerItem(Guid id)
+        //{
+        //    this.id = id;
+        //    Loaded += DesignerItem_Loaded;
+        //    Data = new CustomItemData(id);
+        //}
+        //public DesignerItem() : this(Guid.NewGuid()) { }
+        //public DesignerItem(Guid id, ItemDataBase itemData) : this(id) { Data = itemData; }
+        //public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData) : this(id) { Data.ParentId = parentItemId; Data = itemData; }
+
+        public DesignerItem(Guid id, DiagramControl diagramControl)
         {
             this.id = id;
             Loaded += DesignerItem_Loaded;
             Data = new CustomItemData(id);
+            DiagramControl = diagramControl;
         }
-        public DesignerItem() : this(Guid.NewGuid()) { }
-        public DesignerItem(Guid id, ItemDataBase itemData) : this(id) { Data = itemData; }
-        public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData) : this(id) { Data.ParentId = parentItemId; Data = itemData; }
+        public DesignerItem(DiagramControl diagramControl) : this(Guid.NewGuid(), diagramControl) { }
+        public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl) : this(id, diagramControl) { Data = itemData; }
+        public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData, DiagramControl diagramControl) : this(id, diagramControl) { Data.ParentId = parentItemId; Data = itemData; }
+
+
+
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             //base.OnPreviewMouseDown(e);
@@ -248,16 +283,7 @@ namespace DiagramDesigner
             }
             e.Handled = false;
         }
-        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
-        {
-            //DiagramManager.HighlightSelected(this);
 
-            //DesignerCanvas designer = VisualTreeHelper.GetParent(this) as DesignerCanvas;
-            //if (designer != null)
-            //{
-            //    MessageBox.Show((designer.SelectionService.CurrentSelection.Count).ToString());
-            //}
-        }
         void DesignerItem_Loaded(object sender, RoutedEventArgs e)
         {
             if (Template != null)
@@ -277,14 +303,27 @@ namespace DiagramDesigner
                             if (template != null)
                                 thumb.Template = template;
                         }
+
+                        var controlTemplate = Template;
+                        if (controlTemplate != null)
+                        {
+                            var grid = controlTemplate.FindName("Grid", this) as Grid;
+                            if (grid != null)
+                            {
+                                var x = ContextMenu;
+
+                                //grid.ContextMenu
+                            }
+                        }
                     }
                 }
             }
+
         }
         public object Clone()
         {
             var data = (ItemDataBase)Data.Clone();
-            return new DesignerItem(data.Id) { Data = data, DiagramControl = GetDiagramControl() };
+            return new DesignerItem(data.Id, DiagramControl) { Data = data, DiagramControl = GetDiagramControl() };
         }
     }
 }

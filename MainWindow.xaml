@@ -15,6 +15,7 @@
     <Window.InputBindings>
         <KeyBinding Key="Enter" Command="{Binding AddSiblingCommand}"/>
         <KeyBinding Key="Tab" Command="{Binding AddAfterCommand}"/>
+        <KeyBinding Key="Insert" Command="{Binding AddAfterCommand}"/>
         <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"></KeyBinding>
     </Window.InputBindings>
     <Grid Background="White">
@@ -55,7 +56,14 @@
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
                                             SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
-                                            />
+                                            >
+                                            <s:DesignerItem.ItemContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Add Sibling" Command="{Binding AddSiblingCommand}"></MenuItem>
+                                                    <MenuItem Header="Add After" Command="{Binding AddAfterCommand}"></MenuItem>
+                                                </ContextMenu>
+                                            </s:DesignerItem.ItemContextMenu>
+                                        </c:DiagramControl>
                                     </DockPanel>
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>

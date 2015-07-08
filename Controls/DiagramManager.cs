@@ -27,7 +27,7 @@ namespace DiagramDesigner
         }
 
         #region Setters
-        private const double ChildTopOffset = 35;
+        private const double ChildTopOffset = 27;
         private const double LeftOffset = 20;
         private const int DefaultBorderThickness = 2;
         private const int HighlightBorderThickness = 2;
@@ -37,8 +37,9 @@ namespace DiagramDesigner
         static readonly SolidColorBrush HighlightBorderBrush = Brushes.IndianRed;
         private static readonly SolidColorBrush HighlightBackgroundBrush = Brushes.LightSkyBlue;
         private static readonly SolidColorBrush DefaultBackgroundBrush = Brushes.GhostWhite;
-        static readonly SolidColorBrush ShadowBorderBrush = Brushes.LightGray;
-        private static readonly SolidColorBrush ShadowBackgroundBrush = Brushes.LightGray;
+        static readonly SolidColorBrush ShadowBorderBrush = Brushes.Blue;
+        static readonly SolidColorBrush MoveItemBorderThickness = Brushes.Gray;
+        private static readonly SolidColorBrush ShadowBackgroundBrush = Brushes.WhiteSmoke;
         private static readonly SolidColorBrush ShadowFontColorBrush = Brushes.Gray;
         private static readonly SolidColorBrush DefaultFontColorBrush = Brushes.Black;
         private const string ParentConnector = "Bottom";
@@ -360,15 +361,17 @@ namespace DiagramDesigner
             List<DesignerItem> subItems = new List<DesignerItem>();
             GetAllSubItems(designerItem, subItems);
 
-            foreach (var item in _diagramControl.DesignerItems
-                .Where(item => item.IsShadow == false && !item.Equals(designerItem)))
+            var selectedItems =
+                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+
+            foreach (var item in _diagramControl.DesignerItems)
             {
-                if (!subItems.Contains(item))
+                if (!subItems.Contains(item) && !selectedItems.Contains(item))
                     SetItemBorderStyle(item, DefaultBorderBrush, new Thickness(DefaultBorderThickness),
                         DefaultBackgroundBrush);
                 else
                 {
-                    SetItemBorderStyle(item, ShadowBackgroundBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
+                    SetItemBorderStyle(item, MoveItemBorderThickness, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
                     SetItemFontColor(item, ShadowFontColorBrush);
                 }
             }
@@ -380,8 +383,6 @@ namespace DiagramDesigner
                 //SetBottomItemPosition(parent);
             }
         }
-
-
 
         public void HighlightSelected/*高亮选中*/(DesignerItem item)
         {
@@ -527,7 +528,6 @@ namespace DiagramDesigner
             var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll((a) => a as DesignerItem).ToList();
 
             var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
-
             foreach (var item in itemsToChangeParent)
             {
                 ChangeParent(item, parent);/*改变父节点*/
@@ -535,11 +535,12 @@ namespace DiagramDesigner
                 item.Data.XIndex = Canvas.GetLeft(item);
                 item.Data.YIndex = Canvas.GetTop(item);
             }
-
+            foreach (var selectedItem in selectedItems)
+            {
+                HighlightSelected(selectedItem);
+            }
+            ShowOthers();
             ShowItemConnection(selectedItems);/*拖动完毕，显示连线*/
-            //ResetBrushBorderFontStyle(_diagramControl.Designer, designerItem);/*恢复边框字体样式*/
-            //designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
-            //designerItem.Data.YIndex = Canvas.GetTop(designerItem);
             ArrangeWithRootItems();/*重新布局*/
         }
         private void BringToFront/*将制定元素移到最前面*/(DesignerItem designerItem)
@@ -592,19 +593,28 @@ namespace DiagramDesigner
         }
         private DesignerItem GetNewParentdDesignerItem/*取得元素上方最接近的元素*/(DesignerItem item)
         {
+            var selectedItems =
+                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            selectedItems.ForEach(BringToFront);
+            var selectedItem = selectedItems.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
+
             //取得所有子节点，让parent不能为子节点
             var subitems = new List<DesignerItem>();
-            GetAllSubItems(item, subitems);
+            foreach (var designerItem in selectedItems)
+            {
+                GetAllSubItems(designerItem, subitems);
+            }
+            subitems.AddRange(selectedItems);
 
             var pre = _diagramControl.DesignerItems.Where(x => x.Visibility.Equals(Visibility.Visible));
             var list = (from designerItem in pre
                         let top = Canvas.GetTop(designerItem)
                         let left = Canvas.GetLeft(designerItem)
                         let right = left + designerItem.ActualWidth
-                        where top <= Canvas.GetTop(item) /*top位置小于自己的top位置*/
-                              && left <= Canvas.GetLeft(item)
-                              && right >= Canvas.GetLeft(item)
-                              && !Equals(designerItem, item) /*让parent不能为自己*/
+                        where top <= Canvas.GetTop(selectedItem) /*top位置小于自己的top位置*/
+                              && left <= Canvas.GetLeft(selectedItem)
+                              && right >= Canvas.GetLeft(selectedItem)
+                              && !Equals(designerItem, selectedItem) /*让parent不能为自己*/
                               && !subitems.Contains(designerItem) /*让parent不能为子节点*/
                               && designerItem.IsShadow == false
                         select designerItem).ToList();
@@ -618,8 +628,6 @@ namespace DiagramDesigner
             //找到上方最接近的节点，取得其下方的连接点
             //if (item.Data.XIndex.Equals(item.Oldx) && item.Data.YIndex.Equals(item.Oldy)) return;
             var oldParent = _diagramControl.DesignerItems.Where(x => x.Data.Id == item.Data.ParentId).ToList();
-
-
             if (parent != null)
             {
                 item.Data.ParentId = parent.ID;
@@ -685,18 +693,16 @@ namespace DiagramDesigner
                 }
             }
         }
-        protected void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item)
+        public void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item)
         {
-            var itemTop = (double)item.GetValue(Canvas.TopProperty);
-            var itemLeft = (double)item.GetValue(Canvas.LeftProperty);
-            if (itemTop.Equals(item.Oldy) && itemLeft.Equals(item.Oldx)) return;
+            var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
 
-            foreach (var connection in GetItemConnections(item))
+            foreach (var connection in selectedItems.SelectMany(GetItemConnections))
             {
                 connection.Visibility = Visibility.Hidden;
             }
-
         }
+
         private void ShowItemConnection/*元素所有连线恢复显示*/(List<DesignerItem> items)
         {
             foreach (var item in items)
@@ -721,22 +727,47 @@ namespace DiagramDesigner
                 }
             }
         }
-        public DesignerItem CreateShadows/*拖拽时产生影子*/(DesignerItem designerItem)
+        public List<DesignerItem> CreateShadows/*拖拽时产生影子*/(DesignerItem designerItem)
         {
-            DesignerItem shadow = null;
+            var selectedItems =
+                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var shadows = new List<DesignerItem>();
 
-
-            if (_diagramControl.Designer != null)
+            foreach (var selectedItem in selectedItems)
             {
-                shadow = CreateShadow(designerItem);
+                var shadow = CreateShadow(selectedItem);
                 _diagramControl.Designer.Children.Add(shadow);
                 //隐藏折叠按钮
-                designerItem.IsExpanderVisible = false;
+                selectedItem.IsExpanderVisible = false;
+                shadows.Add(shadow);
             }
-            HideItemConnection(designerItem);/*拖动时隐藏连线*/
-            BringToFront(designerItem);
 
-            return shadow;
+            BringToFront(designerItem);
+            return shadows;
+        }
+
+        public void HideOthers()
+        {
+            var selectedItems =
+                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
+            var selectedItem = itemsToChangeParent.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
+            foreach (var designerItem in selectedItems.Where(x => x.ID != selectedItem.ID))
+            {
+                designerItem.Visibility = Visibility.Hidden;
+            }
+        }
+
+        public void ShowOthers()
+        {
+            var selectedItems =
+                _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
+            var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
+            var selectedItem = itemsToChangeParent.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
+            foreach (var designerItem in selectedItems.Where(x => x.ID != selectedItem.ID))
+            {
+                designerItem.Visibility = Visibility.Visible;
+            }
         }
         private DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item)
         {
@@ -909,6 +940,7 @@ namespace DiagramDesigner
 
         void Scroll(DesignerItem designerItem)
         {
+            if (designerItem == null) return;
             var sv = (ScrollViewer)_diagramControl.Template.FindName("DesignerScrollViewer", _diagramControl);
             sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem));
             sv.ScrollToHorizontalOffset(Canvas.GetLeft(designerItem));

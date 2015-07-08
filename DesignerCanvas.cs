@@ -40,16 +40,16 @@ namespace DiagramDesigner
                 SelectionService.ClearSelection();
                 Focus();
                 e.Handled = true;
-                //var x = this.TemplatedParent as DiagramControl;
-                //x.DiagramManager.ResetBrushBorderFontStyle(this);
+                
+                var diagramControl = TemplatedParent as DiagramControl;
+                if (diagramControl != null)
+                {
+                    selectionService.CurrentSelection.Clear();
+                    SelectionService.ClearSelection();
+                    diagramControl.DiagramManager.ResetBrushBorderFontStyle(this);
+                    diagramControl.SelectedItems.Clear();
+                }
 
-                //var diagramControl = TemplatedParent as DiagramControl;
-                //if (diagramControl != null)
-                //{
-                //    selectionService.CurrentSelection.Clear();
-                //    SelectionService.ClearSelection();
-                //    diagramControl.DiagramManager.ResetBrushBorderFontStyle(this);
-                //}
             }
         }
 
@@ -81,7 +81,7 @@ namespace DiagramDesigner
         }
 
 
-        
+
 
 
         protected override void OnDrop(DragEventArgs e)

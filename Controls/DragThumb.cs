@@ -57,14 +57,13 @@ namespace DiagramDesigner.Controls
                 e.Handled = true;
 
                 #region 为元素产生影子，并且高亮父节点
-
                 var diagramControl = designer.TemplatedParent as DiagramControl;
                 if (diagramControl != null)
                 {
-
-                    diagramControl.DiagramManager.CreateShadows(designerItem);
+                    diagramControl.DiagramManager.HideItemConnection(designerItem);/*拖动时隐藏连线*/
                     diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
                 }
+
                 #endregion
                 designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
                 designerItem.Data.YIndex = Canvas.GetTop(designerItem);
@@ -83,13 +82,23 @@ namespace DiagramDesigner.Controls
                 var canvas = designerItem.Parent as DesignerCanvas;
                 if (canvas != null)
                 {
-                    var control = canvas.TemplatedParent as DiagramControl;
-                    if (control != null)
-                        foreach (var item in control.DesignerItems)
+                    var diagramControl = canvas.TemplatedParent as DiagramControl;
+                    if (diagramControl != null)
+                    {
+                        foreach (var item in diagramControl.DesignerItems)
                         {
                             item.Oldx = Canvas.GetLeft(item);
                             item.Oldy = Canvas.GetTop(item);
                         }
+                        //var diagramControl = designer.TemplatedParent as DiagramControl;
+                        //if (diagramControl != null)
+                        //{
+                        diagramControl.DiagramManager.HideOthers();
+                        diagramControl.DiagramManager.CreateShadows(designerItem);
+                        //diagramControl.DiagramManager.HideItemConnection(designerItem);/*拖动时隐藏连线*/
+                        //diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
+                        //}
+                    }
                 }
             }
         }

@@ -85,9 +85,19 @@
                     <!--<Canvas DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                             ContextMenu="{StaticResource ConnectionContextMenu}">-->
                     <Canvas DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
-                        <Path Name="PART_ConnectionPath"
+                        <!--<Path Name="PART_ConnectionPath"
                               StrokeThickness="1"
                               Stroke="{StaticResource SolidBorderBrush}"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round"
+                              StrokeDashArray="{Binding StrokeDashArray}"
+                              SnapsToDevicePixels="True"
+                              Data="{Binding PathGeometry}">
+                        </Path>-->
+                        <Path Name="PART_ConnectionPath"
+                              StrokeThickness="2"
+                              Stroke="SkyBlue"
                               StrokeStartLineCap="Round"
                               StrokeEndLineCap="Round"
                               StrokeLineJoin="Round"

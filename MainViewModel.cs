@@ -2,13 +2,14 @@
 using DiagramDesigner.MVVM;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
-using System.Windows;
+using System.Runtime.Remoting.Channels;
 using System.Windows.Input;
 
 namespace DiagramDesigner
 {
-    public class MainViewModel : ObservableObject
+    public sealed class MainViewModel : ObservableObject
     {
         private DesignerItem _selectedItem;
         public DesignerItem SelectedItem
@@ -19,6 +20,7 @@ namespace DiagramDesigner
             }
             set
             {
+                //if (_selectedItem != value)
                 _selectedItem = value;
                 OnPropertyChanged("SelectedItem");
             }
@@ -45,13 +47,7 @@ namespace DiagramDesigner
             {
                 if (_selectedItems != value)
                 {
-                    var x = value.FirstOrDefault();
-                    if (x != null)
-                    {
-                        SelectedItem = x;
-                    }
                     _selectedItems = value;
-
                     OnPropertyChanged("SelectedItems");
                 }
             }
@@ -60,6 +56,33 @@ namespace DiagramDesigner
         public MainViewModel()
         {
             InitData();
+            PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case "SelectedItems":
+                        if (SelectedItems != null)
+                        {
+                            if (SelectedItems.Count > 1 && SelectedItems.FirstOrDefault() != null)
+                            {
+                                SelectedItem = null;
+                            }
+                            else
+                            {
+                                SelectedItem = SelectedItems.FirstOrDefault();
+                            }
+
+                            SelectedItems.CollectionChanged += (d, args) =>
+                            {
+                                if (args.Action == NotifyCollectionChangedAction.Reset)
+                                {
+                                    SelectedItem = null;
+                                }
+                            };
+                        }
+                        break;
+                }
+            };
         }
 
         //可用框架中的消息实现
@@ -71,6 +94,7 @@ namespace DiagramDesigner
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,0,2),
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,0,1)
             };
+
         }
 
         public ICommand AddSiblingCommand
@@ -134,7 +158,7 @@ namespace DiagramDesigner
 
                                 //移除节点
                                 ItemDatas.Remove(item);
-                                
+
 
                             }
                         }

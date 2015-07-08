@@ -208,6 +208,7 @@ namespace DiagramDesigner.Controls
                         designerItem.ContextMenu = DesignerItem.GetItemContextMenu(this);
                     }
                 }
+                
             };
 
         }

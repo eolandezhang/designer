@@ -16,8 +16,8 @@ namespace DiagramDesigner
     [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
     public class DesignerItem : ContentControl, ISelectable, IGroupable, ICloneable
     {
-        public double oldx;
-        public double oldy;
+        public double Oldx;
+        public double Oldy;
         private ItemDataBase _data;
         public ItemDataBase Data
         {
@@ -260,7 +260,10 @@ namespace DiagramDesigner
             Data = itemData;
             itemData.DiagramControl = diagramControl;
         }
-        public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData, DiagramControl diagramControl) : this(id, diagramControl) { Data.ParentId = parentItemId; Data = itemData;
+        public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData, DiagramControl diagramControl)
+            : this(id, diagramControl)
+        {
+            Data.ParentId = parentItemId; Data = itemData;
             itemData.DiagramControl = diagramControl;
         }
 

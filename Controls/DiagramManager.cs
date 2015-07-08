@@ -517,12 +517,29 @@ namespace DiagramDesigner
         {
             if (designerItem == null) return;
             RemoveShadows(_diagramControl.Designer);/*移除影子*/
-            ChangeParent(designerItem);/*改变父节点*/
-            var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll((a) => a as DesignerItem);
+
+            if (designerItem.Data.XIndex.Equals(designerItem.Oldx)
+                && designerItem.Data.YIndex.Equals(designerItem.Oldy)) return;
+
+            var parent = GetNewParentdDesignerItem(designerItem);
+
+            //ChangeParent(designerItem);/*改变父节点*/
+            var selectedItems = _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll((a) => a as DesignerItem).ToList();
+
+            var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
+
+            foreach (var item in itemsToChangeParent)
+            {
+                ChangeParent(item, parent);/*改变父节点*/
+                ResetBrushBorderFontStyle(_diagramControl.Designer, item);/*恢复边框字体样式*/
+                item.Data.XIndex = Canvas.GetLeft(item);
+                item.Data.YIndex = Canvas.GetTop(item);
+            }
+
             ShowItemConnection(selectedItems);/*拖动完毕，显示连线*/
-            ResetBrushBorderFontStyle(_diagramControl.Designer, designerItem);/*恢复边框字体样式*/
-            designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
-            designerItem.Data.YIndex = Canvas.GetTop(designerItem);
+            //ResetBrushBorderFontStyle(_diagramControl.Designer, designerItem);/*恢复边框字体样式*/
+            //designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
+            //designerItem.Data.YIndex = Canvas.GetTop(designerItem);
             ArrangeWithRootItems();/*重新布局*/
         }
         private void BringToFront/*将制定元素移到最前面*/(DesignerItem designerItem)
@@ -596,12 +613,12 @@ namespace DiagramDesigner
             var parent = list.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);
             return parent;
         }
-        private void ChangeParent(DesignerItem item)
+        private void ChangeParent(DesignerItem item, DesignerItem parent)
         {
             //找到上方最接近的节点，取得其下方的连接点
-            if (item.Data.XIndex.Equals(item.oldx) && item.Data.YIndex.Equals(item.oldy)) return;
+            //if (item.Data.XIndex.Equals(item.Oldx) && item.Data.YIndex.Equals(item.Oldy)) return;
             var oldParent = _diagramControl.DesignerItems.Where(x => x.Data.Id == item.Data.ParentId).ToList();
-            var parent = GetNewParentdDesignerItem(item);
+
 
             if (parent != null)
             {
@@ -672,7 +689,7 @@ namespace DiagramDesigner
         {
             var itemTop = (double)item.GetValue(Canvas.TopProperty);
             var itemLeft = (double)item.GetValue(Canvas.LeftProperty);
-            if (itemTop.Equals(item.oldy) && itemLeft.Equals(item.oldx)) return;
+            if (itemTop.Equals(item.Oldy) && itemLeft.Equals(item.Oldx)) return;
 
             foreach (var connection in GetItemConnections(item))
             {
@@ -727,8 +744,8 @@ namespace DiagramDesigner
             CreateDesignerItemContent(copy, ShadowFontColorBrush);
             SetItemText(copy, GetItemText(item));
             SetItemBorderStyle(copy, ShadowBorderBrush, new Thickness(DefaultBorderThickness), ShadowBackgroundBrush);
-            copy.SetValue(Canvas.LeftProperty, item.oldx);
-            copy.SetValue(Canvas.TopProperty, item.oldy);
+            copy.SetValue(Canvas.LeftProperty, item.Oldx);
+            copy.SetValue(Canvas.TopProperty, item.Oldy);
             copy.Width = item.Width;
             Panel.SetZIndex(copy, -100);
             return copy;

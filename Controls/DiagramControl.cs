@@ -52,10 +52,8 @@ namespace DiagramDesigner.Controls
         public List<ItemDataBase> RemovedItemDataBase = new List<ItemDataBase>();
         public DesignerCanvas Designer { get; set; }
         public bool Suppress /*阻止通知*/ { get; set; }
-        public DesignerItem Copy;
 
         private string _dataInfo;
-
         public string DataInfo
         {
             get { return _dataInfo; }
@@ -113,42 +111,45 @@ namespace DiagramDesigner.Controls
             new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
-
                     var diagramControl = (DiagramControl)d;
-
+                    if (diagramControl.ItemDatas == null) return;
+                    if (diagramControl.Suppress) return;
                     var n = e.NewValue as ObservableCollection<ItemDataBase>;
-                    if (n != null)
-                    {
-                        n.CollectionChanged += (sender, arg) =>
-                        {
-                            if (arg.Action == NotifyCollectionChangedAction.Add)
-                            {
-                                var items = arg.NewItems.Cast<ItemDataBase>();
-                                var f = items.FirstOrDefault();
-                                if (f != null)
-                                {
-                                    diagramControl.DiagramManager.AddDesignerItem(f);
-                                }
-                            }
-                            if (arg.Action == NotifyCollectionChangedAction.Remove)
-                            {
-                                var items = arg.OldItems.Cast<ItemDataBase>();
-                                var f = items.FirstOrDefault();
-                                if (f != null)
-                                {
-                                    diagramControl.DiagramManager.RemoveDesignerItem(f);
-                                }
-                            }
+                    if (n == null) return;
 
-                        };
-                        if (diagramControl.Suppress) return;
-                        if (diagramControl.ItemDatas != null)
-                        {
-                            var y = n.FirstOrDefault(x => x.ParentId == Guid.Empty);
-                            if (y != null)
-                                diagramControl.DiagramManager.GenerateDesignerItems(y.Id);
-                        }
+                    foreach (var itemDataBase in n.Where(x => x.ParentId == Guid.Empty))
+                    {
+                        diagramControl.DiagramManager.GenerateDesignerItems(itemDataBase.Id);
                     }
+
+                    n.CollectionChanged += (sender, arg) =>
+                    {
+                        switch (arg.Action)
+                        {
+                            case NotifyCollectionChangedAction.Add:
+                                {
+                                    var items = arg.NewItems.Cast<ItemDataBase>();
+                                    var f = items.FirstOrDefault();
+                                    if (f != null)
+                                    {
+                                        diagramControl.DiagramManager.AddDesignerItem(f);
+                                    }
+                                }
+                                break;
+                            case NotifyCollectionChangedAction.Remove:
+                                {
+                                    var items = arg.OldItems.Cast<ItemDataBase>();
+                                    var f = items.FirstOrDefault();
+                                    if (f != null)
+                                    {
+                                        diagramControl.DiagramManager.RemoveDesignerItem(f);
+                                    }
+                                }
+                                break;
+                        }
+                    };
+
+
                 }));
 
         public ObservableCollection<ItemDataBase> ItemDatas
@@ -186,17 +187,6 @@ namespace DiagramDesigner.Controls
 
         #endregion
 
-        //public static readonly DependencyProperty ItemContextMenuProperty = DependencyProperty.Register(
-        //    "ItemContextMenu", typeof(ContextMenu), typeof(DiagramControl), new PropertyMetadata(null));
-
-        //public ContextMenu ItemContextMenu
-        //{
-        //    get { return (ContextMenu)GetValue(ItemContextMenuProperty); }
-        //    set { SetValue(ItemContextMenuProperty, value); }
-        //}
-
-
-
         #endregion
 
         #region Constructors
@@ -207,18 +197,15 @@ namespace DiagramDesigner.Controls
             DesignerItems = new ObservableCollection<DesignerItem>();
             DesignerItems.CollectionChanged += (s, e) =>
             {
-                if (!Suppress)
+                if (Suppress) return;
+                GetDataInfo();
+                if (e.Action == NotifyCollectionChangedAction.Add)
                 {
-                    GetDataInfo();
-                    //DesignerItems.
-                    if (e.Action == NotifyCollectionChangedAction.Add)
+                    var items = e.NewItems.Cast<DesignerItem>().ToList();
+                    if (!items.Any()) return;
+                    foreach (var designerItem in items)
                     {
-                        var items = e.NewItems.Cast<DesignerItem>().ToList();
-                        if (!items.Any()) return;
-                        foreach (var designerItem in items)
-                        {
-                            designerItem.ContextMenu = DesignerItem.GetItemContextMenu(this);
-                        }
+                        designerItem.ContextMenu = DesignerItem.GetItemContextMenu(this);
                     }
                 }
             };

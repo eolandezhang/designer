@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -18,14 +16,13 @@ namespace DiagramDesigner.Controls
             DragDelta += DragThumb_DragDelta;
         }
 
-        private DesignerItem _shadow = null;
         void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var designerItem = DataContext as DesignerItem;
             if (designerItem != null)
             {
                 var designer = VisualTreeHelper.GetParent(designerItem) as DesignerCanvas;
-                if (designerItem == null || designer == null || !designerItem.IsSelected) return;
+                if (designer == null || !designerItem.IsSelected) return;
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
 
@@ -65,15 +62,13 @@ namespace DiagramDesigner.Controls
                 if (diagramControl != null)
                 {
 
-                    _shadow = diagramControl.DiagramManager.CreateShadows(designerItem);
+                    diagramControl.DiagramManager.CreateShadows(designerItem);
                     diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
                 }
                 #endregion
                 designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
                 designerItem.Data.YIndex = Canvas.GetTop(designerItem);
-
             }
-
 
         }
 
@@ -92,8 +87,8 @@ namespace DiagramDesigner.Controls
                     if (control != null)
                         foreach (var item in control.DesignerItems)
                         {
-                            item.oldx = Canvas.GetLeft(item);
-                            item.oldy = Canvas.GetTop(item);
+                            item.Oldx = Canvas.GetLeft(item);
+                            item.Oldy = Canvas.GetTop(item);
                         }
                 }
             }
@@ -120,7 +115,6 @@ namespace DiagramDesigner.Controls
                 if (diagramControl != null)
                     diagramControl.DiagramManager.FinishDraging(designerItem);
             }
-            _shadow = null;
         }
 
 

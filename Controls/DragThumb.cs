@@ -60,8 +60,10 @@ namespace DiagramDesigner.Controls
                 var diagramControl = designer.TemplatedParent as DiagramControl;
                 if (diagramControl != null)
                 {
+                    diagramControl.DiagramManager.HideOthers();
                     diagramControl.DiagramManager.HideItemConnection(designerItem);/*拖动时隐藏连线*/
                     diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
+
                 }
 
                 #endregion
@@ -93,8 +95,12 @@ namespace DiagramDesigner.Controls
                         //var diagramControl = designer.TemplatedParent as DiagramControl;
                         //if (diagramControl != null)
                         //{
-                        diagramControl.DiagramManager.HideOthers();
+                        
                         diagramControl.DiagramManager.CreateShadows(designerItem);
+
+                        //隐藏折叠按钮
+
+                        
                         //diagramControl.DiagramManager.HideItemConnection(designerItem);/*拖动时隐藏连线*/
                         //diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
                         //}

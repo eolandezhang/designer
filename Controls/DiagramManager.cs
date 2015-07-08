@@ -737,8 +737,7 @@ namespace DiagramDesigner
             {
                 var shadow = CreateShadow(selectedItem);
                 _diagramControl.Designer.Children.Add(shadow);
-                //隐藏折叠按钮
-                selectedItem.IsExpanderVisible = false;
+
                 shadows.Add(shadow);
             }
 
@@ -752,6 +751,7 @@ namespace DiagramDesigner
                 _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
             var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
             var selectedItem = itemsToChangeParent.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
+            selectedItem.IsExpanderVisible = false;
             foreach (var designerItem in selectedItems.Where(x => x.ID != selectedItem.ID))
             {
                 designerItem.Visibility = Visibility.Hidden;
@@ -762,11 +762,13 @@ namespace DiagramDesigner
         {
             var selectedItems =
                 _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
-            var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
-            var selectedItem = itemsToChangeParent.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
-            foreach (var designerItem in selectedItems.Where(x => x.ID != selectedItem.ID))
+            foreach (var selectedItem in selectedItems)
             {
-                designerItem.Visibility = Visibility.Visible;
+                selectedItem.Visibility = Visibility.Visible;
+                if (_diagramControl.DesignerItems.Any(x => x.Data.ParentId == selectedItem.Data.Id))
+                {
+                    selectedItem.IsExpanderVisible = selectedItem.CanCollapsed;
+                }
             }
         }
         private DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item)

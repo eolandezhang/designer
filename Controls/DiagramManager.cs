@@ -2,11 +2,16 @@
 using DiagramDesigner.Data;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using DiagramDesigner.MVVM;
+
 namespace DiagramDesigner
 {
     /*
@@ -32,6 +37,7 @@ namespace DiagramDesigner
         private const int DEFAULT_BORDER_THICKNESS = 2;
         private const int HIGHLIGHT_BORDER_THICKNESS = 2;
         private const double MIN_ITEM_WIDTH = 150d;
+        private const double FONT_SIZE = 12d;
         static readonly SolidColorBrush DEFAULT_BORDER_BRUSH = Brushes.SkyBlue;
         static readonly SolidColorBrush SELECTED_BORDER_BRUSH = Brushes.DeepSkyBlue;
         static readonly SolidColorBrush HIGHLIGHT_BORDER_BRUSH = Brushes.IndianRed;
@@ -261,28 +267,17 @@ namespace DiagramDesigner
                 VerticalAlignment = VerticalAlignment.Center,
                 Padding = new Thickness(5, 2, 5, 2),
                 FontFamily = new FontFamily("Arial"),
-                FontSize = 12d,
+                FontSize = FONT_SIZE,
                 Foreground = fontColorBrush
             };
             border.Child = textblock;
             item.Content = border;
-            item.Width = MIN_ITEM_WIDTH;
+            item.Width = item.Data == null || item.Data.Text == null ? MIN_ITEM_WIDTH : item.Data.Text.Length * FONT_SIZE; //MIN_ITEM_WIDTH;
         }
         public void BindData/*将DesignerItems放到画布上，并且创建连线*/()
         {
             var designerItems = GenerateItems();
-            if (designerItems == null) return;
-            if (!designerItems.Any()) return;
             ArrangeWithRootItems();
-            designerItems.ForEach(x =>
-            {
-                x.Data.DiagramControl = _diagramControl;
-                x.MouseDoubleClick += (sender, e) =>
-                {
-                    SetSelectItem(x);
-                    Edit(x);
-                };
-            });
         }
         public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/(Guid id)
         {
@@ -312,6 +307,7 @@ namespace DiagramDesigner
         void ArrangeWithRootItems/*给定根节点，重新布局*/(DesignerItem rootItem/*根节点*/)
         {
             if (rootItem == null) return;
+            SetWidth(rootItem);
             var directSubItems = GetDirectSubItems(rootItem);
             if (directSubItems == null) return;
             if (directSubItems.Count == 0) return;
@@ -340,12 +336,32 @@ namespace DiagramDesigner
                 Canvas.SetLeft(rootSubItems.ElementAt(i), left);
                 rootSubItems.ElementAt(i).Data.XIndex = left;
                 rootSubItems.ElementAt(i).Oldy = left;
-
                 SetItemFontColor(rootSubItems.ElementAt(i), DEFAULT_FONT_COLOR_BRUSH);
+                SetWidth(rootSubItems.ElementAt(i));
                 ArrangeWithRootItems(rootSubItems.ElementAt(i));
             }
         }
 
+        public void SetWidth(DesignerItem designerItem)
+        {
+            designerItem.Width = GetWidth(designerItem);
+        }
+
+        double GetWidth(DesignerItem designerItem)
+        {
+            if (designerItem.Data != null && designerItem.Data.Text != null)
+            {
+                string text = designerItem.Data.Text;
+                FormattedText formattedText = new FormattedText(text, CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, new Typeface("Arial"), FONT_SIZE, Brushes.Black);
+                double width = formattedText.Width + 12;
+                return width < MIN_ITEM_WIDTH ? MIN_ITEM_WIDTH : width;
+            }
+            else
+            {
+                return MIN_ITEM_WIDTH;
+            }
+        }
 
         private double GetOffset(FrameworkElement item)
         {
@@ -573,8 +589,6 @@ namespace DiagramDesigner
             }
         }
 
-
-
         void ChangeNewParent(List<DesignerItem> originalParent, DesignerItem newParent, DesignerItem designerItemToMove)
         {
             designerItemToMove.Data.ParentId = newParent.ID;
@@ -736,12 +750,9 @@ namespace DiagramDesigner
                 _diagramControl.Designer.Children.Add(shadow);
                 shadows.Add(shadow);
             }
-            BringToFront(designerItem);
+            //BringToFront(designerItem);
             return shadows;
         }
-
-
-
 
         public void HideOthers()
         {
@@ -862,35 +873,66 @@ namespace DiagramDesigner
 
         #endregion
 
-        #region Item Operation
-
-        // private string GetText() { return "Item-" + _diagramControl.DesignerItems.Count(); }
+        #region Add,Edit,Delete
         public void Edit(DesignerItem item)
         {
-            TextBox textBox = new TextBox();
-            _diagramControl.Designer.Children.Remove(textBox);
-            var left = Canvas.GetLeft(item);
-            var top = Canvas.GetTop(item);
-            textBox.Text = item.Data.Text;
+            _diagramControl.IsOnEditing = true;
+            var textBox = new TextBox();
+
+            textBox.DataContext = item.Data;
             textBox.Height = 22;
-            textBox.SetValue(Canvas.LeftProperty, left);
-            textBox.SetValue(Canvas.TopProperty, top);
+            textBox.SetBinding(TextBox.TextProperty, new Binding("Text") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+
+            //var keyBinding = new KeyBinding();
+            //keyBinding.Key = Key.Enter;
+            //keyBinding.Command = new RelayCommand(() =>
+            //{
+            //    _diagramControl.Designer.Children.Remove(textBox);
+            //});
+
+            //textBox.InputBindings.Add(keyBinding);
+
+            Canvas.SetLeft(textBox, Canvas.GetLeft(item));
+            Canvas.SetTop(textBox, Canvas.GetTop(item));
+
+            _diagramControl.Designer.Children.Remove(textBox);
             _diagramControl.Designer.Children.Add(textBox);
             BringToFront(textBox);
-            textBox.Focus();
+
             textBox.SelectAll();
+            textBox.Focus();
+
             var t = textBox;
+            t.MinWidth = MIN_ITEM_WIDTH;
             t.LostFocus += (sender, e) =>
             {
                 _diagramControl.Designer.Children.Remove(textBox);
-                item.Data.Text = textBox.Text;
                 item.Data.Changed = true;
-                SetItemText(item, textBox.Text);
-                _diagramControl.GetDataInfo();
+                _diagramControl.IsOnEditing = false;
+                SetWidth(item);
+                ArrangeWithRootItems();
             };
+            t.TextChanged += (sender, e) =>
+            {
+                t.Width = GetWidth(item);
+            };
+            t.PreviewKeyUp += (sender, e) =>
+            {
+                switch (e.Key)
+                {
+                    case Key.Enter:
+                        //MessageBox.Show("abc");
+                        _diagramControl.Designer.Children.Remove(textBox);
+                        e.Handled = true;
+                        _diagramControl.IsOnEditing = false;
+                        break;
+                }
+            };
+
+
         }
-        #region Remove
-        public void RemoveDesignerItem(ItemDataBase itemDataBase)
+        #region Delete
+        public void DeleteDesignerItem(ItemDataBase itemDataBase)
         {
             var child = GetAllChildItemDataBase(itemDataBase.Id);
             _diagramControl.RemovedItemDataBase.AddRange(child);
@@ -898,9 +940,9 @@ namespace DiagramDesigner
             _diagramControl.RemovedItemDataBase.ForEach(x => { x.Removed = true; });
             child.ForEach(c =>
             {
-                RemoveItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == c.Id));
+                DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == c.Id));
             });
-            RemoveItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.Id));
+            DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.Id));
 
             ArrangeWithRootItems();
 
@@ -913,30 +955,7 @@ namespace DiagramDesigner
             ArrangeWithRootItems();
             Scroll(selectedDesignerItem);
         }
-        void RemoveItem(DesignerItem item)
-        {
-            var connections = GetItemConnections(item).ToList();
-            connections.ForEach(x => { _diagramControl.Designer.Children.Remove(x); });
-            var connectors = GetItemConnectors(item);
-            connectors.ForEach(x => { x.Connections.Clear(); });
-            _diagramControl.Designer.Children.Remove(item);
-            _diagramControl.DesignerItems.Remove(item);
-        }
-        #endregion
-        #region Add
-
-        public void AddDesignerItem(ItemDataBase item)
-        {
-            var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
-            var designerItem = new DesignerItem(item.Id, item.ParentId, item, _diagramControl);
-            _diagramControl.DesignerItems.Add(designerItem);
-            CreateChild(parentDesignerItem, designerItem);
-            ArrangeWithRootItems();
-            SetSelectItem(designerItem);
-            Scroll(designerItem);
-        }
-        #endregion
-        public List<ItemDataBase> GetAllChildItemDataBase(Guid id)
+        List<ItemDataBase> GetAllChildItemDataBase(Guid id)
         {
             List<ItemDataBase> result = new List<ItemDataBase>();
             var child = _diagramControl.ItemDatas.Where(x => x.ParentId == id);
@@ -947,7 +966,26 @@ namespace DiagramDesigner
             }
             return result;
         }
-
+        void DeleteItem(DesignerItem item)
+        {
+            var connections = GetItemConnections(item).ToList();
+            connections.ForEach(x => { _diagramControl.Designer.Children.Remove(x); });
+            var connectors = GetItemConnectors(item);
+            connectors.ForEach(x => { x.Connections.Clear(); });
+            _diagramControl.Designer.Children.Remove(item);
+            _diagramControl.DesignerItems.Remove(item);
+        }
+        #endregion
+        public void AddDesignerItem(ItemDataBase item)
+        {
+            var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
+            var designerItem = new DesignerItem(item.Id, item.ParentId, item, _diagramControl);
+            _diagramControl.DesignerItems.Add(designerItem);
+            CreateChild(parentDesignerItem, designerItem);
+            ArrangeWithRootItems();
+            SetSelectItem(designerItem);
+            Scroll(designerItem);
+        }
         #endregion
 
         #region 用数据源，构建节点元素
@@ -1063,7 +1101,7 @@ namespace DiagramDesigner
         {
             var selectedItems =
                 _diagramControl.Designer.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
-            selectedItems.ForEach(BringToFront);
+            //selectedItems.ForEach(BringToFront);
             return selectedItems;
         }
         void Scroll(DesignerItem designerItem)

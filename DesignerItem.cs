@@ -235,6 +235,14 @@ namespace DiagramDesigner
             Data.DiagramControl = diagramControl;
             DiagramControl = diagramControl;
             Focusable = false;
+            //Focus();
+            Name = "DesignerItem";
+
+            MouseDoubleClick += (sender, e) =>
+            {
+                //diagramControl.DiagramManager.SetSelectItem(this);
+                diagramControl.DiagramManager.Edit(this);
+            };
         }
         public DesignerItem(DiagramControl diagramControl) : this(Guid.NewGuid(), diagramControl) { }
         public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl)

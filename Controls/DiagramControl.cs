@@ -14,6 +14,7 @@ namespace DiagramDesigner.Controls
 {
     public class DiagramControl : ContentControl, INotifyPropertyChanged
     {
+        public bool IsOnEditing;
         public DiagramManager DiagramManager { get; set; }
 
         #region Override
@@ -142,7 +143,7 @@ namespace DiagramDesigner.Controls
                                     var f = items.FirstOrDefault();
                                     if (f != null)
                                     {
-                                        diagramControl.DiagramManager.RemoveDesignerItem(f);
+                                        diagramControl.DiagramManager.DeleteDesignerItem(f);
                                     }
                                 }
                                 break;

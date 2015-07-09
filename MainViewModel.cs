@@ -115,10 +115,9 @@ namespace DiagramDesigner
                         }
 
                     }
-                });
+                }, EnableCommand);
             }
         }
-
         public ICommand AddAfterCommand
         {
             get
@@ -135,10 +134,9 @@ namespace DiagramDesigner
                         }
 
                     }
-                });
+                }, EnableCommand);
             }
         }
-
         public ICommand DeleteCommand
         {
             get
@@ -154,20 +152,13 @@ namespace DiagramDesigner
                             var item = selectedItem.Data;
                             if (item != null && item.ParentId != Guid.Empty)
                             {
-                                //移除子节点
-
-                                //移除节点
                                 ItemDatas.Remove(item);
-
-
                             }
                         }
-
                     }
-                });
+                }, EnableCommand);
             }
         }
-
         public ICommand UpCommand
         {
             get
@@ -184,7 +175,7 @@ namespace DiagramDesigner
                             }
 
                         }
-                    });
+                    }, EnableCommand);
             }
         }
         public ICommand DownCommand
@@ -203,8 +194,24 @@ namespace DiagramDesigner
                         }
 
                     }
-                });
+                }, EnableCommand);
             }
+        }
+
+        public bool EnableCommand()
+        {
+            if (SelectedItems != null
+                        && SelectedItems.Count == 1)
+            {
+                var selectedItem = SelectedItems.FirstOrDefault();
+                if (selectedItem != null)
+                {
+                    return !selectedItem.DiagramControl.IsOnEditing;
+
+                }
+                return false;
+            }
+            return false;
         }
 
         private string GetText() { return "Item-" + ((ItemDatas == null) ? "0" : (ItemDatas.Count().ToString())); }

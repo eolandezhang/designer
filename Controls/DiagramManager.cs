@@ -627,7 +627,7 @@ namespace DiagramDesigner
         {
             List<UIElement> childrenSorted =
                 (from UIElement item in _diagramControl.Designer.Children
-                 orderby Canvas.GetZIndex(item as UIElement) ascending
+                 orderby Panel.GetZIndex(item as UIElement) ascending
                  select item as UIElement).ToList();
 
             int i = 0;
@@ -636,12 +636,12 @@ namespace DiagramDesigner
             {
                 if (element.Equals(item))
                 {
-                    int idx = Canvas.GetZIndex(item);
-                    Canvas.SetZIndex(item, childrenSorted.Count - 1 + j++);
+                    int idx = Panel.GetZIndex(item);
+                    Panel.SetZIndex(item, childrenSorted.Count - 1 + j++);
                 }
                 else
                 {
-                    Canvas.SetZIndex(item, i++);
+                    Panel.SetZIndex(item, i++);
                 }
             }
         }
@@ -690,12 +690,7 @@ namespace DiagramDesigner
                     {
                         path.Stroke = Brushes.Red;
                     }
-                    else
-                    {
-                        path.Stroke = Brushes.SkyBlue;
-                    }
                     BringToFront(connection);
-                    //Panel.SetZIndex(connection, 1000);
                 }
             }
 
@@ -729,8 +724,6 @@ namespace DiagramDesigner
                         path.Stroke = Brushes.SkyBlue;
                         Panel.SetZIndex(connection, -1000);
                     }
-
-
                 }
             }
         }

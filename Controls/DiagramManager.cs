@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents.DocumentStructures;
 using System.Windows.Media;
 
 namespace DiagramDesigner
@@ -284,7 +285,6 @@ namespace DiagramDesigner
                 };
             });
         }
-
         public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/(Guid id)
         {
             //_diagramControl.Suppress = true;/*利用数据源创建节点时不执行CollectionChange事件*/
@@ -297,8 +297,6 @@ namespace DiagramDesigner
                 _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == id));
             _diagramControl.GetDataInfo();
         }
-
-
         #endregion
 
         #region Arrange
@@ -556,7 +554,6 @@ namespace DiagramDesigner
                 designerItemToMove.Data.YIndex = Canvas.GetTop(designerItemToMove);
             }
         }
-
         void RemoveConnection(List<DesignerItem> originalParent, DesignerItem designerItemToMove)
         {
             designerItemToMove.Data.ParentId = Guid.Empty;
@@ -576,7 +573,6 @@ namespace DiagramDesigner
                 }
             }
         }
-
         void ChangeNewParent(List<DesignerItem> originalParent, DesignerItem newParent, DesignerItem designerItemToMove)
         {
             designerItemToMove.Data.ParentId = newParent.ID;
@@ -592,7 +588,6 @@ namespace DiagramDesigner
                 });
             }
         }
-
         void CreateNewConnection(DesignerItem newParent, DesignerItem designerItemToMove)
         {
             designerItemToMove.Data.ParentId = newParent.ID;
@@ -786,19 +781,30 @@ namespace DiagramDesigner
             return list;
         }
 
-        public void MoveDown(DesignerItem parent)
+        public void MoveUpAndDown(DesignerItem parent)
         {
             if (parent == null) return;
             var selectedItem = GetFirstDesignerItem();
             var itemTop = Canvas.GetTop(selectedItem);
             var itemsOnCanvas = _diagramControl.Designer.Children;
             var designerItemsOnCanvas = itemsOnCanvas.OfType<DesignerItem>().ToList();
-            var downItems = designerItemsOnCanvas.Where(x =>
-                x.Oldy > itemTop
-                && x.ID != selectedItem.ID);
+            var allSubItems = new List<DesignerItem>();
+            GetAllSubItems(selectedItem, allSubItems);
+            allSubItems.AddRange(designerItemsOnCanvas.Where(x => x.IsShadow));
+            var downItems = designerItemsOnCanvas.Where(x => x.Oldy > itemTop && x.ID != selectedItem.ID);
             foreach (var designerItem in downItems)
             {
-                Canvas.SetTop(designerItem, designerItem.Oldy + CHILD_TOP_OFFSET);
+                if (!allSubItems.Contains(designerItem))
+                {
+                    Canvas.SetTop(designerItem, designerItem.Oldy + CHILD_TOP_OFFSET);
+                }
+                else
+                {
+                    allSubItems.ForEach(x =>
+                    {
+                        Canvas.SetTop(x, x.Oldy + CHILD_TOP_OFFSET);
+                    });
+                }
             }
             var upItems = designerItemsOnCanvas.Where(x =>
                 x.Oldy < itemTop
@@ -806,7 +812,17 @@ namespace DiagramDesigner
                 && x.ID != selectedItem.ID);
             foreach (var designerItem in upItems)
             {
-                Canvas.SetTop(designerItem, designerItem.Data.YIndex);
+                if (!allSubItems.Contains(designerItem))
+                {
+                    Canvas.SetTop(designerItem, designerItem.Data.YIndex);
+                }
+                else
+                {
+                    allSubItems.ForEach(x =>
+                    {
+                        Canvas.SetTop(x, x.Data.YIndex);
+                    });
+                }
             }
         }
 

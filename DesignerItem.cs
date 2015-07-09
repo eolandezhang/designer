@@ -18,6 +18,9 @@ namespace DiagramDesigner
     {
         public double Oldx;
         public double Oldy;
+
+        public Guid OldParentId = Guid.Empty;
+
         private ItemDataBase _data;
         public ItemDataBase Data
         {
@@ -210,16 +213,6 @@ namespace DiagramDesigner
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(DesignerItem), new FrameworkPropertyMetadata(typeof(DesignerItem)));
         }
-        //private DiagramControl _diagramControl;
-        //public DiagramControl DiagramControl
-        //{
-        //    set { _diagramControl = value; }
-        //    get
-        //    {
-        //        _diagramControl = GetDiagramControl();
-        //        return _diagramControl;
-        //    }
-        //}
 
         public DiagramControl DiagramControl { get; set; }
 
@@ -233,17 +226,6 @@ namespace DiagramDesigner
             }
             return null;
         }
-
-
-        //public DesignerItem(Guid id)
-        //{
-        //    this.id = id;
-        //    Loaded += DesignerItem_Loaded;
-        //    Data = new CustomItemData(id);
-        //}
-        //public DesignerItem() : this(Guid.NewGuid()) { }
-        //public DesignerItem(Guid id, ItemDataBase itemData) : this(id) { Data = itemData; }
-        //public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData) : this(id) { Data.ParentId = parentItemId; Data = itemData; }
 
         public DesignerItem(Guid id, DiagramControl diagramControl)
         {
@@ -268,8 +250,6 @@ namespace DiagramDesigner
             itemData.DiagramControl = diagramControl;
         }
 
-
-
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             //base.OnPreviewMouseDown(e);
@@ -291,7 +271,6 @@ namespace DiagramDesigner
                     designer.SelectionService.SelectItem(this);
                 }
                 Focus();
-                //if (DiagramControl != null) { DiagramControl.SelectedItem = this; }
             }
             e.Handled = false;
         }
@@ -316,17 +295,17 @@ namespace DiagramDesigner
                                 thumb.Template = template;
                         }
 
-                        var controlTemplate = Template;
-                        if (controlTemplate != null)
-                        {
-                            var grid = controlTemplate.FindName("Grid", this) as Grid;
-                            if (grid != null)
-                            {
-                                var x = ContextMenu;
+                        //var controlTemplate = Template;
+                        //if (controlTemplate != null)
+                        //{
+                        //    var grid = controlTemplate.FindName("Grid", this) as Grid;
+                        //    if (grid != null)
+                        //    {
+                        //        var x = ContextMenu;
 
-                                //grid.ContextMenu
-                            }
-                        }
+                        //        //grid.ContextMenu
+                        //    }
+                        //}
                     }
                 }
             }

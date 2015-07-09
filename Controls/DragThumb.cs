@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -16,6 +17,7 @@ namespace DiagramDesigner.Controls
             DragDelta += DragThumb_DragDelta;
         }
 
+        private List<DesignerItem> _shadows = null;
         void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var designerItem = DataContext as DesignerItem;
@@ -62,8 +64,12 @@ namespace DiagramDesigner.Controls
                 {
                     diagramControl.DiagramManager.HideOthers();
                     diagramControl.DiagramManager.HideItemConnection(designerItem);/*拖动时隐藏连线*/
-                    diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
+                    var parent = diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
+                    diagramControl.DiagramManager.MoveDown(parent);
+                    if (_shadows == null)
+                        _shadows = diagramControl.DiagramManager.CreateShadows(designerItem);
 
+                    diagramControl.DiagramManager.ChangeParent();/*改变父节点*/
                 }
 
                 #endregion
@@ -92,18 +98,8 @@ namespace DiagramDesigner.Controls
                             item.Oldx = Canvas.GetLeft(item);
                             item.Oldy = Canvas.GetTop(item);
                         }
-                        //var diagramControl = designer.TemplatedParent as DiagramControl;
-                        //if (diagramControl != null)
-                        //{
-                        
-                        diagramControl.DiagramManager.CreateShadows(designerItem);
 
-                        //隐藏折叠按钮
 
-                        
-                        //diagramControl.DiagramManager.HideItemConnection(designerItem);/*拖动时隐藏连线*/
-                        //diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
-                        //}
                     }
                 }
             }
@@ -128,7 +124,17 @@ namespace DiagramDesigner.Controls
             {
                 var diagramControl = DiagramControl();
                 if (diagramControl != null)
-                    diagramControl.DiagramManager.FinishDraging(designerItem);
+                {
+                    //diagramControl.DiagramManager.FinishDraging();
+
+                    diagramControl.DiagramManager.ShowOthers();
+                    diagramControl.DiagramManager.ShowItemConnection();/*拖动完毕，显示连线*/
+                    diagramControl.DiagramManager.RemoveShadows();/*移除影子*/
+                    diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
+                    diagramControl.DiagramManager.HighlightSelected();
+                    //diagramControl.DiagramManager.ResetBrushBorderFontStyle(diagramControl.Designer, designerItemToMove);/*恢复边框字体样式*/
+                    _shadows = null;
+                }
             }
         }
 

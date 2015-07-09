@@ -20,6 +20,8 @@
         <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"/>
         <KeyBinding Key="Up" Command="{Binding UpCommand}"/>
         <KeyBinding Key="Down" Command="{Binding DownCommand}"/>
+        <KeyBinding Key="Left" Command="{Binding LeftCommand}"/>
+        <KeyBinding Key="Right" Command="{Binding RightCommand}"/>
     </Window.InputBindings>
     <Grid Background="White">
         <xcad:DockingManager x:Name="dockManager" AllowMixedOrientation="True" >

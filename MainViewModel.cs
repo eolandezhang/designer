@@ -97,6 +97,23 @@ namespace DiagramDesigner
 
         }
 
+        #region Command
+
+        public bool EnableCommand()
+        {
+            if (SelectedItems != null
+                        && SelectedItems.Count == 1)
+            {
+                var selectedItem = SelectedItems.FirstOrDefault();
+                if (selectedItem != null)
+                {
+                    return !selectedItem.DiagramControl.IsOnEditing;
+
+                }
+                return false;
+            }
+            return false;
+        }
         public ICommand AddSiblingCommand
         {
             get
@@ -171,7 +188,7 @@ namespace DiagramDesigner
                             var selectedItem = SelectedItems.FirstOrDefault();
                             if (selectedItem != null)
                             {
-                                selectedItem.DiagramControl.DiagramManager.SelectUp(selectedItem, true);
+                                selectedItem.DiagramControl.DiagramManager.SelectUpDown(selectedItem, true);
                             }
 
                         }
@@ -190,7 +207,7 @@ namespace DiagramDesigner
                         var selectedItem = SelectedItems.FirstOrDefault();
                         if (selectedItem != null)
                         {
-                            selectedItem.DiagramControl.DiagramManager.SelectUp(selectedItem, false);
+                            selectedItem.DiagramControl.DiagramManager.SelectUpDown(selectedItem, false);
                         }
 
                     }
@@ -198,21 +215,47 @@ namespace DiagramDesigner
             }
         }
 
-        public bool EnableCommand()
+        public ICommand RightCommand
         {
-            if (SelectedItems != null
-                        && SelectedItems.Count == 1)
+            get
             {
-                var selectedItem = SelectedItems.FirstOrDefault();
-                if (selectedItem != null)
+                return new RelayCommand(() =>
                 {
-                    return !selectedItem.DiagramControl.IsOnEditing;
+                    if (SelectedItems != null
+                    && SelectedItems.Count == 1)
+                    {
+                        var selectedItem = SelectedItems.FirstOrDefault();
+                        if (selectedItem != null)
+                        {
+                            selectedItem.DiagramControl.DiagramManager.SelectRightLeft(selectedItem, true);
+                        }
 
-                }
-                return false;
+                    }
+                }, EnableCommand);
             }
-            return false;
         }
+
+        public ICommand LeftCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (SelectedItems != null
+                    && SelectedItems.Count == 1)
+                    {
+                        var selectedItem = SelectedItems.FirstOrDefault();
+                        if (selectedItem != null)
+                        {
+                            selectedItem.DiagramControl.DiagramManager.SelectRightLeft(selectedItem, false);
+                        }
+
+                    }
+                }, EnableCommand);
+            }
+        }
+
+        #endregion
 
         private string GetText() { return "Item-" + ((ItemDatas == null) ? "0" : (ItemDatas.Count().ToString())); }
 

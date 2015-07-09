@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents.DocumentStructures;
 using System.Windows.Media;
-
+using System.Windows.Shapes;
 namespace DiagramDesigner
 {
     /*
@@ -659,7 +658,7 @@ namespace DiagramDesigner
             subitems.AddRange(selectedItems);
             var pre = _diagramControl.DesignerItems.Where(x => x.Visibility.Equals(Visibility.Visible));
             var list = (from designerItem in pre
-                        let parentTop = Canvas.GetTop(designerItem)
+                        let parentTop = Canvas.GetTop(designerItem) + designerItem.ActualHeight
                         let parentLeft = Canvas.GetLeft(designerItem) + designerItem.ActualWidth * 0.1
                         let parentRight = parentLeft + designerItem.ActualWidth
                         where Canvas.GetTop(selectedItem) >= parentTop /*top位置小于自己的top位置*/
@@ -678,10 +677,28 @@ namespace DiagramDesigner
         {
             var selectedItems = GetSelectedItems();
 
-            foreach (var connection in selectedItems.SelectMany(GetItemConnections).Where(x => x.Source.ParentDesignerItem.Equals(item)))
+            foreach (var connection in selectedItems.SelectMany(GetItemConnections))
             {
-                connection.Visibility = Visibility.Hidden;
+                if (connection.Source.ParentDesignerItem.Equals(item))
+                {
+                    connection.Visibility = Visibility.Hidden;
+                }
+                else if (connection.Sink.ParentDesignerItem.Equals(item))
+                {
+                    var path = connection.Template.FindName("PART_ConnectionPath", connection) as Path;
+                    if (path != null)
+                    {
+                        path.Stroke = Brushes.Red;
+                    }
+                    else
+                    {
+                        path.Stroke = Brushes.SkyBlue;
+                    }
+                    BringToFront(connection);
+                    //Panel.SetZIndex(connection, 1000);
+                }
             }
+
         }
         public void ShowItemConnection/*元素所有连线恢复显示*/()
         {
@@ -705,6 +722,15 @@ namespace DiagramDesigner
                             connection.Visibility = Visibility.Visible;
                         }
                     }
+
+                    var path = connection.Template.FindName("PART_ConnectionPath", connection) as Path;
+                    if (path != null)
+                    {
+                        path.Stroke = Brushes.SkyBlue;
+                        Panel.SetZIndex(connection, -1000);
+                    }
+
+
                 }
             }
         }

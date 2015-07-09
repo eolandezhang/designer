@@ -9,15 +9,23 @@ namespace DiagramDesigner.Controls
 {
     public class DragThumb : Thumb
     {
-        //double _originalLeft;
-        //double _originalTop;
-
+        private List<DesignerItem> _shadows;
+        private DiagramControl DiagramControl
+        {
+            get
+            {
+                var designerItem = DataContext as DesignerItem;
+                if (designerItem == null) return null;
+                var designer = designerItem.Parent as DesignerCanvas;
+                if (designer == null) return null;
+                var diagramControl = designer.TemplatedParent as DiagramControl;
+                return diagramControl;
+            }
+        }
         public DragThumb()
         {
             DragDelta += DragThumb_DragDelta;
         }
-
-        private List<DesignerItem> _shadows = null;
         void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var designerItem = DataContext as DesignerItem;
@@ -68,13 +76,9 @@ namespace DiagramDesigner.Controls
                     diagramControl.DiagramManager.MoveUpAndDown(parent);
                     if (_shadows == null)
                         _shadows = diagramControl.DiagramManager.CreateShadows(designerItem);
-
                     diagramControl.DiagramManager.ChangeParent();/*改变父节点*/
                 }
-
                 #endregion
-                designerItem.Data.XIndex = Canvas.GetLeft(designerItem);
-                designerItem.Data.YIndex = Canvas.GetTop(designerItem);
             }
 
         }
@@ -84,56 +88,27 @@ namespace DiagramDesigner.Controls
         //拖动前保存元素位置
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
-            var designerItem = DataContext as DesignerItem;
-            if (designerItem != null)
+            var diagramControl = DiagramControl;
+            if (diagramControl == null) return;
+            foreach (var item in diagramControl.DesignerItems)
             {
-                var canvas = designerItem.Parent as DesignerCanvas;
-                if (canvas != null)
-                {
-                    var diagramControl = canvas.TemplatedParent as DiagramControl;
-                    if (diagramControl != null)
-                    {
-                        foreach (var item in diagramControl.DesignerItems)
-                        {
-                            item.Oldx = Canvas.GetLeft(item);
-                            item.Oldy = Canvas.GetTop(item);
-                        }
-
-
-                    }
-                }
+                item.Oldx = Canvas.GetLeft(item);
+                item.Oldy = Canvas.GetTop(item);
             }
         }
-        DiagramControl DiagramControl()
-        {
-            var designerItem = DataContext as DesignerItem;
-            if (designerItem != null)
-            {
-                var designer = designerItem.Parent as DesignerCanvas;
-                if (designer == null) return null;
-                var diagramControl = designer.TemplatedParent as DiagramControl;
-                return diagramControl;
-            }
-            return null;
-        }
+
 
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            var designerItem = DataContext as DesignerItem;
-            if (designerItem != null)
-            {
-                var diagramControl = DiagramControl();
-                if (diagramControl != null)
-                {
-                    diagramControl.DiagramManager.ShowOthers();
-                    diagramControl.DiagramManager.ShowItemConnection();/*拖动完毕，显示连线*/
-                    diagramControl.DiagramManager.RemoveShadows();/*移除影子*/
-                    diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
-                    diagramControl.DiagramManager.ResetBrushBorderFontStyle(diagramControl.Designer);/*恢复边框字体样式*/
-                    diagramControl.DiagramManager.HighlightSelected();
-                    _shadows = null;
-                }
-            }
+            var diagramControl = DiagramControl;
+            if (diagramControl == null) return;
+            diagramControl.DiagramManager.ShowOthers();
+            diagramControl.DiagramManager.ShowItemConnection();/*拖动完毕，显示连线*/
+            diagramControl.DiagramManager.RemoveShadows();/*移除影子*/
+            diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
+            diagramControl.DiagramManager.ResetBrushBorderFontStyle(diagramControl.Designer);/*恢复边框字体样式*/
+            diagramControl.DiagramManager.HighlightSelected();
+            _shadows = null;
         }
 
 

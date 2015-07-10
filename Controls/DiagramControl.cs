@@ -14,9 +14,6 @@ namespace DiagramDesigner.Controls
 {
     public class DiagramControl : ContentControl, INotifyPropertyChanged
     {
-        public bool IsOnEditing;
-        public DiagramManager DiagramManager { get; set; }
-
         #region Override
 
         public override void OnApplyTemplate()
@@ -26,7 +23,7 @@ namespace DiagramDesigner.Controls
             var designer = (DesignerCanvas)GetTemplateChild("Designer");
             if (designer != null)
             {
-                Designer = designer;
+                DesignerCanvas = designer;
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
@@ -38,7 +35,7 @@ namespace DiagramDesigner.Controls
 
         public readonly ObservableCollection<DesignerItem> DesignerItems; /*节点元素*/
         public List<ItemDataBase> RemovedItemDataBase = new List<ItemDataBase>();
-        public DesignerCanvas Designer { get; set; }
+        public DesignerCanvas DesignerCanvas { get; set; }
         public bool Suppress /*阻止通知*/ { get; set; }
 
         private string _dataInfo;
@@ -62,7 +59,8 @@ namespace DiagramDesigner.Controls
                 OnPropertyChanged("SelectionInfo");
             }
         }
-
+        public bool IsOnEditing;/*双击出现编辑框，标识编辑状态，此时回车按键按下之后，会阻止新增相邻节点命令*/
+        public DiagramManager DiagramManager { get; set; }
         #endregion
 
         #region Dependency Property 用于数据绑定
@@ -161,7 +159,7 @@ namespace DiagramDesigner.Controls
 
         #endregion
 
-        #region SelectedItems 选中项
+        #region SelectedItems 选中项,用于向界面返回选中项
 
         public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
             "SelectedItems", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl),
@@ -173,11 +171,7 @@ namespace DiagramDesigner.Controls
             set { SetValue(SelectedItemsProperty, value); }
         }
 
-        //public List<DesignerItem> SelectedItems
-        //{
-        //    get { return DesignerItems.Where(x => x.IsSelected).ToList(); }
-        //}
-        
+      
         #endregion
 
         #endregion
@@ -203,7 +197,7 @@ namespace DiagramDesigner.Controls
                 }
             };
 
-           
+
 
         }
         public void GetDataInfo()

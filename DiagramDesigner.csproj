@@ -99,6 +99,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\InputBindingsBehavior.cs" />
+    <Compile Include="InputBindingManager.cs" />
     <Compile Include="MVVM\DataContextSpy.cs" />
     <Compile Include="MVVM\ObservableObject.cs" />
     <Compile Include="MVVM\RelayCommand.cs" />

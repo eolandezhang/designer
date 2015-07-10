@@ -8,17 +8,18 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
-                        <GroupBox x:Name="DiagramHeader" Background="White">
-                            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    <GroupBox x:Name="DiagramHeader">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto" Name="DesignerScrollViewer">
-                                <s:DesignerCanvas
+                            <s:DesignerCanvas
                                     Focusable="true" 
                                     x:Name="Designer"
                                     Background="{StaticResource WindowBackgroundBrush}"
                                     Margin="2" 
-                                    FocusVisualStyle="{x:Null}"/>
-                            </ScrollViewer>
-                        </GroupBox>
+                                    FocusVisualStyle="{x:Null}"
+                                    />
+                        </ScrollViewer>
+                    </GroupBox>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

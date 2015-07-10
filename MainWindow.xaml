@@ -7,9 +7,8 @@
         WindowStartupLocation="CenterScreen"
         Title="Diagram Designer"
         Height="720" Width="1000" Background="White"
-        Icon="Resources/Images/tree_32.ico"
-         c:InputBindingsBehavior.TakesInputBindingPrecedence="True"
-        >
+        Icon="Resources/Images/tree_32.ico"         
+        c:InputBindingsBehavior.TakesInputBindingPrecedence="True">
     <Window.DataContext>
         <s:MainViewModel/>
     </Window.DataContext>
@@ -70,7 +69,7 @@
                                                 </ContextMenu>
                                             </s:DesignerItem.ItemContextMenu>
                                         </c:DiagramControl>
-                                        
+
                                     </DockPanel>
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>

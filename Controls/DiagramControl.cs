@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DiagramDesigner.Data;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -6,9 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using DiagramDesigner.Data;
-using DiagramDesigner.MVVM;
 
 namespace DiagramDesigner.Controls
 {
@@ -27,6 +25,9 @@ namespace DiagramDesigner.Controls
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
+            
+
+
         }
 
         #endregion
@@ -97,16 +98,14 @@ namespace DiagramDesigner.Controls
             new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
+
                     var diagramControl = (DiagramControl)d;
                     if (diagramControl.ItemDatas == null) return;
                     if (diagramControl.Suppress) return;
                     var n = e.NewValue as ObservableCollection<ItemDataBase>;
                     if (n == null) return;
-
-                    foreach (var itemDataBase in n.Where(x => x.ParentId == Guid.Empty))
-                    {
-                        diagramControl.DiagramManager.GenerateDesignerItems(itemDataBase.Id);
-                    }
+                    //diagramControl.DiagramManager.Arrange();
+                    diagramControl.DiagramManager.GenerateDesignerItems();
 
                     n.CollectionChanged += (sender, arg) =>
                     {
@@ -171,7 +170,7 @@ namespace DiagramDesigner.Controls
             set { SetValue(SelectedItemsProperty, value); }
         }
 
-      
+
         #endregion
 
         #endregion

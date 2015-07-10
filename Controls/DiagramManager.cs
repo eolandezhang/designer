@@ -280,7 +280,7 @@ namespace DiagramDesigner
             //SetWidth(item);
         }
 
-        public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/(Guid id)
+        public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/()
         {
             var roots = InitDesignerItems();
             if (roots == null) return;
@@ -288,17 +288,18 @@ namespace DiagramDesigner
             GenerateItems();
             ArrangeWithRootItems();/*将DesignerItems放到画布上，并且创建连线*/
 
-            if (id != Guid.Empty)
-                _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == id));
+            _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.Data.ParentId == Guid.Empty));
         }
         #endregion
 
         #region Arrange
 
-        void Arrange()
+        public void Arrange()
         {
-            //_diagramControl.DesignerCanvas.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            _diagramControl.DesignerCanvas.Arrange(new Rect(0, 0, _diagramControl.DesignerCanvas.DesiredSize.Width, _diagramControl.DesignerCanvas.DesiredSize.Height));
+            var sv = Application.Current.MainWindow;
+            if (sv == null) return;
+            _diagramControl.DesignerCanvas.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            _diagramControl.DesignerCanvas.Arrange(new Rect(0, 0, sv.ActualWidth, sv.ActualHeight));
         }
         public void ArrangeWithRootItems()
         {
@@ -733,13 +734,13 @@ namespace DiagramDesigner
             var parent = list.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);
             return parent;
         }
-        public void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item)
+        public void HideItemConnection/*拖动元素，隐藏元素连线*/(DesignerItem item, DesignerItem parent)
         {
             var selectedItems = GetSelectedItems();
 
             foreach (var connection in selectedItems.SelectMany(GetItemConnections))
             {
-                if (connection.Sink.ParentDesignerItem.Equals(item))
+                if (connection.Sink.ParentDesignerItem.Equals(item) && connection.Source.ParentDesignerItem.Equals(parent))
                 {
                     var path = connection.Template.FindName("PART_ConnectionPath", connection) as Path;
                     if (path != null)
@@ -793,7 +794,7 @@ namespace DiagramDesigner
             var shadows = new List<DesignerItem>();
             foreach (var shadow in selectedItems.Select(CreateShadow))
             {
-                _diagramControl.DesignerCanvas.Children.Add(shadow);
+                //_diagramControl.DesignerCanvas.Children.Add(shadow);
                 shadows.Add(shadow);
             }
             BringToFront(designerItem);
@@ -823,23 +824,51 @@ namespace DiagramDesigner
         }
         private DesignerItem CreateShadow/*拖动时创建的影子*/(DesignerItem item)
         {
-            var copy = new DesignerItem(_diagramControl) { IsExpanderVisible = false, IsShadow = true };
-            CreateDesignerItemContent(copy, SHADOW_FONT_COLOR_BRUSH);
-            SetItemText(copy, GetItemText(item));
-            SetItemBorderStyle(copy, SHADOW_BORDER_BRUSH, new Thickness(DEFAULT_BORDER_THICKNESS), SHADOW_BACKGROUND_BRUSH);
-            Canvas.SetLeft(copy, item.Oldx);
-            Canvas.SetTop(copy, item.Oldy);
-            copy.Oldx = item.Oldx;
-            copy.Oldy = item.Oldy;
-            copy.Data.Text = item.Data.Text;
-            copy.Data.XIndex = item.Oldx;
-            copy.Data.YIndex = item.Oldy;
-            copy.Width = item.Width;
-            Panel.SetZIndex(copy, -100);
-            return copy;
+            var shadow = new DesignerItem(_diagramControl) { IsExpanderVisible = false, IsShadow = true };
+            CreateDesignerItemContent(shadow, SHADOW_FONT_COLOR_BRUSH);
+            SetItemText(shadow, GetItemText(item));
+            SetItemBorderStyle(shadow, SHADOW_BORDER_BRUSH, new Thickness(DEFAULT_BORDER_THICKNESS), SHADOW_BACKGROUND_BRUSH);
+            Canvas.SetLeft(shadow, item.Oldx);
+            Canvas.SetTop(shadow, item.Oldy);
+            shadow.Oldx = item.Oldx;
+            shadow.Oldy = item.Oldy;
+            shadow.Data.Text = item.Data.Text;
+            shadow.Data.XIndex = item.Oldx;
+            shadow.Data.YIndex = item.Oldy;
+            shadow.Width = item.Width;
+            Panel.SetZIndex(shadow, -100);
+
+            _diagramControl.DesignerCanvas.Children.Add(shadow);
+            //Arrange();
+
+            //var connections = GetItemConnections(item).Where(x => Equals(x.Source.ParentDesignerItem, item));
+            //foreach (var connection in connections)
+            //{
+            //    var source = GetItemConnector(shadow, PARENT_CONNECTOR);
+            //    source.Connections.Remove(connection);
+            //    connection.Source = source;
+            //}
+            return shadow;
         }
         public void RemoveShadows()
         {
+            //var items = _diagramControl.DesignerItems;
+            //foreach (var designerItem in items)
+            //{
+            //    if (designerItem == null) continue;
+            //    var parent = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == designerItem.Data.ParentId);
+            //    if (parent == null) continue;
+            //    var connector = GetItemConnector(parent, PARENT_CONNECTOR);
+            //    var connections = GetItemConnections(designerItem).Where(x => x.Sink.ParentDesignerItem == designerItem);
+            //    foreach (var connection in connections)
+            //    {
+            //        connector.Connections.Add(connection);
+            //        connection.Source = connector;
+            //        Arrange();
+            //    }
+            //}
+
+
             foreach (var shadow in GetDesignerItems().Where(x => x.IsShadow))
             {
                 _diagramControl.DesignerCanvas.Children.Remove(shadow);

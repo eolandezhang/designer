@@ -173,6 +173,7 @@
     <!-- DesignerItem Style -->
     <Style TargetType="{x:Type s:DesignerItem}">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"></Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type s:DesignerItem}">

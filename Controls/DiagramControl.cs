@@ -27,19 +27,6 @@ namespace DiagramDesigner.Controls
             if (designer != null)
             {
                 Designer = designer;
-                //designer.PreviewMouseMove += (s, e) =>
-                //{
-                //    var selectedItems =
-                //        designer.SelectionService.CurrentSelection.ConvertAll(item => item as DesignerItem);
-                //    if (selectedItems.Count() != 0)
-                //    {
-                //        SelectionInfo = "Selected:" + selectedItems.Count.ToString();
-                //    }
-                //    else
-                //    {
-                //        SelectionInfo = "Selected:0";
-                //    }
-                //};
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
@@ -186,6 +173,11 @@ namespace DiagramDesigner.Controls
             set { SetValue(SelectedItemsProperty, value); }
         }
 
+        //public List<DesignerItem> SelectedItems
+        //{
+        //    get { return DesignerItems.Where(x => x.IsSelected).ToList(); }
+        //}
+        
         #endregion
 
         #endregion
@@ -199,7 +191,7 @@ namespace DiagramDesigner.Controls
             DesignerItems.CollectionChanged += (s, e) =>
             {
                 if (Suppress) return;
-                GetDataInfo();
+                //GetDataInfo();
                 if (e.Action == NotifyCollectionChangedAction.Add)
                 {
                     var items = e.NewItems.Cast<DesignerItem>().ToList();
@@ -209,8 +201,9 @@ namespace DiagramDesigner.Controls
                         designerItem.ContextMenu = DesignerItem.GetItemContextMenu(this);
                     }
                 }
-                
             };
+
+           
 
         }
         public void GetDataInfo()

@@ -1,9 +1,7 @@
-﻿using System;
+﻿using DiagramDesigner.Controls;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel.Design;
 using System.Linq;
-using DiagramDesigner.Controls;
 
 namespace DiagramDesigner
 {
@@ -31,6 +29,16 @@ namespace DiagramDesigner
         {
             this.ClearSelection();
             this.AddToSelection(item);
+
+            var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
+            if (diagramControl != null)
+            {
+                diagramControl.SelectedItems.Clear();
+                foreach (var designerItem in CurrentSelection.Cast<DesignerItem>())
+                {
+                    diagramControl.SelectedItems.Add(designerItem);
+                }
+            }
         }
 
         internal void AddToSelection(ISelectable item)
@@ -41,34 +49,13 @@ namespace DiagramDesigner
                 CurrentSelection.Add(item);
                 x.IsSelected = true;
 
-                var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
-                if (diagramControl != null)
-                {
-                    diagramControl.DiagramManager.ResetBrushBorderFontStyle(designerCanvas);
-                    diagramControl.SelectedItems.Clear();
 
-                    ObservableCollection<DesignerItem> selectedItems = new ObservableCollection<DesignerItem>();
-                    foreach (var designerItem in CurrentSelection.ConvertAll((a) => a as DesignerItem))
-                    {
-                        selectedItems.Add(designerItem);
-                    }
 
-                    diagramControl.SelectedItems = selectedItems;
-                    diagramControl.DiagramManager.HighlightSelected();
-                }
-
-                //var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
-                //if (diagramControl != null)
-                //{
-                //    diagramControl.SelectedItem = x;
-                //    diagramControl.SelectedItems = CurrentSelection.ConvertAll((c) => c as DesignerItem);
-                //    //
-                //}
 
 
                 //if (item is IGroupable)
                 //{
-                //List<IGroupable> groupItems = GetGroupMembers(item as IGroupable);
+                //  List<IGroupable> groupItems = GetGroupMembers(item as IGroupable);
 
                 //foreach (ISelectable groupItem in groupItems)
                 //{

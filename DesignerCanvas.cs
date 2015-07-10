@@ -46,7 +46,7 @@ namespace DiagramDesigner
                 {
                     selectionService.CurrentSelection.Clear();
                     SelectionService.ClearSelection();
-                    diagramControl.DiagramManager.ResetBrushBorderFontStyle(this);
+                    //diagramControl.DiagramManager.ResetBrushBorderFontStyle(this);
                     diagramControl.SelectedItems.Clear();
                 }
 

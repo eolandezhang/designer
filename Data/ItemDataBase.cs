@@ -19,8 +19,10 @@ namespace DiagramDesigner.Data
             set
             {
                 if (_parentId == value) return;
+
                 _parentId = value;
                 OnPropertyChanged("ParentId");
+
                 if (!Added)
                 {
                     Changed = true;
@@ -35,13 +37,6 @@ namespace DiagramDesigner.Data
             {
                 if (_text == value) return;
                 _text = value;
-
-                if (DiagramControl != null)
-                {
-                    var item = DiagramControl.DesignerItems.FirstOrDefault(x => x.ID == Id);
-                    if (item != null)
-                        DiagramControl.DiagramManager.SetItemText(item, value);
-                }
                 if (_text != "")//初始化时，不标记为更改
                 {
                     Changed = true;

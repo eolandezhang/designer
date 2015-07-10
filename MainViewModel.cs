@@ -4,7 +4,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Runtime.Remoting.Channels;
 using System.Windows.Input;
 
 namespace DiagramDesigner
@@ -53,6 +52,8 @@ namespace DiagramDesigner
             }
         }
 
+
+
         public MainViewModel()
         {
             InitData();
@@ -74,6 +75,16 @@ namespace DiagramDesigner
 
                             SelectedItems.CollectionChanged += (d, args) =>
                             {
+                                if (args.Action == NotifyCollectionChangedAction.Add)
+                                {
+                                    var n = args.NewItems.Cast<DesignerItem>();
+                                    if (n.Count() > 1)
+                                        SelectedItem = null;
+                                    else
+                                    {
+                                        SelectedItem = n.FirstOrDefault();
+                                    }
+                                }
                                 if (args.Action == NotifyCollectionChangedAction.Reset)
                                 {
                                     SelectedItem = null;
@@ -83,6 +94,8 @@ namespace DiagramDesigner
                         break;
                 }
             };
+
+
         }
 
         //可用框架中的消息实现
@@ -101,16 +114,9 @@ namespace DiagramDesigner
 
         public bool EnableCommand()
         {
-            if (SelectedItems != null
-                        && SelectedItems.Count == 1)
+            if (SelectedItem != null)
             {
-                var selectedItem = SelectedItems.FirstOrDefault();
-                if (selectedItem != null)
-                {
-                    return !selectedItem.DiagramControl.IsOnEditing;
-
-                }
-                return false;
+                return !SelectedItem.DiagramControl.IsOnEditing;
             }
             return false;
         }
@@ -120,18 +126,10 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                 {
-                    if (SelectedItems != null
-                        && SelectedItems.Count == 1)
-                    {
-                        var selectedItem = SelectedItems.FirstOrDefault();
-                        if (selectedItem != null)
-                        {
-                            var parentId = selectedItem.Data.ParentId;
-                            var id = parentId.Equals(Guid.Empty) ? selectedItem.ID : parentId;
-                            ItemDatas.Add(new CustomItemData(Guid.NewGuid(), id, GetText(), "", true, false, 0, double.MaxValue));
-                        }
-
-                    }
+                    if (SelectedItem == null) return;
+                    var parentId = SelectedItem.Data.ParentId;
+                    var id = parentId.Equals(Guid.Empty) ? SelectedItem.ID : parentId;
+                    ItemDatas.Add(new CustomItemData(Guid.NewGuid(), id, GetText(), "", true, false, 0, double.MaxValue));
                 }, EnableCommand);
             }
         }
@@ -141,16 +139,9 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                 {
-                    if (SelectedItems != null
-                        && SelectedItems.Count == 1)
-                    {
-                        var selectedItem = SelectedItems.FirstOrDefault();
-                        if (selectedItem != null)
-                        {
-                            ItemDatas.Add(new CustomItemData(Guid.NewGuid(), selectedItem.ID, GetText(), "", true, false, 0, double.MaxValue));
-                        }
+                    if (SelectedItem == null) return;
+                    ItemDatas.Add(new CustomItemData(Guid.NewGuid(), SelectedItem.ID, GetText(), "", true, false, 0, double.MaxValue));
 
-                    }
                 }, EnableCommand);
             }
         }
@@ -160,18 +151,11 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                 {
-                    if (SelectedItems != null
-                        && SelectedItems.Count == 1)
+                    if (SelectedItem == null) return;
+                    var item = SelectedItem.Data;
+                    if (item != null && item.ParentId != Guid.Empty)
                     {
-                        var selectedItem = SelectedItems.FirstOrDefault();
-                        if (selectedItem != null)
-                        {
-                            var item = selectedItem.Data;
-                            if (item != null && item.ParentId != Guid.Empty)
-                            {
-                                ItemDatas.Remove(item);
-                            }
-                        }
+                        ItemDatas.Remove(item);
                     }
                 }, EnableCommand);
             }
@@ -182,16 +166,8 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                     {
-                        if (SelectedItems != null
-                        && SelectedItems.Count == 1)
-                        {
-                            var selectedItem = SelectedItems.FirstOrDefault();
-                            if (selectedItem != null)
-                            {
-                                selectedItem.DiagramControl.DiagramManager.SelectUpDown(selectedItem, true);
-                            }
-
-                        }
+                        if (SelectedItem == null) return;
+                        SelectedItem.DiagramControl.DiagramManager.SelectUpDown(SelectedItem, true);
                     }, EnableCommand);
             }
         }
@@ -201,16 +177,9 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                 {
-                    if (SelectedItems != null
-                    && SelectedItems.Count == 1)
-                    {
-                        var selectedItem = SelectedItems.FirstOrDefault();
-                        if (selectedItem != null)
-                        {
-                            selectedItem.DiagramControl.DiagramManager.SelectUpDown(selectedItem, false);
-                        }
+                    if (SelectedItem == null) return;
+                    SelectedItem.DiagramControl.DiagramManager.SelectUpDown(SelectedItem, false);
 
-                    }
                 }, EnableCommand);
             }
         }
@@ -221,16 +190,8 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                 {
-                    if (SelectedItems != null
-                    && SelectedItems.Count == 1)
-                    {
-                        var selectedItem = SelectedItems.FirstOrDefault();
-                        if (selectedItem != null)
-                        {
-                            selectedItem.DiagramControl.DiagramManager.SelectRightLeft(selectedItem, true);
-                        }
-
-                    }
+                    if (SelectedItem == null) return;
+                    SelectedItem.DiagramControl.DiagramManager.SelectRightLeft(SelectedItem, true);
                 }, EnableCommand);
             }
         }
@@ -241,16 +202,8 @@ namespace DiagramDesigner
             {
                 return new RelayCommand(() =>
                 {
-                    if (SelectedItems != null
-                    && SelectedItems.Count == 1)
-                    {
-                        var selectedItem = SelectedItems.FirstOrDefault();
-                        if (selectedItem != null)
-                        {
-                            selectedItem.DiagramControl.DiagramManager.SelectRightLeft(selectedItem, false);
-                        }
-
-                    }
+                    if (SelectedItem == null) return;
+                    SelectedItem.DiagramControl.DiagramManager.SelectRightLeft(SelectedItem, false);
                 }, EnableCommand);
             }
         }

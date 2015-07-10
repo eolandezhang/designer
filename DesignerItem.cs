@@ -1,7 +1,6 @@
 ﻿using DiagramDesigner.Controls;
 using DiagramDesigner.Data;
 using System;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -190,6 +189,20 @@ namespace DiagramDesigner
 
         #endregion
 
+        //是否是新父节点
+        #region Collapsable
+
+        public static readonly DependencyProperty IsNewParentProperty = DependencyProperty.Register(
+            "IsNewParent", typeof(bool), typeof(DesignerItem), new FrameworkPropertyMetadata(false));
+
+        public bool IsNewParent
+        {
+            get { return (bool)GetValue(IsNewParentProperty); }
+            set { SetValue(IsNewParentProperty, value); }
+        }
+
+        #endregion
+
 
         #region 菜单
         public static readonly DependencyProperty ItemContextMenuProperty =
@@ -235,14 +248,10 @@ namespace DiagramDesigner
             Data.DiagramControl = diagramControl;
             DiagramControl = diagramControl;
             Focusable = false;
-            //Focus();
-            Name = "DesignerItem";
-
             MouseDoubleClick += (sender, e) =>
-            {
-                //diagramControl.DiagramManager.SetSelectItem(this);
-                diagramControl.DiagramManager.Edit(this);
-            };
+             {
+                 diagramControl.DiagramManager.Edit(this);
+             };
         }
         public DesignerItem(DiagramControl diagramControl) : this(Guid.NewGuid(), diagramControl) { }
         public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl)

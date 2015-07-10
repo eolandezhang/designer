@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -250,33 +251,40 @@ namespace DiagramDesigner
             if (item == null) return;
             if (item.Data != null && item.Data.Text == (GetItemText(item))) { return; }
             if (borderBrush == null) borderBrush = DEFAULT_BORDER_BRUSH;
-            var border = new Border()
-            {
-                BorderThickness = new Thickness(DEFAULT_BORDER_THICKNESS),
-                BorderBrush = borderBrush,
-                Background = DEFAULT_BACKGROUND_BRUSH,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                IsHitTestVisible = false
-            };
+            //var border = new Border()
+            //{
+            //    BorderThickness = new Thickness(DEFAULT_BORDER_THICKNESS),
+            //    BorderBrush = borderBrush,
+            //    Background = DEFAULT_BACKGROUND_BRUSH,
+            //    VerticalAlignment = VerticalAlignment.Stretch,
+            //    HorizontalAlignment = HorizontalAlignment.Stretch,
+            //    IsHitTestVisible = false
+            //};
             var textblock = new TextBlock()
             {
-                Name = "Text",
-                Text = item.Data == null ? "" : item.Data.Text,
                 IsHitTestVisible = false,
                 VerticalAlignment = VerticalAlignment.Center,
                 Padding = new Thickness(5, 2, 5, 2),
                 FontFamily = new FontFamily("Arial"),
                 FontSize = FONT_SIZE,
-                Foreground = fontColorBrush
+                Foreground = fontColorBrush,
+                DataContext = item.Data
             };
-            border.Child = textblock;
-            item.Content = border;
-            item.Width = item.Data == null || item.Data.Text == null ? MIN_ITEM_WIDTH : item.Data.Text.Length * FONT_SIZE; //MIN_ITEM_WIDTH;
+            textblock.SetBinding(TextBlock.TextProperty, new Binding("Text"));
+
+            //border.Child = textblock;
+            //item.Content = border;
+
+            item.Content = textblock;
+
+            //item.Width = MIN_ITEM_WIDTH;
+            //SetWidth(item);
         }
+
+
         public void BindData/*将DesignerItems放到画布上，并且创建连线*/()
         {
-            var designerItems = GenerateItems();
+            GenerateItems();
             ArrangeWithRootItems();
         }
         public void GenerateDesignerItems/*利用数据源在画布上添加节点及连线*/(Guid id)
@@ -289,7 +297,7 @@ namespace DiagramDesigner
             //_diagramControl.Suppress = false;
             if (id != Guid.Empty)
                 _diagramControl.DiagramManager.SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == id));
-            _diagramControl.GetDataInfo();
+            //_diagramControl.GetDataInfo();
         }
         #endregion
 
@@ -362,6 +370,35 @@ namespace DiagramDesigner
                 return MIN_ITEM_WIDTH;
             }
         }
+        //double GetWidth(string text)
+        //{
+        //    if (text != null)
+        //    {
+        //        FormattedText formattedText = new FormattedText(text, CultureInfo.CurrentCulture,
+        //            FlowDirection.LeftToRight, new Typeface("Arial"), FONT_SIZE, Brushes.Black);
+        //        double width = formattedText.Width + 12;
+        //        return width < MIN_ITEM_WIDTH ? MIN_ITEM_WIDTH : width;
+        //    }
+        //    else
+        //    {
+        //        return MIN_ITEM_WIDTH;
+        //    }
+        //}
+
+        //public void SetWidth(string text)
+        //{
+        //    var selectedItems = GetSelectedItems();
+        //    if (selectedItems != null && selectedItems.Count() == 1)
+        //    {
+        //        var selectedItem = selectedItems.FirstOrDefault();
+        //        if (selectedItem != null)
+        //        {
+        //            var width = GetWidth(text);
+        //            selectedItem.Width = width;
+        //            ArrangeWithRootItems();
+        //        }
+        //    }
+        //}
 
         private double GetOffset(FrameworkElement item)
         {
@@ -391,7 +428,7 @@ namespace DiagramDesigner
                     SetItemFontColor(item, SHADOW_FONT_COLOR_BRUSH);
                 }
             }
-            var parent = GetNewParentdDesignerItem();
+            var parent = GetNewParentdDesignerItem(designerItem);
             if (parent != null)
             {
                 SetItemBorderStyle(parent, HIGHLIGHT_BORDER_BRUSH, new Thickness(HIGHLIGHT_BORDER_THICKNESS),
@@ -401,16 +438,16 @@ namespace DiagramDesigner
             return parent;
         }
 
-        public void HighlightSelected/*高亮选中*/()
-        {
-            var selectedItems = GetSelectedItems();
-            foreach (var selectedItem in selectedItems)
-            {
-                SetItemBorderStyle(selectedItem, SELECTED_BORDER_BRUSH, new Thickness(HIGHLIGHT_BORDER_THICKNESS), HIGHLIGHT_BACKGROUND_BRUSH);
-                SetItemFontColor(selectedItem, DEFAULT_FONT_COLOR_BRUSH);
-            }
+        //public void HighlightSelected/*高亮选中*/()
+        //{
+        //    var selectedItems = GetSelectedItems();
+        //    foreach (var selectedItem in selectedItems)
+        //    {
+        //        SetItemBorderStyle(selectedItem, SELECTED_BORDER_BRUSH, new Thickness(HIGHLIGHT_BORDER_THICKNESS), HIGHLIGHT_BACKGROUND_BRUSH);
+        //        SetItemFontColor(selectedItem, DEFAULT_FONT_COLOR_BRUSH);
+        //    }
 
-        }
+        //}
 
         #endregion
 
@@ -460,22 +497,22 @@ namespace DiagramDesigner
 
         #region Reset Style
 
-        public void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer)
-        {
-            foreach (var item in _diagramControl.DesignerItems.Where(item => !item.IsShadow))
-            {
-                SetItemBorderStyle(item, DEFAULT_BORDER_BRUSH, new Thickness(DEFAULT_BORDER_THICKNESS), DEFAULT_BACKGROUND_BRUSH);
-                SetItemFontColor(item, DEFAULT_FONT_COLOR_BRUSH);
-            }
-        }
-        public void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer, DesignerItem designerItem)
-        {
-            foreach (var item in _diagramControl.DesignerItems.Where(item => !item.IsShadow && item != designerItem))
-            {
-                SetItemBorderStyle(item, DEFAULT_BORDER_BRUSH, new Thickness(DEFAULT_BORDER_THICKNESS), DEFAULT_BACKGROUND_BRUSH);
-                SetItemFontColor(item, DEFAULT_FONT_COLOR_BRUSH);
-            }
-        }
+        //public void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer)
+        //{
+        //    foreach (var item in _diagramControl.DesignerItems.Where(item => !item.IsShadow))
+        //    {
+        //        SetItemBorderStyle(item, DEFAULT_BORDER_BRUSH, new Thickness(DEFAULT_BORDER_THICKNESS), DEFAULT_BACKGROUND_BRUSH);
+        //        SetItemFontColor(item, DEFAULT_FONT_COLOR_BRUSH);
+        //    }
+        //}
+        //public void ResetBrushBorderFontStyle/*恢复所有元素边框样式*/(Canvas designer, DesignerItem designerItem)
+        //{
+        //    foreach (var item in _diagramControl.DesignerItems.Where(item => !item.IsShadow && item != designerItem))
+        //    {
+        //        SetItemBorderStyle(item, DEFAULT_BORDER_BRUSH, new Thickness(DEFAULT_BORDER_THICKNESS), DEFAULT_BACKGROUND_BRUSH);
+        //        SetItemFontColor(item, DEFAULT_FONT_COLOR_BRUSH);
+        //    }
+        //}
 
         #endregion
 
@@ -536,18 +573,14 @@ namespace DiagramDesigner
 
         #region Drag
 
-        public void FinishDraging/*改变父节点，移除影子，显示连线，重新布局*/()
-        {
-            ChangeParent();/*改变父节点*/
-
-        }
-        public void ChangeParent()
+        public DesignerItem ChangeParent(DesignerItem selectedItem)
         {
             var selectedItems = GetSelectedItems();
             var designerItemsToMove = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
+            var newParent = GetNewParentdDesignerItem(selectedItem);
             foreach (var designerItemToMove in designerItemsToMove)
             {
-                var newParent = GetNewParentdDesignerItem();
+                
                 var originalParent = _diagramControl.DesignerItems.Where(x => x.Data.Id == designerItemToMove.Data.ParentId).ToList();
                 if (newParent != null)//有新父节点
                 {
@@ -559,15 +592,19 @@ namespace DiagramDesigner
                     {
                         CreateNewConnection(newParent, designerItemToMove);
                     }
+                    _diagramControl.DesignerItems.Where(x => x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
+                    newParent.IsNewParent = true;
                 }
                 else //没有新父节点，成为独立节点
                 {
                     RemoveConnection(originalParent, designerItemToMove);//原先有父节点，则移除与原父节点之间的连线
+                    _diagramControl.DesignerItems.Where(x => x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
                 }
                 //ResetBrushBorderFontStyle(_diagramControl.Designer, designerItemToMove);/*恢复边框字体样式*/
                 designerItemToMove.Data.XIndex = Canvas.GetLeft(designerItemToMove);
                 designerItemToMove.Data.YIndex = Canvas.GetTop(designerItemToMove);
             }
+            return newParent;
         }
         void RemoveConnection(List<DesignerItem> originalParent, DesignerItem designerItemToMove)
         {
@@ -660,10 +697,9 @@ namespace DiagramDesigner
                 }
             }
         }
-        private DesignerItem GetNewParentdDesignerItem/*取得元素上方最接近的元素*/()
+        public DesignerItem GetNewParentdDesignerItem/*取得元素上方最接近的元素*/(DesignerItem selectedItem)
         {
             var selectedItems = GetSelectedItems();
-            var selectedItem = GetFirstDesignerItem();
             //取得所有子节点，让parent不能为子节点
             var subitems = new List<DesignerItem>();
             foreach (var designerItem in selectedItems)
@@ -673,7 +709,7 @@ namespace DiagramDesigner
             subitems.AddRange(selectedItems);
             var pre = _diagramControl.DesignerItems.Where(x => x.Visibility.Equals(Visibility.Visible));
             var list = (from designerItem in pre
-                        let parentTop = Canvas.GetTop(designerItem) + designerItem.ActualHeight - 10
+                        let parentTop = Canvas.GetTop(designerItem) + designerItem.ActualHeight - 13
                         let parentLeft = Canvas.GetLeft(designerItem) + designerItem.ActualWidth * 0.1
                         let parentRight = parentLeft + designerItem.ActualWidth
                         where Canvas.GetTop(selectedItem) >= parentTop /*top位置小于自己的top位置*/
@@ -750,14 +786,13 @@ namespace DiagramDesigner
                 _diagramControl.Designer.Children.Add(shadow);
                 shadows.Add(shadow);
             }
-            //BringToFront(designerItem);
+            BringToFront(designerItem);
             return shadows;
         }
 
-        public void HideOthers()
+        public void HideOthers(DesignerItem selectedItem)
         {
             var selectedItems = GetSelectedItems();
-            var selectedItem = GetFirstDesignerItem();
             selectedItem.IsExpanderVisible = false;
             foreach (var designerItem in selectedItems.Where(x => x.ID != selectedItem.ID))
             {
@@ -786,6 +821,7 @@ namespace DiagramDesigner
             Canvas.SetTop(copy, item.Oldy);
             copy.Oldx = item.Oldx;
             copy.Oldy = item.Oldy;
+            copy.Data.Text = item.Data.Text;
             copy.Data.XIndex = item.Oldx;
             copy.Data.YIndex = item.Oldy;
             copy.Width = item.Width;
@@ -815,10 +851,9 @@ namespace DiagramDesigner
             }
             return list;
         }
-        public void MoveUpAndDown(DesignerItem parent)
+        public void MoveUpAndDown(DesignerItem parent, DesignerItem selectedItem)
         {
             if (parent == null) return;
-            var selectedItem = GetFirstDesignerItem();
             var itemTop = Canvas.GetTop(selectedItem);
             var itemsOnCanvas = _diagramControl.Designer.Children;
             var designerItemsOnCanvas = itemsOnCanvas.OfType<DesignerItem>().ToList();
@@ -862,35 +897,30 @@ namespace DiagramDesigner
             }
         }
 
-        DesignerItem GetFirstDesignerItem()
-        {
-            var selectedItems = GetSelectedItems();
-            var itemsToChangeParent = selectedItems.Where(x => selectedItems.All(y => y.ID != x.Data.ParentId)).ToList();
-            var selectedItem = itemsToChangeParent.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? b : a);
-            return selectedItem;
-        }
-
-
         #endregion
 
-        #region Add,Edit,Delete
+        #region Add,Edit,Delete,Copy
+        public void AddDesignerItem(ItemDataBase item)
+        {
+            var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
+            var designerItem = new DesignerItem(item.Id, item.ParentId, item, _diagramControl);
+            _diagramControl.DesignerItems.Add(designerItem);
+            CreateChild(parentDesignerItem, designerItem);
+            ArrangeWithRootItems();
+            SetSelectItem(designerItem);
+
+            //_diagramControl.SelectedItems.Clear();
+            //_diagramControl.SelectedItems.Add(designerItem);
+
+            Scroll(designerItem);
+        }
         public void Edit(DesignerItem item)
         {
             _diagramControl.IsOnEditing = true;
             var textBox = new TextBox();
-
-            textBox.DataContext = item.Data;
             textBox.Height = 22;
+            textBox.DataContext = item.Data;
             textBox.SetBinding(TextBox.TextProperty, new Binding("Text") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
-
-            //var keyBinding = new KeyBinding();
-            //keyBinding.Key = Key.Enter;
-            //keyBinding.Command = new RelayCommand(() =>
-            //{
-            //    _diagramControl.Designer.Children.Remove(textBox);
-            //});
-
-            //textBox.InputBindings.Add(keyBinding);
 
             Canvas.SetLeft(textBox, Canvas.GetLeft(item));
             Canvas.SetTop(textBox, Canvas.GetTop(item));
@@ -909,8 +939,6 @@ namespace DiagramDesigner
                 _diagramControl.Designer.Children.Remove(textBox);
                 item.Data.Changed = true;
                 _diagramControl.IsOnEditing = false;
-                SetWidth(item);
-                ArrangeWithRootItems();
             };
             t.TextChanged += (sender, e) =>
             {
@@ -921,10 +949,12 @@ namespace DiagramDesigner
                 switch (e.Key)
                 {
                     case Key.Enter:
-                        //MessageBox.Show("abc");
-                        _diagramControl.Designer.Children.Remove(textBox);
-                        e.Handled = true;
-                        _diagramControl.IsOnEditing = false;
+                        if (_diagramControl.IsOnEditing)
+                        {
+                            _diagramControl.Designer.Children.Remove(textBox);
+                            e.Handled = true;
+                            _diagramControl.IsOnEditing = false;
+                        }
                         break;
                 }
             };
@@ -976,16 +1006,7 @@ namespace DiagramDesigner
             _diagramControl.DesignerItems.Remove(item);
         }
         #endregion
-        public void AddDesignerItem(ItemDataBase item)
-        {
-            var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
-            var designerItem = new DesignerItem(item.Id, item.ParentId, item, _diagramControl);
-            _diagramControl.DesignerItems.Add(designerItem);
-            CreateChild(parentDesignerItem, designerItem);
-            ArrangeWithRootItems();
-            SetSelectItem(designerItem);
-            Scroll(designerItem);
-        }
+
         #endregion
 
         #region 用数据源，构建节点元素

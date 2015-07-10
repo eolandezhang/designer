@@ -52,7 +52,6 @@ namespace DiagramDesigner
             AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this.designerCanvas);
             if (adornerLayer != null)
                 adornerLayer.Remove(this);
-
             e.Handled = true;
         }
 
@@ -79,7 +78,7 @@ namespace DiagramDesigner
                 Rect itemRect = VisualTreeHelper.GetDescendantBounds(item);
                 Rect itemBounds = item.TransformToAncestor(designerCanvas).TransformBounds(itemRect);
 
-                //rubberBand.IntersectsWith
+                //rubberBand.Contains
                 if (rubberBand.IntersectsWith(itemBounds))
                 {
                     if (item is Connection)

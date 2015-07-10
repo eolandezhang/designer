@@ -70,6 +70,7 @@
                                                 </ContextMenu>
                                             </s:DesignerItem.ItemContextMenu>
                                         </c:DiagramControl>
+                                        
                                     </DockPanel>
                                 </xcad:LayoutDocument>
                             </xcad:LayoutDocumentPane>

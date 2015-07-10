@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -64,21 +65,25 @@ namespace DiagramDesigner.Controls
                 }
 
                 designer.InvalidateMeasure();
-                e.Handled = true;
+
 
                 #region 为元素产生影子，并且高亮父节点
                 var diagramControl = designer.TemplatedParent as DiagramControl;
                 if (diagramControl != null)
                 {
-                    diagramControl.DiagramManager.HideOthers();
+
+                    diagramControl.DiagramManager.HideOthers(designerItem);
                     diagramControl.DiagramManager.HideItemConnection(designerItem);/*拖动时隐藏连线*/
-                    var parent = diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
-                    diagramControl.DiagramManager.MoveUpAndDown(parent);
+                    //var parent = diagramControl.DiagramManager.HighlightParent(designerItem);/*拖动节点时，高亮父节点*/
+                    var parent = diagramControl.DiagramManager.ChangeParent(designerItem);/*改变父节点*/
+                    diagramControl.DiagramManager.MoveUpAndDown(parent,designerItem);
                     if (_shadows == null)
                         _shadows = diagramControl.DiagramManager.CreateShadows(designerItem);
-                    diagramControl.DiagramManager.ChangeParent();/*改变父节点*/
+                    
                 }
                 #endregion
+
+                e.Handled = true;
             }
 
         }
@@ -106,8 +111,9 @@ namespace DiagramDesigner.Controls
             diagramControl.DiagramManager.ShowItemConnection();/*拖动完毕，显示连线*/
             diagramControl.DiagramManager.RemoveShadows();/*移除影子*/
             diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
-            diagramControl.DiagramManager.ResetBrushBorderFontStyle(diagramControl.Designer);/*恢复边框字体样式*/
-            diagramControl.DiagramManager.HighlightSelected();
+            //diagramControl.DiagramManager.ResetBrushBorderFontStyle(diagramControl.Designer);/*恢复边框字体样式*/
+            //diagramControl.DiagramManager.HighlightSelected();
+            diagramControl.DesignerItems.Where(x => x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
             _shadows = null;
         }
 

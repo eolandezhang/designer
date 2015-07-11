@@ -1318,7 +1318,7 @@ namespace DiagramDesigner
                     }
                 }
             }
-            _diagramControl.DiagramManager.SetSelectItem(selectedDesignerItem);
+            if (selectedDesignerItem != null) _diagramControl.DiagramManager.SetSelectItem(selectedDesignerItem);
             Scroll(selectedDesignerItem);
         }
         public void SelectRightLeft(DesignerItem selectedItem, bool selectRight)
@@ -1343,7 +1343,7 @@ namespace DiagramDesigner
                     }
                 }
             }
-            _diagramControl.DiagramManager.SetSelectItem(selectedDesignerItem);
+            if (selectedDesignerItem != null) _diagramControl.DiagramManager.SetSelectItem(selectedDesignerItem);
         }
         List<DesignerItem> GetSelectedItems()
         {

@@ -18,7 +18,8 @@ namespace DiagramDesigner
         public double Oldx;
         public double Oldy;
 
-        public Guid OldParentId = Guid.Empty;
+        public DesignerItem ShadowOrignal;
+        //public DesignerItem NewParent;
 
         private ItemDataBase _data;
         public ItemDataBase Data
@@ -219,7 +220,17 @@ namespace DiagramDesigner
         }
         #endregion
 
-        public bool IsShadow { get; set; }
+        //public bool IsShadow { get; set; }
+        public static readonly DependencyProperty IsShadowProperty = DependencyProperty.Register(
+            "IsShadow", typeof(bool), typeof(DesignerItem), new PropertyMetadata(false));
+
+        public bool IsShadow
+        {
+            get { return (bool)GetValue(IsShadowProperty); }
+            set { SetValue(IsShadowProperty, value); }
+        }
+
+
         static DesignerItem()
         {
             // set the key to reference the style for this control

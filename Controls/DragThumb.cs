@@ -11,6 +11,7 @@ namespace DiagramDesigner.Controls
     public class DragThumb : Thumb
     {
         private List<DesignerItem> _shadows;
+        private DesignerItem NewParent;
         private DiagramControl DiagramControl
         {
             get
@@ -71,20 +72,19 @@ namespace DiagramDesigner.Controls
                 var diagramControl = designer.TemplatedParent as DiagramControl;
                 if (diagramControl != null)
                 {
+                    NewParent = diagramControl.DiagramManager.ChangeItemParent(designerItem, _shadows);
 
-                    diagramControl.DiagramManager.HideOthers(designerItem);
-                    var parent = diagramControl.DiagramManager.ChangeParent(designerItem);/*改变父节点*/
-                    diagramControl.DiagramManager.MoveUpAndDown(parent, designerItem);
-                    if (_shadows == null)
-                        _shadows = diagramControl.DiagramManager.CreateShadows(designerItem);
-                    diagramControl.DiagramManager.HideItemConnection(designerItem, parent);/*拖动时隐藏连线*/
+                    //var parent = diagramControl.DiagramManager.ChangeParent(designerItem);/*改变父节点*/
+                    //else { _shadows.ForEach(x => x.NewParent = parent); }
+                    //diagramControl.DiagramManager.HideOthers(designerItem);
+                    //diagramControl.DiagramManager.MoveUpAndDown(parent, designerItem);
+                    //diagramControl.DiagramManager.HideItemConnection(designerItem, parent);/*拖动时隐藏连线*/
                 }
                 #endregion
-
                 e.Handled = true;
             }
-
         }
+
 
 
 
@@ -103,14 +103,17 @@ namespace DiagramDesigner.Controls
 
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
+            var designerItem = DataContext as DesignerItem;
             var diagramControl = DiagramControl;
             if (diagramControl == null) return;
-            diagramControl.DiagramManager.ShowOthers();
-            diagramControl.DiagramManager.ShowItemConnection();/*拖动完毕，显示连线*/
-            diagramControl.DiagramManager.RemoveShadows();/*移除影子*/
-            diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
-            diagramControl.DesignerItems.Where(x => x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
+            diagramControl.DiagramManager.FinishChangeParent(NewParent);
+            //diagramControl.DiagramManager.ShowOthers();
+            //diagramControl.DiagramManager.RemoveShadows();/*移除影子*/
+            //diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/
+            //diagramControl.DesignerItems.Where(x => x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
+            //diagramControl.DiagramManager.ShowItemConnection();/*拖动完毕，显示连线*/
             _shadows = null;
+            NewParent = null;
         }
 
 

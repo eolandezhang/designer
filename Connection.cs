@@ -15,6 +15,8 @@ namespace DiagramDesigner
 
         #region Properties
 
+        public bool toNewParent = false;
+
         public Guid ID { get; set; }
 
         // source connector

@@ -913,7 +913,7 @@ namespace DiagramDesigner
             foreach (var shadow in shadows)
             {
                 if (shadow.ShadowOrignal.Data.ParentId == Guid.Empty)
-                    if (newParent != null) CreateConnection(newParent, shadow.ShadowOrignal);
+                    if (newParent != null) CreateNewConnection(newParent, shadow.ShadowOrignal);
                 var connections = GetItemConnections(shadow).ToList();
                 foreach (var connection in connections)
                 {

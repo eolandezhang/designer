@@ -72,8 +72,11 @@ namespace DiagramDesigner.Controls
                 var diagramControl = designer.TemplatedParent as DiagramControl;
                 if (diagramControl != null)
                 {
-                    NewParent = diagramControl.DiagramManager.ChangeItemParent(designerItem, _shadows);
 
+                    NewParent = diagramControl.DiagramManager.ChangeItemParent(designerItem, _shadows);
+                    if (_shadows == null || _shadows.Count == 0)
+                        _shadows = diagramControl.DiagramManager.CreateShadows(designerItem, designerItem, NewParent);
+                    diagramControl.DiagramManager.ConnectToParent(NewParent, designerItem);
                     //var parent = diagramControl.DiagramManager.ChangeParent(designerItem);/*改变父节点*/
                     //else { _shadows.ForEach(x => x.NewParent = parent); }
                     //diagramControl.DiagramManager.HideOthers(designerItem);
@@ -106,7 +109,8 @@ namespace DiagramDesigner.Controls
             var designerItem = DataContext as DesignerItem;
             var diagramControl = DiagramControl;
             if (diagramControl == null) return;
-            diagramControl.DiagramManager.FinishChangeParent(NewParent);
+            if (_shadows != null)
+                diagramControl.DiagramManager.FinishChangeParent(NewParent);
             //diagramControl.DiagramManager.ShowOthers();
             //diagramControl.DiagramManager.RemoveShadows();/*移除影子*/
             //diagramControl.DiagramManager.ArrangeWithRootItems();/*重新布局*/

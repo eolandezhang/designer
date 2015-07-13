@@ -613,6 +613,8 @@ namespace DiagramDesigner
                         select designerItem).ToList();
             if (!list.Any()) return null;
             var parent = list.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);
+            _diagramControl.DesignerItems.ToList().ForEach(x=> { x.IsNewParent = false; });
+            parent.IsNewParent = true;
             return parent;
         }
         public DesignerItem ChangeParent(DesignerItem designerItem)
@@ -708,9 +710,9 @@ namespace DiagramDesigner
             RemoveShadows();
             ArrangeWithRootItems();/*重新布局*/
         }
-        
-        
-        
+
+
+
         void CreateHelperConnection(DesignerItem newParent, DesignerItem dragItem)
         {
             var source = GetItemConnector(newParent, PARENT_CONNECTOR);

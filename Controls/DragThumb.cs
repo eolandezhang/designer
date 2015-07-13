@@ -66,23 +66,24 @@ namespace DiagramDesigner.Controls
                 }
                 designer.InvalidateMeasure();
 
-                #region 为元素产生影子，并且高亮父节点
-                var diagramControl = designer.TemplatedParent as DiagramControl;
-                if (diagramControl != null)
-                {
-                    NewParent = diagramControl.DiagramManager.ChangeParent(designerItem);
-                    if (_shadows == null || _shadows.Count == 0)
-                        _shadows = diagramControl.DiagramManager.CreateShadows(designerItem, designerItem, NewParent);
-                    diagramControl.DiagramManager.ConnectToParent(NewParent, designerItem);
-                }
-                #endregion
+                ChangeParent(designer, designerItem);
 
                 e.Handled = true;
             }
         }
 
-
-
+        void ChangeParent(DesignerCanvas designer, DesignerItem designerItem)
+        {
+            var diagramControl = designer.TemplatedParent as DiagramControl;
+            if (diagramControl != null)
+            {
+                diagramControl.DesignerItems.Where(x => !x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
+                NewParent = diagramControl.DiagramManager.ChangeParent(designerItem);
+                if (_shadows == null) { _shadows = diagramControl.DiagramManager.CreateShadows(designerItem, NewParent); }
+                diagramControl.DiagramManager.ConnectToParent(NewParent, designerItem);
+                diagramControl.DiagramManager.MoveUpAndDown(NewParent, designerItem);
+            }
+        }
 
         //拖动前保存元素位置
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)

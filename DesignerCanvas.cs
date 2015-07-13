@@ -152,8 +152,8 @@ namespace DiagramDesigner
                 }
             }
             // add margin 
-            size.Width += 10;
-            size.Height += 10;
+            size.Width += 1000;
+            size.Height += 1000;
 
             //foreach (DesignerItem item in SelectionService.CurrentSelection.OfType<DesignerItem>())
             //{

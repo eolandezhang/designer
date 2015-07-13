@@ -25,7 +25,7 @@ namespace DiagramDesigner.Controls
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
-            
+
 
 
         }
@@ -104,9 +104,7 @@ namespace DiagramDesigner.Controls
                     if (diagramControl.Suppress) return;
                     var n = e.NewValue as ObservableCollection<ItemDataBase>;
                     if (n == null) return;
-                    //diagramControl.DiagramManager.Arrange();
-                    diagramControl.DiagramManager.GenerateDesignerItems();
-
+                    diagramControl.DiagramManager.GenerateDesignerItems();/*利用数据源在画布上添加节点及连线*/
                     n.CollectionChanged += (sender, arg) =>
                     {
                         switch (arg.Action)

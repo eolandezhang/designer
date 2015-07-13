@@ -15,26 +15,7 @@ namespace DiagramDesigner
     [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
     public class DesignerItem : ContentControl, ISelectable, IGroupable, ICloneable
     {
-        public double Oldx;
-        public double Oldy;
-
-        public DesignerItem ShadowOrignal;
-        //public DesignerItem NewParent;
-
-        private ItemDataBase _data;
-        public ItemDataBase Data
-        {
-            get { return _data; }
-            set
-            {
-                if (_data != value)
-                {
-                    _data = value;
-
-                }
-            }
-        }
-
+        #region Fields
         #region ID
         private Guid id;
         public Guid ID
@@ -43,29 +24,17 @@ namespace DiagramDesigner
             set { id = value; }
         }
         #endregion
-
-        #region ParentID
-        //分组时用的，并不是表示父节点ID
-        public Guid ParentID
-        {
-            get { return (Guid)GetValue(ParentIDProperty); }
-            set { SetValue(ParentIDProperty, value); }
-        }
-        public static readonly DependencyProperty ParentIDProperty = DependencyProperty.Register("ParentID", typeof(Guid), typeof(DesignerItem));
+        public ItemDataBase Data;/*存放数据*/
+        #region 位置
+        public double Oldx;/*记录拖拽前的位置*/
+        public double Oldy;
+        #endregion
+        public DesignerItem ShadowOrignal;/*当此节点为shadow时，记录shadow的原节点*/
+        public DiagramControl DiagramControl;
         #endregion
 
-        #region IsGroup
-        public bool IsGroup
-        {
-            get { return (bool)GetValue(IsGroupProperty); }
-            set { SetValue(IsGroupProperty, value); }
-        }
-        public static readonly DependencyProperty IsGroupProperty =
-            DependencyProperty.Register("IsGroup", typeof(bool), typeof(DesignerItem));
-        #endregion
-
-        #region IsSelected Property
-
+        #region Property
+        #region IsSelected Property 被选中的
         public bool IsSelected
         {
             get { return (bool)GetValue(IsSelectedProperty); }
@@ -76,65 +45,8 @@ namespace DiagramDesigner
                                        typeof(bool),
                                        typeof(DesignerItem),
                                        new FrameworkPropertyMetadata(false));
-
         #endregion
-
-        #region DragThumbTemplate Property
-
-        // can be used to replace the default template for the DragThumb
-        public static readonly DependencyProperty DragThumbTemplateProperty =
-            DependencyProperty.RegisterAttached("DragThumbTemplate", typeof(ControlTemplate), typeof(DesignerItem));
-
-        public static ControlTemplate GetDragThumbTemplate(UIElement element)
-        {
-            return (ControlTemplate)element.GetValue(DragThumbTemplateProperty);
-        }
-
-        public static void SetDragThumbTemplate(UIElement element, ControlTemplate value)
-        {
-            element.SetValue(DragThumbTemplateProperty, value);
-        }
-
-        #endregion
-
-        #region ConnectorDecoratorTemplate Property
-
-        // can be used to replace the default template for the ConnectorDecorator
-        public static readonly DependencyProperty ConnectorDecoratorTemplateProperty =
-            DependencyProperty.RegisterAttached("ConnectorDecoratorTemplate", typeof(ControlTemplate), typeof(DesignerItem));
-
-        public static ControlTemplate GetConnectorDecoratorTemplate(UIElement element)
-        {
-            return (ControlTemplate)element.GetValue(ConnectorDecoratorTemplateProperty);
-        }
-
-        public static void SetConnectorDecoratorTemplate(UIElement element, ControlTemplate value)
-        {
-            element.SetValue(ConnectorDecoratorTemplateProperty, value);
-        }
-
-        #endregion
-
-        #region IsDragConnectionOver
-
-        // while drag connection procedure is ongoing and the mouse moves over 
-        // this item this value is true; if true the ConnectorDecorator is triggered
-        // to be visible, see template
-        public bool IsDragConnectionOver
-        {
-            get { return (bool)GetValue(IsDragConnectionOverProperty); }
-            set { SetValue(IsDragConnectionOverProperty, value); }
-        }
-        public static readonly DependencyProperty IsDragConnectionOverProperty =
-            DependencyProperty.Register("IsDragConnectionOver",
-                                         typeof(bool),
-                                         typeof(DesignerItem),
-                                         new FrameworkPropertyMetadata(false));
-
-        #endregion
-
-        //是否展开
-        #region IsExpanded
+        #region IsExpanded Property 是否展开
 
         public static readonly DependencyProperty IsExpandedProperty = DependencyProperty.Register(
             "IsExpanded", typeof(bool), typeof(DesignerItem),
@@ -161,9 +73,7 @@ namespace DiagramDesigner
         }
 
         #endregion
-
-        //折叠按钮是否显示
-        #region IsExpanderVisible
+        #region IsExpanderVisible Property 折叠按钮是否显示
 
         public static readonly DependencyProperty IsExpanderVisibleProperty = DependencyProperty.Register(
             "IsExpanderVisible", typeof(bool), typeof(DesignerItem), new FrameworkPropertyMetadata(false));
@@ -175,9 +85,7 @@ namespace DiagramDesigner
         }
 
         #endregion
-
-        //是否可以折叠
-        #region Collapsable
+        #region CanCollapsed Property 是否可以折叠
 
         public static readonly DependencyProperty CanCollapsedProperty = DependencyProperty.Register(
             "CanCollapsed", typeof(bool), typeof(DesignerItem), new FrameworkPropertyMetadata(true));
@@ -189,9 +97,7 @@ namespace DiagramDesigner
         }
 
         #endregion
-
-        //是否是新父节点
-        #region Collapsable
+        #region IsNewParent Property 是否是新父节点
 
         public static readonly DependencyProperty IsNewParentProperty = DependencyProperty.Register(
             "IsNewParent", typeof(bool), typeof(DesignerItem), new FrameworkPropertyMetadata(false));
@@ -203,9 +109,7 @@ namespace DiagramDesigner
         }
 
         #endregion
-
-
-        #region 菜单
+        #region ItemContextMenu Property 右键菜单
         public static readonly DependencyProperty ItemContextMenuProperty =
             DependencyProperty.RegisterAttached("ItemContextMenu", typeof(ContextMenu), typeof(DesignerItem));
 
@@ -219,8 +123,8 @@ namespace DiagramDesigner
             element.SetValue(ItemContextMenuProperty, value);
         }
         #endregion
+        #region IsShadow Property 标识是否是拖拽阴影
 
-        //public bool IsShadow { get; set; }
         public static readonly DependencyProperty IsShadowProperty = DependencyProperty.Register(
             "IsShadow", typeof(bool), typeof(DesignerItem), new PropertyMetadata(false));
 
@@ -230,27 +134,80 @@ namespace DiagramDesigner
             set { SetValue(IsShadowProperty, value); }
         }
 
-
-        static DesignerItem()
+        #endregion
+        #region 树状图，不使用的属性
+        #region ParentID Property 分组时用的，并不是表示父节点ID
+        public Guid ParentID
         {
-            // set the key to reference the style for this control
-            DefaultStyleKeyProperty.OverrideMetadata(
-                typeof(DesignerItem), new FrameworkPropertyMetadata(typeof(DesignerItem)));
+            get { return (Guid)GetValue(ParentIDProperty); }
+            set { SetValue(ParentIDProperty, value); }
+        }
+        public static readonly DependencyProperty ParentIDProperty = DependencyProperty.Register("ParentID", typeof(Guid), typeof(DesignerItem));
+        #endregion
+        #region IsGroup Property 分组
+        public bool IsGroup
+        {
+            get { return (bool)GetValue(IsGroupProperty); }
+            set { SetValue(IsGroupProperty, value); }
+        }
+        public static readonly DependencyProperty IsGroupProperty =
+            DependencyProperty.Register("IsGroup", typeof(bool), typeof(DesignerItem));
+        #endregion
+        #region DragThumbTemplate Property 拖拽模板
+
+        // can be used to replace the default template for the DragThumb
+        public static readonly DependencyProperty DragThumbTemplateProperty =
+            DependencyProperty.RegisterAttached("DragThumbTemplate", typeof(ControlTemplate), typeof(DesignerItem));
+
+        public static ControlTemplate GetDragThumbTemplate(UIElement element)
+        {
+            return (ControlTemplate)element.GetValue(DragThumbTemplateProperty);
         }
 
-        public DiagramControl DiagramControl { get; set; }
-
-        private DiagramControl GetDiagramControl()/*父控件*/
+        public static void SetDragThumbTemplate(UIElement element, ControlTemplate value)
         {
-            DesignerCanvas designer = VisualTreeHelper.GetParent(this) as DesignerCanvas;
-            if (designer != null)
-            {
-                var diagramControl = designer.TemplatedParent as DiagramControl;
-                return diagramControl;
-            }
-            return null;
+            element.SetValue(DragThumbTemplateProperty, value);
         }
 
+        #endregion
+        #region ConnectorDecoratorTemplate Property 连接点模板
+
+        // can be used to replace the default template for the ConnectorDecorator
+        public static readonly DependencyProperty ConnectorDecoratorTemplateProperty =
+            DependencyProperty.RegisterAttached("ConnectorDecoratorTemplate", typeof(ControlTemplate), typeof(DesignerItem));
+
+        public static ControlTemplate GetConnectorDecoratorTemplate(UIElement element)
+        {
+            return (ControlTemplate)element.GetValue(ConnectorDecoratorTemplateProperty);
+        }
+
+        public static void SetConnectorDecoratorTemplate(UIElement element, ControlTemplate value)
+        {
+            element.SetValue(ConnectorDecoratorTemplateProperty, value);
+        }
+
+        #endregion
+        #region IsDragConnectionOver Property
+
+        // while drag connection procedure is ongoing and the mouse moves over 
+        // this item this value is true; if true the ConnectorDecorator is triggered
+        // to be visible, see template
+        public bool IsDragConnectionOver
+        {
+            get { return (bool)GetValue(IsDragConnectionOverProperty); }
+            set { SetValue(IsDragConnectionOverProperty, value); }
+        }
+        public static readonly DependencyProperty IsDragConnectionOverProperty =
+            DependencyProperty.Register("IsDragConnectionOver",
+                                         typeof(bool),
+                                         typeof(DesignerItem),
+                                         new FrameworkPropertyMetadata(false));
+
+        #endregion
+        #endregion
+        #endregion
+
+        #region Constructors
         public DesignerItem(Guid id, DiagramControl diagramControl)
         {
             this.id = id;
@@ -264,7 +221,8 @@ namespace DiagramDesigner
                  diagramControl.DiagramManager.Edit(this);
              };
         }
-        public DesignerItem(DiagramControl diagramControl) : this(Guid.NewGuid(), diagramControl) { }
+        public DesignerItem(DiagramControl diagramControl)
+            : this(Guid.NewGuid(), diagramControl) { }
         public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl)
             : this(id, diagramControl)
         {
@@ -277,7 +235,15 @@ namespace DiagramDesigner
             Data.ParentId = parentItemId; Data = itemData;
             itemData.DiagramControl = diagramControl;
         }
+        static DesignerItem()
+        {
+            // set the key to reference the style for this control
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(DesignerItem), new FrameworkPropertyMetadata(typeof(DesignerItem)));
+        }
+        #endregion
 
+        #region override
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             //base.OnPreviewMouseDown(e);
@@ -302,6 +268,7 @@ namespace DiagramDesigner
             }
             e.Handled = false;
         }
+        #endregion
 
         void DesignerItem_Loaded(object sender, RoutedEventArgs e)
         {
@@ -323,26 +290,16 @@ namespace DiagramDesigner
                                 thumb.Template = template;
                         }
 
-                        //var controlTemplate = Template;
-                        //if (controlTemplate != null)
-                        //{
-                        //    var grid = controlTemplate.FindName("Grid", this) as Grid;
-                        //    if (grid != null)
-                        //    {
-                        //        var x = ContextMenu;
-
-                        //        //grid.ContextMenu
-                        //    }
-                        //}
                     }
                 }
             }
 
         }
+
         public object Clone()
         {
             var data = (ItemDataBase)Data.Clone();
-            return new DesignerItem(data.Id, DiagramControl) { Data = data, DiagramControl = GetDiagramControl() };
+            return new DesignerItem(data.Id, DiagramControl) { Data = data, DiagramControl = DiagramControl };
         }
     }
 }

@@ -505,12 +505,12 @@ namespace DiagramDesigner
         public void MoveUpAndDown(DesignerItem parent, DesignerItem selectedItem)
         {
             if (parent == null) return;
-            _diagramControl.DesignerItems.Where(x=>!Equals(x, selectedItem)).ToList().ForEach(x =>
+            _diagramControl.DesignerItems.Where(x => !Equals(x, selectedItem)).ToList().ForEach(x =>
             {
-                Canvas.SetTop(x,x.Data.YIndex);
-                Canvas.SetLeft(x,x.Data.XIndex);
+                Canvas.SetTop(x, x.Data.YIndex);
+                Canvas.SetLeft(x, x.Data.XIndex);
             });
-            var itemTop = Canvas.GetTop(selectedItem) - selectedItem.ActualHeight/2;
+            var itemTop = Canvas.GetTop(selectedItem) - selectedItem.ActualHeight / 2;
             var itemsOnCanvas = _diagramControl.DesignerCanvas.Children;
             var designerItemsOnCanvas = itemsOnCanvas.OfType<DesignerItem>().ToList();
             var downItems = designerItemsOnCanvas.Where(x =>
@@ -520,53 +520,63 @@ namespace DiagramDesigner
                ).ToList();
             foreach (var designerItem in downItems)
             {
-                var item = designerItem.IsShadow ? designerItem.ShadowOrignal : designerItem;
+                Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
+                var list = designerItemsOnCanvas.Where(x =>
+                    x.Oldy > designerItem.Oldy
+                    && x.ID != selectedItem.ID
+                    ).ToList();
 
-
-                var p = GetTopestParentAfterSpecifiedParent(parent, item);
-                if (p != null)
+                list.ForEach(x =>
                 {
-                    if (Equals(p, selectedItem))
-                    {
-                        var shadow = designerItemsOnCanvas.FirstOrDefault(x => x.IsShadow && x.ShadowOrignal.Equals(p));
-                        if (shadow != null) Canvas.SetTop(shadow, shadow.Oldy + selectedItem.ActualHeight);
-                        var list = designerItemsOnCanvas.Where(x =>
-                           x.Oldy > p.Oldy
-                           && x.ID != selectedItem.ID
-                           ).ToList();
+                    Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
+                });
 
-                        list.ForEach(x =>
-                        {
-                            Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
-                        });
-                    }
-                    else
-                    {
-                        Canvas.SetTop(p, p.Oldy + selectedItem.ActualHeight);
-                        var list = designerItemsOnCanvas.Where(x =>
-                            x.Oldy > p.Oldy
-                            && x.ID != selectedItem.ID
-                            ).ToList();
+                //var item = designerItem.IsShadow ? designerItem.ShadowOrignal : designerItem;
 
-                        list.ForEach(x =>
-                        {
-                            Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
-                        });
-                    }
-                }
-                else
-                {
-                    Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
-                    var list = designerItemsOnCanvas.Where(x =>
-                        x.Oldy > designerItem.Oldy
-                        && x.ID != selectedItem.ID
-                        ).ToList();
+                //var p = GetTopestParentAfterSpecifiedParent(parent, item);
+                //if (p != null)
+                //{
+                //    if (Equals(p, selectedItem))
+                //    {
+                //        var shadow = designerItemsOnCanvas.FirstOrDefault(x => x.IsShadow && x.ShadowOrignal.Equals(p));
+                //        if (shadow != null) Canvas.SetTop(shadow, shadow.Oldy + selectedItem.ActualHeight);
+                //        var list = designerItemsOnCanvas.Where(x =>
+                //           x.Oldy > p.Oldy
+                //           && x.ID != selectedItem.ID
+                //           ).ToList();
 
-                    list.ForEach(x =>
-                    {
-                        Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
-                    });
-                }
+                //        list.ForEach(x =>
+                //        {
+                //            Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
+                //        });
+                //    }
+                //    else
+                //    {
+                //        Canvas.SetTop(p, p.Oldy + selectedItem.ActualHeight);
+                //        var list = designerItemsOnCanvas.Where(x =>
+                //            x.Oldy > p.Oldy
+                //            && x.ID != selectedItem.ID
+                //            ).ToList();
+
+                //        list.ForEach(x =>
+                //        {
+                //            Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
+                //        });
+                //    }
+                //}
+                //else
+                //{
+                //    Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
+                //    var list = designerItemsOnCanvas.Where(x =>
+                //        x.Oldy > designerItem.Oldy
+                //        && x.ID != selectedItem.ID
+                //        ).ToList();
+
+                //    list.ForEach(x =>
+                //    {
+                //        Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
+                //    });
+                //}
             }
             var upItems = designerItemsOnCanvas.Where(x =>
                 x.Oldy < itemTop

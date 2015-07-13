@@ -16,16 +16,7 @@ namespace DiagramDesigner
     public class DesignerItem : ContentControl, ISelectable, IGroupable, ICloneable
     {
         #region Fields
-        #region ID
-        private Guid id;
-        public Guid ID
-        {
-            get { return id; }
-            set { id = value; }
-        }
-        #endregion
-        public ItemDataBase Data { get; set; }/*存放数据*/
-        #region 位置
+          #region 位置
         public double Oldx;/*记录拖拽前的位置*/
         public double Oldy;
         #endregion
@@ -34,6 +25,8 @@ namespace DiagramDesigner
         #endregion
 
         #region Property
+        public Guid ID { get; set; }
+        public ItemDataBase Data { get; set; }/*存放数据*/
         #region IsSelected Property 被选中的
         public bool IsSelected
         {
@@ -210,7 +203,7 @@ namespace DiagramDesigner
         #region Constructors
         public DesignerItem(Guid id, DiagramControl diagramControl)
         {
-            this.id = id;
+            this.ID = id;
             Loaded += DesignerItem_Loaded;
             Data = new CustomItemData(id);
             Data.DiagramControl = diagramControl;

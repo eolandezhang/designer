@@ -24,7 +24,7 @@ namespace DiagramDesigner
             set { id = value; }
         }
         #endregion
-        public ItemDataBase Data;/*存放数据*/
+        public ItemDataBase Data { get; set; }/*存放数据*/
         #region 位置
         public double Oldx;/*记录拖拽前的位置*/
         public double Oldy;

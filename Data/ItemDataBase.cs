@@ -40,6 +40,10 @@ namespace DiagramDesigner.Data
                 if (_text != "")//初始化时，不标记为更改
                 {
                     Changed = true;
+                    if (DiagramControl != null)
+                    {
+                        DiagramControl.DiagramManager.ArrangeWithRootItems();
+                    }
                 }
                 OnPropertyChanged("Text");
             }

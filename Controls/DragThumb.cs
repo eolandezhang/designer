@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -12,16 +11,18 @@ namespace DiagramDesigner.Controls
     {
         private List<DesignerItem> _shadows;
         private DesignerItem NewParent;
+        private DiagramControl _diagramControl;
         private DiagramControl DiagramControl
         {
             get
             {
+                if (_diagramControl != null) return _diagramControl;
                 var designerItem = DataContext as DesignerItem;
                 if (designerItem == null) return null;
                 var designer = designerItem.Parent as DesignerCanvas;
                 if (designer == null) return null;
-                var diagramControl = designer.TemplatedParent as DiagramControl;
-                return diagramControl;
+                _diagramControl = designer.TemplatedParent as DiagramControl;
+                return _diagramControl;
             }
         }
         public DragThumb()
@@ -65,24 +66,17 @@ namespace DiagramDesigner.Controls
                     Canvas.SetTop(item, top + deltaVertical);
                 }
                 designer.InvalidateMeasure();
-
-                ChangeParent(designer, designerItem);
-
                 e.Handled = true;
+                ChangeParent(designerItem);
             }
         }
 
-        void ChangeParent(DesignerCanvas designer, DesignerItem designerItem)
+        void ChangeParent(DesignerItem designerItem)
         {
-            var diagramControl = designer.TemplatedParent as DiagramControl;
-            if (diagramControl != null)
-            {
-                diagramControl.DesignerItems.Where(x => !x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
-                NewParent = diagramControl.DiagramManager.ChangeParent(designerItem);
-                if (_shadows == null) { _shadows = diagramControl.DiagramManager.CreateShadows(designerItem, NewParent); }
-                diagramControl.DiagramManager.ConnectToParent(NewParent, designerItem);
-                diagramControl.DiagramManager.MoveUpAndDown(NewParent, designerItem);
-            }
+            NewParent = DiagramControl.DiagramManager.ChangeParent(designerItem);
+            if (_shadows == null) { _shadows = DiagramControl.DiagramManager.CreateShadows(designerItem, NewParent); }
+            DiagramControl.DiagramManager.CreateHelperConnection(NewParent, designerItem);
+            DiagramControl.DiagramManager.MoveUpAndDown(NewParent, designerItem);
         }
 
         //拖动前保存元素位置

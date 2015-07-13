@@ -763,14 +763,14 @@ namespace DiagramDesigner
         public void MoveUpAndDown(DesignerItem parent, DesignerItem selectedItem)
         {
             if (parent == null) return;
-            var itemTop = Canvas.GetTop(selectedItem);
+            var itemTop = Canvas.GetTop(selectedItem) - selectedItem.ActualHeight;
             var itemsOnCanvas = _diagramControl.DesignerCanvas.Children;
             var designerItemsOnCanvas = itemsOnCanvas.OfType<DesignerItem>().ToList();
             var downItems = designerItemsOnCanvas.Where(x =>
                 x.Oldy > itemTop
                 && x.ID != selectedItem.ID
+                && x.Data.ParentId != Guid.Empty
                ).ToList();
-            var allSubItems = GetAllSubItems(selectedItem);
             foreach (var designerItem in downItems)
             {
                 DesignerItem item = null;
@@ -790,7 +790,7 @@ namespace DiagramDesigner
                         Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
                     });
                 }
-                else if (p == null && GetDirectSubItems(parent).Contains(item))
+                else
                 {
                     Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
 
@@ -804,15 +804,12 @@ namespace DiagramDesigner
                         Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
                     });
                 }
-                else if (!allSubItems.Contains(item))
-                {
-                    Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
-                }
             }
             var upItems = designerItemsOnCanvas.Where(x =>
                 x.Oldy < itemTop
                 && x.Oldy > Canvas.GetTop(parent)
                 && x.ID != selectedItem.ID
+                 && x.Data.ParentId != Guid.Empty
                 ).ToList();
             foreach (var designerItem in upItems)
             {

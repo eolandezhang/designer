@@ -773,7 +773,9 @@ namespace DiagramDesigner
             var allSubItems = GetAllSubItems(selectedItem);
             foreach (var designerItem in downItems)
             {
-                var p = GetParent(parent, designerItem);
+                DesignerItem item = null;
+                item = designerItem.IsShadow ? designerItem.ShadowOrignal : designerItem;
+                var p = GetParent(parent, item);
                 if (p != null && !Equals(p, selectedItem))
                 {
                     Canvas.SetTop(p, p.Oldy + selectedItem.ActualHeight);
@@ -788,7 +790,21 @@ namespace DiagramDesigner
                         Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
                     });
                 }
-                else if (!allSubItems.Contains(designerItem))
+                else if (p == null && GetDirectSubItems(parent).Contains(item))
+                {
+                    Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
+
+                    var list = designerItemsOnCanvas.Where(x =>
+                        x.Oldy > designerItem.Oldy
+                        && x.ID != selectedItem.ID
+                        ).ToList();
+
+                    list.ForEach(x =>
+                    {
+                        Canvas.SetTop(x, x.Oldy + selectedItem.ActualHeight);
+                    });
+                }
+                else if (!allSubItems.Contains(item))
                 {
                     Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
                 }
@@ -801,7 +817,9 @@ namespace DiagramDesigner
             foreach (var designerItem in upItems)
             {
                 Canvas.SetTop(designerItem, designerItem.Data.YIndex);
-                var x1 = GetAllSubItems(designerItem);
+                DesignerItem item = null;
+                item = designerItem.IsShadow ? designerItem.ShadowOrignal : designerItem;
+                var x1 = GetAllSubItems(item);
                 if (x1 != null && x1.Any())
                 {
                     var list = designerItemsOnCanvas.Where(x =>

@@ -761,7 +761,7 @@ namespace DiagramDesigner
 
         #endregion
 
-        #region Add,Edit,Delete,Copy
+        #region Add,Edit,Delete,Cut,Copy,Paste
         public void AddDesignerItem(ItemDataBase item)
         {
             var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
@@ -773,6 +773,7 @@ namespace DiagramDesigner
             BringToFront(designerItem);
             Scroll(designerItem);
         }
+        #region Edit
         public void Edit(DesignerItem item)
         {
             _diagramControl.IsOnEditing = true;
@@ -809,66 +810,34 @@ namespace DiagramDesigner
         {
             GlobalInputBindingManager.Default.Clear();
 
-            KeyBinding kbCtrlEnter = new KeyBinding();
-            kbCtrlEnter.Key = Key.Enter;
-            kbCtrlEnter.Modifiers = ModifierKeys.Control;
-            kbCtrlEnter.Command = new RelayCommand(() =>
+            var kbCtrlEnter = new KeyBinding
             {
-                t.Text += Environment.NewLine;
-                t.SelectionStart = t.Text.Length;
-            });
+                Key = Key.Enter,
+                Modifiers = ModifierKeys.Control,
+                Command = new RelayCommand(() =>
+                {
+                    t.Text += Environment.NewLine;
+                    t.SelectionStart = t.Text.Length;
+                })
+            };
             t.InputBindings.Add(kbCtrlEnter);
 
-            KeyBinding kbEnter = new KeyBinding();
-            kbEnter.Key = Key.Enter;
-            kbEnter.Command = new RelayCommand(() =>
+            var kbEnter = new KeyBinding
             {
-                if (_diagramControl.IsOnEditing)
+                Key = Key.Enter,
+                Command = new RelayCommand(() =>
                 {
-                    _diagramControl.DesignerCanvas.Children.Remove(t);
-                    ArrangeWithRootItems();
-                    _diagramControl.IsOnEditing = false;
-                }
-            });
+                    if (_diagramControl.IsOnEditing)
+                    {
+                        _diagramControl.DesignerCanvas.Children.Remove(t);
+                        ArrangeWithRootItems();
+                        _diagramControl.IsOnEditing = false;
+                    }
+                })
+            };
             t.InputBindings.Add(kbEnter);
-
-            KeyBinding kbDelete = new KeyBinding();
-            kbDelete.Key = Key.Delete;
-            kbDelete.Command = new RelayCommand(() =>
-            {
-                if (_diagramControl.IsOnEditing)
-                {
-                    DeleteText(t);
-                }
-            });
-            t.InputBindings.Add(kbDelete);
         }
-        void DeleteText(TextBox t)
-        {
-            if (_diagramControl.IsOnEditing)
-            {
-                var text = t.Text;
-                var x = t.SelectedText;
-                if (!string.IsNullOrEmpty(text))
-                {
-                    if (!string.IsNullOrEmpty(x))
-                    {
-                        t.Text = System.Text.RegularExpressions.Regex.Replace(text, x, "");
-                    }
-                    else
-                    {
-                        var index = t.SelectionStart;
-                        if (index != text.Length)
-                        {
-                            t.Text = System.Text.RegularExpressions.Regex.Replace(text, text[index].ToString(), "");
-                            t.SelectionStart = index;
-                        }
-                    }
-                }
-
-
-            }
-        }
+        #endregion
         #region Delete
         public void DeleteDesignerItem(ItemDataBase itemDataBase)
         {
@@ -912,6 +881,32 @@ namespace DiagramDesigner
             connectors.ForEach(x => { x.Connections.Clear(); });
             _diagramControl.DesignerCanvas.Children.Remove(item);
             _diagramControl.DesignerItems.Remove(item);
+        }
+        #endregion
+        #region Copy&Paste
+        List<ItemDataBase> _clipbrd = new List<ItemDataBase>();//clipboard 复制，剪切板
+
+        public void Cut()
+        {
+            _clipbrd.Clear();
+            foreach (var selectedItem in GetSelectedItems())
+            {
+                _clipbrd.Add(selectedItem.Data);
+                _diagramControl.ItemDatas.Remove(selectedItem.Data);
+            }
+            
+        }
+        public void Copy()
+        {
+            _clipbrd.Clear();
+            foreach (var selectedItem in GetSelectedItems())
+            {
+                _clipbrd.Add(selectedItem.Data);
+            }
+        }
+        public void Paste()
+        {
+
         }
         #endregion
         #endregion

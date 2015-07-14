@@ -288,17 +288,18 @@ namespace DiagramDesigner
                         DragThumb thumb = this.Template.FindName("PART_DragThumb", this) as DragThumb;
                         if (thumb != null)
                         {
-                            ControlTemplate template =
-                                GetDragThumbTemplate(contentVisual);
-                            if (template != null)
-                                thumb.Template = template;
+                            ControlTemplate template = GetDragThumbTemplate(contentVisual);
+                            if (template != null) thumb.Template = template;
                         }
 
                     }
+                    contentPresenter.ContentTemplate = DiagramControl.GetDesignerItemTemplate(this.DiagramControl);
+
                 }
             }
-
         }
+
+
 
         public object Clone()
         {

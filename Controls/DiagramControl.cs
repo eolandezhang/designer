@@ -25,10 +25,8 @@ namespace DiagramDesigner.Controls
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
-
-
-
         }
+
 
         #endregion
 
@@ -98,13 +96,13 @@ namespace DiagramDesigner.Controls
             new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
                 (d, e) =>
                 {
-
                     var diagramControl = (DiagramControl)d;
                     if (diagramControl.ItemDatas == null) return;
                     if (diagramControl.Suppress) return;
                     var n = e.NewValue as ObservableCollection<ItemDataBase>;
                     if (n == null) return;
                     diagramControl.DiagramManager.GenerateDesignerItems();/*利用数据源在画布上添加节点及连线*/
+
                     n.CollectionChanged += (sender, arg) =>
                     {
                         switch (arg.Action)
@@ -171,6 +169,22 @@ namespace DiagramDesigner.Controls
 
         #endregion
 
+        #region DesignerItemTemplate
+
+        public static readonly DependencyProperty DesignerItemTemplateProperty =
+            DependencyProperty.RegisterAttached("DesignerItemTemplate", typeof(DataTemplate), typeof(DiagramControl));
+
+        public static DataTemplate GetDesignerItemTemplate(UIElement element)
+        {
+            return (DataTemplate)element.GetValue(DesignerItemTemplateProperty);
+        }
+
+        public static void SetDesignerItemTemplate(UIElement element, DataTemplate value)
+        {
+            element.SetValue(DesignerItemTemplateProperty, value);
+        }
+        #endregion
+
         #endregion
 
         #region Constructors
@@ -193,20 +207,19 @@ namespace DiagramDesigner.Controls
                     }
                 }
             };
-
-
-
+            
         }
-        public void GetDataInfo()
-        {
 
-            var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
-            DataInfo = string.Format("Changed:{0},Added:{1},Removed:{2},Total:{3}",
-                list.Count(x => x.Changed),
-                list.Count(x => x.Added),
-                RemovedItemDataBase.Count(),
-                list.Count(x => !x.Removed));
-        }
+        //public void GetDataInfo()
+        //{
+
+        //    var list = DesignerItems.Select(designerItem => designerItem.Data).ToList();
+        //    DataInfo = string.Format("Changed:{0},Added:{1},Removed:{2},Total:{3}",
+        //        list.Count(x => x.Changed),
+        //        list.Count(x => x.Added),
+        //        RemovedItemDataBase.Count(),
+        //        list.Count(x => !x.Removed));
+        //}
 
         #endregion
 

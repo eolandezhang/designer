@@ -11,17 +11,10 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace DiagramDesigner
 {
-    /*
-     *DesignerItem的结构是
-     *Border
-     *TextBlock
-     *如果结构发生变化，需要更改 Helpers region中的方法
-     */
-
-
     public class DiagramManager
     {
         readonly DiagramControl _diagramControl;
@@ -152,7 +145,9 @@ namespace DiagramDesigner
             if (roots == null) return;
             if (!roots.Any()) return;/*创建DesignerItems*/
             DrawItems();
+
             ArrangeWithRootItems();/*将DesignerItems放到画布上，并且创建连线*/
+
             SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.Data.ParentId == Guid.Empty));
         }
         void DrawItems()
@@ -214,12 +209,16 @@ namespace DiagramDesigner
             GenerateDesignerItemContent(item, DEFAULT_FONT_COLOR_BRUSH);
             if (!item.Data.Removed)
             {
+
                 _diagramControl.DesignerCanvas.Children.Add(item);
+
                 Arrange();
+
                 Canvas.SetTop(item, topOffset);
                 Canvas.SetLeft(item, leftOffset);
             }
         }
+
         #endregion
 
         #region Arrange Items
@@ -245,21 +244,29 @@ namespace DiagramDesigner
         }
         public void ArrangeWithRootItems()
         {
-            Measure();
-            var items = _diagramControl.DesignerItems.ToList();
-            var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
-            foreach (var root in roots)
-            {
-                //设定节点宽度
-                SetWidth(root);
-                //设定节点位置
-                root.Data.YIndex = Canvas.GetTop(root);
-                root.Oldy = Canvas.GetTop(root);
-                root.Data.XIndex = Canvas.GetLeft(root);
-                root.Oldx = Canvas.GetLeft(root);
-                ArrangeWithRootItems(root);
-            }
+            //Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+            //{
+
+                //Arrange();
+                //Measure();
+                var items = _diagramControl.DesignerItems.ToList();
+                var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
+                foreach (var root in roots)
+                {
+                    //设定节点宽度
+                    SetWidth(root);
+                    //设定节点位置
+                    root.Data.YIndex = Canvas.GetTop(root);
+                    root.Oldy = Canvas.GetTop(root);
+                    root.Data.XIndex = Canvas.GetLeft(root);
+                    root.Oldx = Canvas.GetLeft(root);
+                    ArrangeWithRootItems(root);
+                }
+
+            //}));
+
         }
+
         void ArrangeWithRootItems/*递归方法，给定根节点，重新布局*/(DesignerItem designerItem/*根节点*/)
         {
             if (designerItem == null) return;
@@ -273,7 +280,7 @@ namespace DiagramDesigner
             {
                 if (i != 0) h1 += subItems[i - 1].ActualHeight;
                 var list = new List<DesignerItem>();
-                for (var j = 0; j < i; j++) { list.AddRange(GetAllSubItems(subItems.ElementAt(j)).Where(item => !list.Contains(item))); }
+                for (var j = 0; j < i; j++) { list.AddRange(GetAllSubItems(subItems.ElementAt(j))/*.Where(item => !list.Contains(item))*/); }
                 var preChilds = list.OrderBy(x => x.Data.YIndex).Where(x => x.Visibility.Equals(Visibility.Visible));
                 var h2 = preChilds.Sum(preChild => preChild.ActualHeight);/*父节点的直接子节点的所有子节点的总高度*/
                 #region 设定节点位置
@@ -305,6 +312,7 @@ namespace DiagramDesigner
                 FormattedText formattedText = new FormattedText(text, CultureInfo.CurrentCulture,
                     FlowDirection.LeftToRight, new Typeface("Arial"), FONT_SIZE, Brushes.Black);
                 double width = formattedText.Width + 12;
+                double height = formattedText.Height;
                 return width < MIN_ITEM_WIDTH ? MIN_ITEM_WIDTH : width;
             }
             else
@@ -851,8 +859,6 @@ namespace DiagramDesigner
             });
             DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.Id));
 
-            ArrangeWithRootItems();
-
             var c1 = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == itemDataBase.ParentId).ToList();
             DesignerItem selectedDesignerItem = null;
             selectedDesignerItem = c1.Any() ?
@@ -894,7 +900,7 @@ namespace DiagramDesigner
                 _clipbrd.Add(selectedItem.Data);
                 _diagramControl.ItemDatas.Remove(selectedItem.Data);
             }
-            
+
         }
         public void Copy()
         {
@@ -1041,10 +1047,15 @@ namespace DiagramDesigner
         }
         void Scroll(DesignerItem designerItem)
         {
-            if (designerItem == null) return;
-            var sv = (ScrollViewer)_diagramControl.Template.FindName("DesignerScrollViewer", _diagramControl);
-            sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem) - 500);
-            sv.ScrollToHorizontalOffset(Canvas.GetLeft(designerItem) - 500);
+            //Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+            //{
+
+                if (designerItem == null) return;
+                var sv = (ScrollViewer)_diagramControl.Template.FindName("DesignerScrollViewer", _diagramControl);
+                var x = Canvas.GetTop(designerItem);
+                sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem) - 500);
+                sv.ScrollToHorizontalOffset(Canvas.GetLeft(designerItem) - 500);
+            //}));
         }
         #endregion
     }

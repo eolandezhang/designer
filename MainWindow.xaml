@@ -21,6 +21,8 @@
         <KeyBinding Key="Down" Command="{Binding DownCommand}"/>
         <KeyBinding Key="Left" Command="{Binding LeftCommand}"/>
         <KeyBinding Key="Right" Command="{Binding RightCommand}"/>
+        <KeyBinding Key="C" Modifiers="Control" Command="{Binding CopyCommand}"/>
+        <KeyBinding Key="P" Modifiers="Control" Command="{Binding PasteCommand}"/>
     </Window.InputBindings>
     <Grid Background="White">
         <xcad:DockingManager x:Name="dockManager" AllowMixedOrientation="True" >
@@ -36,13 +38,13 @@
                                     <DockPanel Background="White">
                                         <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
                                             <ToolBar>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=AddSiblingCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=AddAfterCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=DeleteCommand}"/>
-                                                <!--<Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=DiagramManager.CommandManager.CollapseCommand}"/>
-                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=DiagramManager.CommandManager.ExpandCommand}"/>
-                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="保存" Command="{Binding Path=DiagramManager.CommandManager.SaveCommand}"/>
-                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="重新加载" Command="{Binding Path=DiagramManager.CommandManager.ReloadCommand}"/>-->
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=AddSiblingCommand}" ToolTip="Enter"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=AddAfterCommand}" ToolTip="Tab or Insert"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=DeleteCommand}" ToolTip="Delete"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="折叠" Command="{Binding Path=CollapseCommand}"/>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="展开" Command="{Binding Path=ExpandCommand}"/>
+                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="复制" Command="{Binding Path=CopyCommand}"/>
+                                                <Button  Margin="4,0,4,0" Padding="5,4,5,4"  Content="粘贴" Command="{Binding Path=PasteCommand}"/>
                                             </ToolBar>
                                         </ToolBarTray>
 

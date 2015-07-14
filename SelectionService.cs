@@ -30,15 +30,7 @@ namespace DiagramDesigner
             this.ClearSelection();
             this.AddToSelection(item);
 
-            var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
-            if (diagramControl != null)
-            {
-                diagramControl.SelectedItems.Clear();
-                foreach (var designerItem in CurrentSelection.Cast<DesignerItem>())
-                {
-                    diagramControl.SelectedItems.Add(designerItem);
-                }
-            }
+            
         }
 
         internal void AddToSelection(ISelectable item)
@@ -49,7 +41,15 @@ namespace DiagramDesigner
                 CurrentSelection.Add(item);
                 x.IsSelected = true;
 
-
+                var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
+                if (diagramControl != null)
+                {
+                    diagramControl.SelectedItems.Clear();
+                    foreach (var designerItem in CurrentSelection.Cast<DesignerItem>())
+                    {
+                        diagramControl.SelectedItems.Add(designerItem);
+                    }
+                }
 
 
 

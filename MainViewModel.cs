@@ -1,10 +1,10 @@
-﻿using DiagramDesigner.Data;
+﻿using DiagramDesigner.Controls;
+using DiagramDesigner.Data;
 using DiagramDesigner.MVVM;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Windows;
 using System.Windows.Input;
 
 namespace DiagramDesigner
@@ -20,7 +20,6 @@ namespace DiagramDesigner
             }
             set
             {
-                //if (_selectedItem != value)
                 _selectedItem = value;
                 OnPropertyChanged("SelectedItem");
             }
@@ -53,7 +52,7 @@ namespace DiagramDesigner
             }
         }
 
-
+        public DiagramControl DiagramControl { get; set; }
 
         public MainViewModel()
         {
@@ -79,7 +78,7 @@ namespace DiagramDesigner
                                 if (args.Action == NotifyCollectionChangedAction.Add)
                                 {
                                     var n = args.NewItems.Cast<DesignerItem>().ToList();
-                                    SelectedItem = n.Count() > 1 ? null : n.FirstOrDefault();
+                                    SelectedItem = SelectedItems.Count() > 1 ? null : n.FirstOrDefault();
                                 }
                                 if (args.Action == NotifyCollectionChangedAction.Reset)
                                 {
@@ -103,8 +102,7 @@ namespace DiagramDesigner
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,0,2),
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,0,1),
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f933","d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "Item-3", "3",false,false,0,3),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",false,false,0,4)
-                ,
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",false,false,0,4),
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5", "5",false,false,0,5)
             };
 
@@ -216,13 +214,16 @@ namespace DiagramDesigner
 
 
 
-        //public ICommand AddAfterCommand { get { return new RelayCommand(_diagramManager.AddAfter); } }
-        //public ICommand RemoveCommand { get { return new RelayCommand(_diagramManager.Remove); } }
-        //public ICommand CollapseCommand { get { return new RelayCommand(_diagramManager.CollapseAll); } }
-        //public ICommand ExpandCommand { get { return new RelayCommand(_diagramManager.ExpandAll); } }
-        //public ICommand ReloadCommand { get { return new RelayCommand(_diagramManager.GenerateDesignerItems); } }
-        //public ICommand CopyCommand { get { return new RelayCommand(_diagramManager.Copy); } }
-        //public ICommand PasteCommand { get { return new RelayCommand(_diagramManager.Paste); } }
+        public ICommand CollapseCommand { get { return new RelayCommand(() => { if (DiagramControl != null) DiagramControl.DiagramManager.CollapseAll(); }); } }
+        public ICommand ExpandCommand { get { return new RelayCommand(() => { if (DiagramControl != null) DiagramControl.DiagramManager.ExpandAll(); }); } }
+
+        public ICommand CutCommand { get { return new RelayCommand(() => { }, () => SelectedItems != null); } }
+        public ICommand CopyCommand { get { return new RelayCommand(() => { }, () => SelectedItems != null); } }
+        public ICommand PasteCommand { get { return new RelayCommand(() => { }, () => SelectedItems != null); } }
+
+
+
+
         //public ICommand SaveCommand { get { return new RelayCommand(_diagramManager.Save); } }
     }
 }

@@ -7,8 +7,10 @@ namespace DiagramDesigner
         public MainWindow()
         {
             InitializeComponent();
+            var vm = DataContext as MainViewModel;
+            if (vm != null) vm.DiagramControl = Diagram;
         }
 
-        
+
     }
 }

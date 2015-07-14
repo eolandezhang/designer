@@ -38,6 +38,7 @@
                                     <DockPanel Background="White">
                                         <ToolBarTray   DockPanel.Dock="Top" HorizontalAlignment="Left">
                                             <ToolBar>
+                                                <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="载入" Command="{Binding LoadData}"></Button>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(相邻)" Command="{Binding Path=AddSiblingCommand}" ToolTip="Enter"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="增加(之后)" Command="{Binding Path=AddAfterCommand}" ToolTip="Tab or Insert"/>
                                                 <Button Margin="4,0,4,0" Padding="5,4,5,4" Content="移除" Command="{Binding Path=DeleteCommand}" ToolTip="Delete"/>
@@ -63,6 +64,13 @@
                                             ItemDatas="{Binding ItemDatas}"
                                             SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
                                             >
+                                            <c:DiagramControl.DesignerItemTemplate>
+                                                <DataTemplate>
+                                                    <Border>
+                                                        <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </c:DiagramControl.DesignerItemTemplate>
                                             <s:DesignerItem.ItemContextMenu>
                                                 <ContextMenu>
                                                     <MenuItem Header="Add Sibling" Command="{Binding AddSiblingCommand}"></MenuItem>

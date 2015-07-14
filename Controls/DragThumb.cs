@@ -73,6 +73,7 @@ namespace DiagramDesigner.Controls
 
         void ChangeParent(DesignerItem designerItem)
         {
+            DiagramControl.DiagramManager.SetDragItemChildFlag();
             NewParent = DiagramControl.DiagramManager.ChangeParent(designerItem);
             if (_shadows == null) { _shadows = DiagramControl.DiagramManager.CreateShadows(designerItem, NewParent); }
             DiagramControl.DiagramManager.CreateHelperConnection(NewParent, designerItem);
@@ -100,6 +101,7 @@ namespace DiagramDesigner.Controls
                 diagramControl.DiagramManager.FinishChangeParent(NewParent);
             _shadows = null;
             NewParent = null;
+            DiagramControl.DiagramManager.RestoreDragItemChildFlag();
         }
 
 

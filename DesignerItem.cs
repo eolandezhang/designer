@@ -16,7 +16,7 @@ namespace DiagramDesigner
     public class DesignerItem : ContentControl, ISelectable, IGroupable, ICloneable
     {
         #region Fields
-          #region 位置
+        #region 位置
         public double Oldx;/*记录拖拽前的位置*/
         public double Oldy;
         #endregion
@@ -127,6 +127,17 @@ namespace DiagramDesigner
             set { SetValue(IsShadowProperty, value); }
         }
 
+        #endregion
+        #region IsDragItemChild 拖拽元素的子元素，灰色边框样式
+
+        public static readonly DependencyProperty IsDragItemChildProperty = DependencyProperty.Register(
+            "IsDragItemChild", typeof(bool), typeof(DesignerItem), new PropertyMetadata(default(bool)));
+
+        public bool IsDragItemChild
+        {
+            get { return (bool)GetValue(IsDragItemChildProperty); }
+            set { SetValue(IsDragItemChildProperty, value); }
+        }
         #endregion
         #region 树状图，不使用的属性
         #region ParentID Property 分组时用的，并不是表示父节点ID

@@ -146,17 +146,17 @@
                 <ControlTemplate TargetType="ToggleButton">
                     <Grid>
                         <Ellipse x:Name="outerCircle" 
-                                 Width="10" Height="10" Fill="LightBlue" Stroke="SkyBlue"/>
-                        <Border>
-                            <TextBlock
+                                 Width="9" Height="9" Fill="Snow" Stroke="LightGray"/>
+                        <!--<Border>-->
+                        <TextBlock
                                 x:Name="content" 
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" 
                                 Text="{TemplateBinding  Content}"
                                 Foreground="Gray"
-                                FontSize="8">
-                            </TextBlock>
-                        </Border>
+                                FontSize="7">
+                        </TextBlock>
+                        <!--</Border>-->
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="ToggleButton.IsChecked" Value="true">
@@ -217,12 +217,12 @@
                         <Control Grid.Row="1" x:Name="PART_IsExpanderVisible">
                             <Control.Template>
                                 <ControlTemplate  TargetType="{x:Type Control}">
-                                    <c:RelativePositionPanel Margin="-5,0,0,0">
+                                    <c:RelativePositionPanel Margin="-3,0,0,0">
                                         <ToggleButton 
                                             x:Name="PART_ToggleButton" 
                                             c:RelativePositionPanel.RelativePosition="0.1,1"
                                             Width="10"
-                                            Height="10" 
+                                            Height="13" 
                                             Style="{StaticResource ButtonTemplate}" 
                                             IsChecked="{Binding IsExpanded}">
                                         </ToggleButton>
@@ -255,6 +255,11 @@
                         </DataTrigger>
                         <DataTrigger Value="True" Binding="{Binding RelativeSource={RelativeSource Self},Path=IsGroup}">
                             <Setter TargetName="PART_DragThumb" Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self},Path=IsDragItemChild}" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="LightGray"></Setter>
+                            <Setter TargetName="Border" Property="Background" Value="GhostWhite"></Setter>
+                            <Setter TargetName="PART_ContentPresenter" Property="TextBlock.Foreground" Value="Gray"></Setter>
                         </DataTrigger>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>

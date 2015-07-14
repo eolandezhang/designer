@@ -97,7 +97,7 @@
                         </Path>-->
                         <Path Name="PART_ConnectionPath"
                               StrokeThickness="2"
-                              Stroke="SkyBlue"
+                              Stroke="LightSkyBlue"
                               StrokeStartLineCap="Round"
                               StrokeEndLineCap="Round"
                               StrokeLineJoin="Round"

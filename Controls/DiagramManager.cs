@@ -66,7 +66,7 @@ namespace DiagramDesigner
             if (rightItemConnector != null) connectors.Add(rightItemConnector);
             return connectors;
         }
-        IEnumerable<Connection> GetItemConnections/*取得所有连线*/(DesignerItem designerItem)
+        List<Connection> GetItemConnections/*取得所有连线*/(DesignerItem designerItem)
         {
             var connections = new List<Connection>();
             var list = GetItemConnectors(designerItem);
@@ -130,9 +130,9 @@ namespace DiagramDesigner
         void GenerateDesignerItemContent/*创建元素内容，固定结构*/(DesignerItem item, SolidColorBrush fontColorBrush)
         {
             if (item == null) return;
-            if (item.Data != null && item.Data.Text == (GetItemText(item))) { return; }
             var textblock = new TextBlock()
             {
+                Name = "DesignerItemText",
                 IsHitTestVisible = false,
                 VerticalAlignment = VerticalAlignment.Center,
                 Padding = new Thickness(5, 2, 5, 2),
@@ -321,45 +321,20 @@ namespace DiagramDesigner
         #region Style
 
         #region Get Visual Item
-        private Border GetBorder/*元素边框控件*/(DesignerItem item)
-        {
-            return item.Content as Border;
-        }
+
         private TextBlock GetTextBlock/*元素文字控件*/(DesignerItem item)
         {
-            var border = GetBorder(item);
-            if (border == null) return null;
-            return border.Child as TextBlock;
-        }
-        private string GetItemText/*取得元素文字内容*/(DesignerItem item)
-        {
-            var textBlock = GetTextBlock(item);
-            if (textBlock == null) return string.Empty;
-            return textBlock.GetValue(TextBlock.TextProperty).ToString();
+            return item.Content as TextBlock;
         }
         #endregion
 
         #region Set Visual Item
 
-        public void SetItemText/*设定元素文字*/(DesignerItem item, string text)
-        {
-            var textBlock = GetTextBlock(item);
-            if (textBlock == null) return;
-            textBlock.SetValue(TextBlock.TextProperty, text);
-        }
         private void SetItemFontColor/*设定元素文字颜色*/(DesignerItem item, SolidColorBrush fontColorBrush)
         {
             var textBlock = GetTextBlock(item);
             if (textBlock == null) return;
             textBlock.SetValue(TextBlock.ForegroundProperty, fontColorBrush);
-        }
-        private void SetItemBorderStyle/*设定边框样式*/(DesignerItem item, SolidColorBrush borderColor, Thickness borderThickness, SolidColorBrush backgroundbrBrush)
-        {
-            var border = GetBorder(item);
-            if (border == null) return;
-            border.BorderBrush = borderColor;
-            border.BorderThickness = borderThickness;
-            border.Background = backgroundbrBrush;
         }
 
         #endregion
@@ -475,6 +450,41 @@ namespace DiagramDesigner
         #region Drag
 
         #region Public DragThumb 中调用
+
+        #region 拖拽时，子元素及边框边框变灰
+        public void SetDragItemChildFlag()
+        {
+            GetSelectedItems().ForEach(selectedItem =>
+            {
+                GetAllSubItems(selectedItem).ForEach(x =>
+                {
+                    x.IsDragItemChild = true;
+                    SetItemFontColor(x, SHADOW_FONT_COLOR_BRUSH);
+                    GetItemConnections(x).ForEach(c =>
+                    {
+                        SetConnectionColor(c, Brushes.LightGray);
+                    });
+                });
+
+            });
+        }
+        public void RestoreDragItemChildFlag()
+        {
+            GetSelectedItems().ForEach(selectedItem =>
+            {
+                GetAllSubItems(selectedItem).ForEach(x =>
+                {
+                    x.IsDragItemChild = false;
+                    SetItemFontColor(x, DEFAULT_FONT_COLOR_BRUSH);
+                    GetItemConnections(x).ForEach(c =>
+                    {
+                        SetConnectionColor(c, Brushes.LightSkyBlue);
+                    });
+                });
+
+            });
+        }
+        #endregion
         public DesignerItem ChangeParent(DesignerItem designerItem)
         {
             _diagramControl.DesignerItems.Where(x => !x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
@@ -574,18 +584,6 @@ namespace DiagramDesigner
             _diagramControl.DesignerItems.ToList().ForEach(x => { x.IsNewParent = false; });
             parent.IsNewParent = true;
             return parent;
-        }
-        DesignerItem GetTopestParentAfterSpecifiedParent/*取得parent之后的，item的最高根节点*/(DesignerItem parent, DesignerItem item)
-        {
-            DesignerItem result = null;
-            var p = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.Data.ParentId && x.Data.ParentId != Guid.Empty);/*树状列表，节点只有一个根节点*/
-            if (p != null && !p.Equals(parent))//无父节点，或者到达指定根节点，则返回上一个节点。
-            {
-                result = p;
-                var x = GetTopestParentAfterSpecifiedParent(parent, p);
-                if (x != null) result = x;
-            }
-            return result;
         }
         #endregion
 
@@ -1044,7 +1042,6 @@ namespace DiagramDesigner
         {
             var selectedItems =
                 _diagramControl.DesignerCanvas.SelectionService.CurrentSelection.ConvertAll(x => x as DesignerItem);
-            //selectedItems.ForEach(BringToFront);
             return selectedItems;
         }
         void Scroll(DesignerItem designerItem)

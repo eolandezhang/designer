@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace DiagramDesigner
 {
@@ -24,7 +25,6 @@ namespace DiagramDesigner
                 OnPropertyChanged("SelectedItem");
             }
         }
-
         private ObservableCollection<ItemDataBase> _itemDatas;
         public ObservableCollection<ItemDataBase> ItemDatas
         {
@@ -51,9 +51,7 @@ namespace DiagramDesigner
                 }
             }
         }
-
         public DiagramControl DiagramControl { get; set; }
-
         public MainViewModel()
         {
             InitData();
@@ -92,7 +90,6 @@ namespace DiagramDesigner
 
 
         }
-
         //可用框架中的消息实现
         public void InitData()
         {
@@ -103,9 +100,8 @@ namespace DiagramDesigner
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,0,1),
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f933","d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "Item-3", "3",false,false,0,3),
                 new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",false,false,0,4),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5", "5",false,false,0,5)
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5\r\nasdf", "5",false,false,0,5)
             };
-
         }
 
         #region Command
@@ -210,10 +206,6 @@ namespace DiagramDesigner
         #endregion
 
         private string GetText() { return "Item-" + ((ItemDatas == null) ? "0" : (ItemDatas.Count().ToString())); }
-
-
-
-
         public ICommand CollapseCommand { get { return new RelayCommand(() => { if (DiagramControl != null) DiagramControl.DiagramManager.CollapseAll(); }); } }
         public ICommand ExpandCommand { get { return new RelayCommand(() => { if (DiagramControl != null) DiagramControl.DiagramManager.ExpandAll(); }); } }
 
@@ -222,7 +214,7 @@ namespace DiagramDesigner
         public ICommand PasteCommand { get { return new RelayCommand(() => { }, () => SelectedItems != null); } }
 
 
-
+        public ICommand LoadData { get { return new RelayCommand(InitData); } }
 
         //public ICommand SaveCommand { get { return new RelayCommand(_diagramManager.Save); } }
     }

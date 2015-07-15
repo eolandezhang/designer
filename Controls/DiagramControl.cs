@@ -1,5 +1,4 @@
 ﻿using DiagramDesigner.Data;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -7,6 +6,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+
 
 namespace DiagramDesigner.Controls
 {
@@ -25,8 +26,11 @@ namespace DiagramDesigner.Controls
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
+            if (LoadDataCommand != null)
+            {
+                LoadDataCommand.Execute(null);
+            }
         }
-
 
         #endregion
 
@@ -141,6 +145,19 @@ namespace DiagramDesigner.Controls
 
         #endregion
 
+        #region DataSourceProperty 数据源
+
+        public static readonly DependencyProperty DataSourceProperty = DependencyProperty.Register(
+            "DataSource", typeof(object), typeof(DiagramControl), new PropertyMetadata(default(object)));
+
+        public object DataSource
+        {
+            get { return (object)GetValue(DataSourceProperty); }
+            set { SetValue(DataSourceProperty, value); }
+        }
+
+        #endregion
+
         #region DiagramHeaderProperty 画板区域标题
 
         public static readonly DependencyProperty DiagramHeaderProperty = DependencyProperty.Register(
@@ -230,6 +247,18 @@ namespace DiagramDesigner.Controls
         //        list.Count(x => !x.Removed));
         //}
 
+        #endregion
+
+        #region Commands
+
+        public static readonly DependencyProperty LoadDataCommandProperty = DependencyProperty.Register(
+            "LoadDataCommand", typeof(ICommand), typeof(DiagramControl), new PropertyMetadata(default(ICommand)));
+
+        public ICommand LoadDataCommand
+        {
+            get { return (ICommand)GetValue(LoadDataCommandProperty); }
+            set { SetValue(LoadDataCommandProperty, value); }
+        }
         #endregion
 
         #region INotifyPropertyChanged

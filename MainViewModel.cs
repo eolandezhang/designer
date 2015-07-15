@@ -125,9 +125,10 @@ namespace DiagramDesigner
                 return new RelayCommand(() =>
                 {
                     if (SelectedItem == null) return;
-                    var parentId = SelectedItem.Data.ParentId;
-                    var id = parentId.Equals(Guid.Empty) ? SelectedItem.ID : parentId;
-                    ItemDatas.Add(new CustomItemData(Guid.NewGuid(), id, GetText(), "", true, false, 0, double.MaxValue));
+                    var parentId = SelectedItem.ItemParentId;
+                    
+                    var id = parentId.Equals(string.Empty) ? SelectedItem.ItemId : parentId;
+                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), id, GetText(), "", true, false, 0, double.MaxValue));
                 }, EnableCommand);
             }
         }
@@ -138,7 +139,7 @@ namespace DiagramDesigner
                 return new RelayCommand(() =>
                 {
                     if (SelectedItem == null) return;
-                    ItemDatas.Add(new CustomItemData(Guid.NewGuid(), SelectedItem.ID, GetText(), "", true, false, 0, double.MaxValue));
+                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), SelectedItem.ItemId, GetText(), "", true, false, 0, double.MaxValue));
 
                 }, EnableCommand);
             }
@@ -151,7 +152,7 @@ namespace DiagramDesigner
                 {
                     if (SelectedItem == null) return;
                     var item = SelectedItem.Data;
-                    if (item != null && item.ParentId != Guid.Empty)
+                    if (item != null && item.ItemParentId != string.Empty)
                     {
                         ItemDatas.Remove(item);
                     }

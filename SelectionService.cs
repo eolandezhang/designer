@@ -152,7 +152,7 @@ namespace DiagramDesigner
 
         private IGroupable GetRoot(IEnumerable<IGroupable> list, IGroupable node)
         {
-            if (node == null || node.ParentID == Guid.Empty)
+            if (node == null || node.ParentID == string.Empty)
             {
                 return node;
             }
@@ -160,7 +160,7 @@ namespace DiagramDesigner
             {
                 foreach (IGroupable item in list)
                 {
-                    if (item.ID == node.ParentID)
+                    if (item.ItemId == node.ParentID)
                     {
                         return GetRoot(list, item);
                     }
@@ -174,7 +174,7 @@ namespace DiagramDesigner
             List<IGroupable> groupMembers = new List<IGroupable>();
             groupMembers.Add(parent);
 
-            var children = list.Where(node => node.ParentID == parent.ID);
+            var children = list.Where(node => node.ParentID == parent.ItemId);
 
             foreach (IGroupable child in children)
             {

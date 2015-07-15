@@ -24,7 +24,7 @@ namespace DiagramDesigner.Data
                 if (_desc == value) return;
                 _desc = value;
                 OnPropertyChanged("Desc");
-                
+
                 if (_desc != "")
                 {
                     Changed = true;
@@ -33,24 +33,24 @@ namespace DiagramDesigner.Data
         }
 
         #region Constructors
-        public CustomItemData(Guid id)
+        public CustomItemData(string id)
             : base(id)
         {
-            Id = id;
+            ItemId = id;
         }
-        public CustomItemData(
-            Guid id,
-            Guid parentId,
-            string text,
-            string desc,
-            bool added,
-            bool removed,
-            double xIndex,
-            double yIndex)
-            : base(id, parentId, text, added, removed, xIndex, yIndex)
-        {
-            Desc = desc;
-        }
+        //public CustomItemData(
+        //    Guid id,
+        //    Guid parentId,
+        //    string text,
+        //    string desc,
+        //    bool added,
+        //    bool removed,
+        //    double xIndex,
+        //    double yIndex)
+        //    : base(id, parentId, text, added, removed, xIndex, yIndex)
+        //{
+        //    Desc = desc;
+        //}
 
         public CustomItemData(
             string id,
@@ -61,15 +61,17 @@ namespace DiagramDesigner.Data
             bool removed,
             double xIndex,
             double yIndex)
-            : this(
-            new Guid(id),
-            parentId == "" ? Guid.Empty : new Guid(parentId),
+            : base(
+            id,
+            parentId,
             text,
-            desc,
             added,
             removed,
             xIndex,
-            yIndex) { }
+            yIndex)
+        {
+            Desc = desc;
+        }
 
         #endregion
     }

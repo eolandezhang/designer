@@ -74,7 +74,7 @@ namespace DiagramDesigner
         List<DesignerItem> GetDirectSubItems/*取得直接子节点*/(DesignerItem item)
         {
             var list =
-                _diagramControl.DesignerItems.Where(x => x.Data.ParentId == item.ID && !x.Data.Removed).OrderBy(x => x.Data.YIndex).ToList();
+                _diagramControl.DesignerItems.Where(x => x.ItemParentId == item.ItemId && !x.Data.Removed).OrderBy(x => x.Data.YIndex).ToList();
 
             if (item.CanCollapsed == false)
             {
@@ -95,7 +95,7 @@ namespace DiagramDesigner
             var result = new List<DesignerItem>();
             var child = new List<DesignerItem>();
             var list = _diagramControl.DesignerItems
-                .Where(x => x.Data.ParentId == item.ID && !x.Data.Removed)
+                .Where(x => x.ItemParentId == item.ItemId && !x.Data.Removed)
                 .OrderBy(x => x.Data.YIndex).ToList();
             foreach (var subItem in list.Where(subItem => !result.Contains(subItem)))
             {
@@ -152,14 +152,14 @@ namespace DiagramDesigner
 
             ArrangeWithRootItems();/*将DesignerItems放到画布上，并且创建连线*/
 
-            SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.Data.ParentId == Guid.Empty));
+            SetSelectItem(_diagramControl.DesignerItems.FirstOrDefault(x => String.IsNullOrEmpty(x.ItemParentId)));
         }
         void DrawItems()
         {
             _diagramControl.DesignerCanvas.Children.Clear();
             if (_diagramControl.DesignerItems == null) return;
             if (!_diagramControl.DesignerItems.Any()) return;
-            var roots = _diagramControl.DesignerItems.Where(x => x.Data.ParentId.Equals(Guid.Empty)).ToList();
+            var roots = _diagramControl.DesignerItems.Where(x => String.IsNullOrEmpty(x.ItemParentId)).ToList();
             roots.ForEach(root =>
             {
                 DrawDesignerItems(root);
@@ -169,13 +169,13 @@ namespace DiagramDesigner
         {
             var designerItems = new List<DesignerItem>();
             if (parentItem == null) return designerItems;
-            if (designerItems.All(x => !x.ID.Equals(parentItem.ID))
-                && parentItem.Data.ParentId.Equals(Guid.Empty))
+            if (designerItems.All(x => !x.ItemId.Equals(parentItem.ItemId))
+                && String.IsNullOrEmpty(parentItem.ItemParentId))
             { DrawRoot(parentItem, parentItem.Data.YIndex, parentItem.Data.XIndex); }
-            var childs = _diagramControl.DesignerItems.Where(x => x.Data.ParentId.Equals(parentItem.ID));
+            var childs = _diagramControl.DesignerItems.Where(x => x.ItemParentId==(parentItem.ItemId));
             foreach (var childItem in childs)
             {
-                if (designerItems.All(x => !x.ID.Equals(childItem.ID))) { DrawChild(parentItem, childItem); }
+                if (designerItems.All(x => !x.ItemId.Equals(childItem.ItemId))) { DrawChild(parentItem, childItem); }
                 designerItems.AddRange(DrawDesignerItems(childItem));
             }
             return designerItems;
@@ -226,7 +226,7 @@ namespace DiagramDesigner
         public void ArrangeWithRootItems()
         {
             var items = _diagramControl.DesignerItems.ToList();
-            var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
+            var roots = items.Where(x => string.IsNullOrEmpty(x.ItemParentId));
             foreach (var root in roots)
             {
                 //设定节点宽度
@@ -409,7 +409,7 @@ namespace DiagramDesigner
             {
                 var childs = new List<DesignerItem>();
                 childs = GetAllSubItems(item);
-                var parents = _diagramControl.DesignerItems.Where(x => x.ID == item.Data.ParentId).ToList();
+                var parents = _diagramControl.DesignerItems.Where(x => x.ItemId == item.ItemParentId).ToList();
                 foreach (var p in parents)
                 {
                     var parent = p;
@@ -504,7 +504,7 @@ namespace DiagramDesigner
             var designerItemsOnCanvas = itemsOnCanvas.OfType<DesignerItem>().ToList();
             var downItems = designerItemsOnCanvas.Where(x =>
                 x.Oldy > itemTop
-                && x.ID != selectedItem.ID
+                && x.ItemId != selectedItem.ItemId
                ).ToList();/*比元素大的，全部向下移*/
 
             foreach (var designerItem in downItems)
@@ -514,7 +514,7 @@ namespace DiagramDesigner
             var upItems = designerItemsOnCanvas.Where(x =>
                 x.Oldy < itemTop
                 && x.Oldy > Canvas.GetTop(parent)
-                && x.ID != selectedItem.ID
+                && x.ItemId != selectedItem.ItemId
                 ).ToList();/*比父节点大的，比元素小的，恢复位置*/
             foreach (var designerItem in upItems)
             {
@@ -534,7 +534,7 @@ namespace DiagramDesigner
                 if (x1 == null || !x1.Any()) continue;
                 var list = designerItemsOnCanvas.Where(x =>
                     x.Oldy <= x1.Aggregate((a, b) => a.Oldy > b.Oldy ? a : b).Oldy
-                    && x.ID != selectedItem.ID
+                    && x.ItemId != selectedItem.ItemId
                     ).ToList();
                 list.ForEach(x => { Canvas.SetTop(x, x.Oldy); });
             }
@@ -621,10 +621,10 @@ namespace DiagramDesigner
         void ConnectToNewParent/*根据取得的newParent,改变特定item的连线*/(DesignerItem newParent)
         {
             var items = GetSelectedItems();
-            var itemsToChangeParent = items.Where(a => items.All(y => y.ID != a.Data.ParentId));/*在选中的集合a中，只改变“父节点不在集合a中的”节点*/
+            var itemsToChangeParent = items.Where(a => items.All(y => y.ItemId != a.ItemParentId));/*在选中的集合a中，只改变“父节点不在集合a中的”节点*/
             foreach (var designerItem in itemsToChangeParent)
             {
-                designerItem.Data.ParentId = newParent == null ? Guid.Empty : newParent.ID;
+                designerItem.ItemParentId = newParent == null ? null : newParent.ItemId;
                 var connections = GetItemConnections(designerItem).Where(x => Equals(x.Sink.ParentDesignerItem, designerItem)).ToList();
                 if (connections.Any())//有连线
                 {
@@ -678,7 +678,7 @@ namespace DiagramDesigner
         {
             var selectedItems = GetSelectedItems();
             selectedItem.IsExpanderVisible = false;
-            foreach (var designerItem in selectedItems.Where(x => x.ID != selectedItem.ID))
+            foreach (var designerItem in selectedItems.Where(x => x.ItemId != selectedItem.ItemId))
             {
                 designerItem.Visibility = Visibility.Hidden;
             }
@@ -689,7 +689,7 @@ namespace DiagramDesigner
             foreach (var selectedItem in selectedItems)
             {
                 selectedItem.Visibility = Visibility.Visible;
-                if (_diagramControl.DesignerItems.Any(x => x.Data.ParentId == selectedItem.Data.Id))/*如果有子节点*/
+                if (_diagramControl.DesignerItems.Any(x => x.ItemParentId == selectedItem.ItemId))/*如果有子节点*/
                 {
                     selectedItem.IsExpanderVisible = selectedItem.CanCollapsed;/*可折叠，则显示折叠/展开按钮*/
                 }
@@ -759,8 +759,8 @@ namespace DiagramDesigner
         #region Add,Edit,Delete,Cut,Copy,Paste
         public void AddDesignerItem(ItemDataBase item)
         {
-            var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == item.ParentId);
-            var designerItem = new DesignerItem(item.Id, item.ParentId, item, _diagramControl);
+            var parentDesignerItem = _diagramControl.DesignerItems.FirstOrDefault(x => x.ItemId == item.ItemParentId);
+            var designerItem = new DesignerItem(item.ItemId, item.ItemParentId, item, _diagramControl);
             _diagramControl.DesignerItems.Add(designerItem);
             DrawChild(parentDesignerItem, designerItem);
             SetSelectItem(designerItem);
@@ -835,33 +835,33 @@ namespace DiagramDesigner
         #region Delete
         public void DeleteDesignerItem(ItemDataBase itemDataBase)
         {
-            var child = GetAllChildItemDataBase(itemDataBase.Id);
+            var child = GetAllChildItemDataBase(itemDataBase.ItemId);
             _diagramControl.RemovedItemDataBase.AddRange(child);
             _diagramControl.RemovedItemDataBase.Add(itemDataBase);
             _diagramControl.RemovedItemDataBase.ForEach(x => { x.Removed = true; });
             child.ForEach(c =>
             {
-                DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == c.Id));
+                DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ItemId == c.ItemId));
             });
-            DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.Id));
+            DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ItemParentId == itemDataBase.ItemId));
 
-            var c1 = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == itemDataBase.ParentId).ToList();
+            var c1 = _diagramControl.DesignerItems.Where(x => x.ItemParentId == itemDataBase.ItemParentId).ToList();
             DesignerItem selectedDesignerItem = null;
             selectedDesignerItem = c1.Any() ?
                 c1.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b) :
-                _diagramControl.DesignerItems.FirstOrDefault(x => x.ID == itemDataBase.ParentId);
+                _diagramControl.DesignerItems.FirstOrDefault(x => x.ItemParentId == itemDataBase.ItemParentId);
             SetSelectItem(selectedDesignerItem);
             ArrangeWithRootItems();
             Scroll(selectedDesignerItem);
         }
-        List<ItemDataBase> GetAllChildItemDataBase(Guid id)
+        List<ItemDataBase> GetAllChildItemDataBase(string id)
         {
             List<ItemDataBase> result = new List<ItemDataBase>();
-            var child = _diagramControl.ItemDatas.Where(x => x.ParentId == id);
+            var child = _diagramControl.ItemDatas.Where(x => x.ItemParentId == id);
             foreach (var itemDataBase in child)
             {
                 result.Add(itemDataBase);
-                result.AddRange(GetAllChildItemDataBase(itemDataBase.Id));
+                result.AddRange(GetAllChildItemDataBase(itemDataBase.ItemId));
             }
             return result;
         }
@@ -907,7 +907,7 @@ namespace DiagramDesigner
         private List<DesignerItem> InitDesignerItems()
         {
             if (_diagramControl.ItemDatas == null) return null;
-            var roots = _diagramControl.ItemDatas.Where(x => x.ParentId == Guid.Empty).ToList();
+            var roots = _diagramControl.ItemDatas.Where(x => String.IsNullOrEmpty(x.ItemParentId)).ToList();
             if (!roots.Any()) return null;
             List<DesignerItem> rootDesignerItems = new List<DesignerItem>();
             _diagramControl.DesignerItems.Clear();
@@ -922,25 +922,25 @@ namespace DiagramDesigner
         }
         private void CreateChildDesignerItem(DesignerItem parentDesignerItem)
         {
-            var child = _diagramControl.ItemDatas.Where(x => x.ParentId == parentDesignerItem.ID && !x.Removed);
+            var child = _diagramControl.ItemDatas.Where(x => x.ItemParentId == parentDesignerItem.ItemId && !x.Removed);
             foreach (var userDataSource in child)
             {
-                var childDesignerItem = CreateChildItem(parentDesignerItem.ID, userDataSource);
+                var childDesignerItem = CreateChildItem(parentDesignerItem.ItemId, userDataSource);
                 _diagramControl.DesignerItems.Add(childDesignerItem);
                 CreateChildDesignerItem(childDesignerItem);
             }
         }
         private DesignerItem CreateRootItem(ItemDataBase itemData)
-        { return new DesignerItem(itemData.Id, itemData, _diagramControl); }
-        private DesignerItem CreateChildItem(Guid parentId, ItemDataBase itemData)
-        { return new DesignerItem(itemData.Id, parentId, itemData, _diagramControl); }
+        { return new DesignerItem(itemData.ItemId, itemData, _diagramControl); }
+        private DesignerItem CreateChildItem(string parentId, ItemDataBase itemData)
+        { return new DesignerItem(itemData.ItemId, parentId, itemData, _diagramControl); }
         #endregion
 
         #region Select Operations
         public void SelectUpDown(DesignerItem selectedItem, bool selectUp)
         {
             if (selectedItem == null) return;
-            var siblingDesignerItems = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == selectedItem.Data.ParentId).ToList();
+            var siblingDesignerItems = _diagramControl.DesignerItems.Where(x => x.ItemParentId == selectedItem.ItemParentId).ToList();
             DesignerItem selectedDesignerItem = null;
 
             if (selectUp)
@@ -955,7 +955,7 @@ namespace DiagramDesigner
                 else
                 {
                     var parent =
-                        _diagramControl.DesignerItems.Where(x => x.Data.Id == selectedItem.Data.ParentId).ToList();
+                        _diagramControl.DesignerItems.Where(x => x.ItemId == selectedItem.ItemParentId).ToList();
                     if (parent.Count() == 1)
                         selectedDesignerItem = parent.FirstOrDefault();
                 }
@@ -971,7 +971,7 @@ namespace DiagramDesigner
                 else //没有处于下方的相邻节点，2.有父亲节点，则找其父亲的，处于下方的相邻节点，3.如果没有父亲节点，就找子节点
                 {
                     var parents =
-                        _diagramControl.DesignerItems.Where(x => x.Data.Id == selectedItem.Data.ParentId).ToList();
+                        _diagramControl.DesignerItems.Where(x => x.ItemId == selectedItem.ItemParentId).ToList();
                     if (parents.Count() == 1 && parents.FirstOrDefault() != null) //有父节点，父节点邻居，处于下方的节点
                     {
                         var parent = parents.FirstOrDefault();
@@ -979,7 +979,7 @@ namespace DiagramDesigner
                         {
                             var parentSibling =
                                 _diagramControl.DesignerItems.Where(
-                                    x => x.Data.ParentId == parent.Data.ParentId
+                                    x => x.ItemParentId == parent.ItemParentId
                                          && x.Data.YIndex > parent.Data.YIndex).ToList();
                             if (parentSibling.Any())
                             {
@@ -990,7 +990,7 @@ namespace DiagramDesigner
                     }
                     if (selectedDesignerItem == null)//没有父节点，找子节点
                     {
-                        var child = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == selectedItem.ID).ToList();
+                        var child = _diagramControl.DesignerItems.Where(x => x.ItemParentId == selectedItem.ItemId).ToList();
                         if (child.Any())
                         {
                             selectedDesignerItem = child.Aggregate((a, b) => a.Data.YIndex < b.Data.YIndex ? a : b);
@@ -1008,7 +1008,7 @@ namespace DiagramDesigner
             {
                 if (selectRight)
                 {
-                    var child = _diagramControl.DesignerItems.Where(x => x.Data.ParentId == selectedItem.ID).ToList();
+                    var child = _diagramControl.DesignerItems.Where(x => x.ItemParentId == selectedItem.ItemId).ToList();
                     if (child.Any())
                     {
                         selectedDesignerItem = child.Aggregate((a, b) => a.Data.YIndex < b.Data.YIndex ? a : b);
@@ -1016,7 +1016,7 @@ namespace DiagramDesigner
                 }
                 else
                 {
-                    var parent = _diagramControl.DesignerItems.Where(x => x.ID == selectedItem.Data.ParentId).ToList();
+                    var parent = _diagramControl.DesignerItems.Where(x => x.ItemId == selectedItem.ItemParentId).ToList();
                     if (parent.Any())
                     {
                         selectedDesignerItem = parent.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);

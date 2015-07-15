@@ -26,7 +26,9 @@ namespace DiagramDesigner
         #endregion
 
         #region Property
-        public Guid ID { get; set; }
+        public string ItemId { get; set; }
+        public string ItemParentId { get; set; }
+        //public Guid ID { get; set; }
         public ItemDataBase Data { get; set; }/*存放数据*/
         #region IsSelected Property 被选中的
         public bool IsSelected
@@ -142,12 +144,13 @@ namespace DiagramDesigner
         #endregion
         #region 树状图，不使用的属性
         #region ParentID Property 分组时用的，并不是表示父节点ID
-        public Guid ParentID
-        {
-            get { return (Guid)GetValue(ParentIDProperty); }
-            set { SetValue(ParentIDProperty, value); }
-        }
-        public static readonly DependencyProperty ParentIDProperty = DependencyProperty.Register("ParentID", typeof(Guid), typeof(DesignerItem));
+       
+        public string ParentID
+                {
+                    get { return (string)GetValue(ParentIDProperty); }
+                    set { SetValue(ParentIDProperty, value); }
+                }
+        public static readonly DependencyProperty ParentIDProperty = DependencyProperty.Register("ParentID", typeof(string), typeof(DesignerItem));
         #endregion
         #region IsGroup Property 分组
         public bool IsGroup
@@ -213,9 +216,10 @@ namespace DiagramDesigner
         #endregion
 
         #region Constructors
-        public DesignerItem(Guid id, DiagramControl diagramControl)
+        public DesignerItem(string id, DiagramControl diagramControl)
         {
-            this.ID = id;
+            this.ItemId = id;
+            ItemParentId = string.Empty;
             Loaded += DesignerItem_Loaded;
             Data = new CustomItemData(id);
             Data.DiagramControl = diagramControl;
@@ -228,17 +232,18 @@ namespace DiagramDesigner
 
         }
         public DesignerItem(DiagramControl diagramControl)
-            : this(Guid.NewGuid(), diagramControl) { }
-        public DesignerItem(Guid id, ItemDataBase itemData, DiagramControl diagramControl)
+            : this(Guid.NewGuid().ToString(), diagramControl) { }
+        public DesignerItem(string id, ItemDataBase itemData, DiagramControl diagramControl)
             : this(id, diagramControl)
         {
             Data = itemData;
             itemData.DiagramControl = diagramControl;
         }
-        public DesignerItem(Guid id, Guid parentItemId, ItemDataBase itemData, DiagramControl diagramControl)
+        public DesignerItem(string id, string parentItemId, ItemDataBase itemData, DiagramControl diagramControl)
             : this(id, diagramControl)
         {
-            Data.ParentId = parentItemId; Data = itemData;
+            ItemParentId = parentItemId;
+            Data.ItemParentId = parentItemId; Data = itemData;
             itemData.DiagramControl = diagramControl;
         }
         static DesignerItem()
@@ -331,7 +336,7 @@ namespace DiagramDesigner
         public object Clone()
         {
             var data = (ItemDataBase)Data.Clone();
-            return new DesignerItem(data.Id, DiagramControl) { Data = data, DiagramControl = DiagramControl };
+            return new DesignerItem(data.ItemId, DiagramControl) { Data = data, DiagramControl = DiagramControl };
         }
     }
 }

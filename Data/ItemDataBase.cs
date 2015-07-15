@@ -11,24 +11,51 @@ namespace DiagramDesigner.Data
     {
         private bool Suppress /*阻止通知*/{ get; set; }
         public DiagramControl DiagramControl { get; set; }
-        public Guid Id { get; set; }
-        private Guid _parentId;
-        public Guid ParentId
+        private string _itemId;
+        public string ItemId
         {
-            get { return _parentId; }
+            get
+            {
+                return _itemId;
+            }
             set
             {
-                if (_parentId == value) return;
-
-                _parentId = value;
-                OnPropertyChanged("ParentId");
-
-                if (!Added)
-                {
-                    Changed = true;
-                }
+                _itemId = value;
+                OnPropertyChanged("ItemId");
             }
         }
+        private string _itemParentId;
+
+        public string ItemParentId
+        {
+            get
+            {
+                return _itemParentId;
+            }
+            set
+            {
+                _itemParentId = value;
+                OnPropertyChanged("ItemParentId");
+            }
+        }
+        //public Guid Id { get; set; }
+        //private Guid _parentId;
+        //public Guid ParentId
+        //{
+        //    get { return _parentId; }
+        //    set
+        //    {
+        //        if (_parentId == value) return;
+
+        //        _parentId = value;
+        //        OnPropertyChanged("ParentId");
+
+        //        if (!Added)
+        //        {
+        //            Changed = true;
+        //        }
+        //    }
+        //}
         private string _text;
         public string Text
         {
@@ -86,22 +113,22 @@ namespace DiagramDesigner.Data
         }
 
 
-        public ItemDataBase(Guid id)
+        public ItemDataBase(string id)
         {
-            Id = id;
+            ItemId = id;
         }
-        public ItemDataBase() : this(Guid.NewGuid()) { }
+        public ItemDataBase() : this(Guid.NewGuid().ToString()) { }
         public ItemDataBase(
-            Guid id,
-            Guid parentId,
+            string id,
+            string parentId,
             string text,
             bool added,
             bool removed,
             double xIndex,
             double yIndex)
         {
-            Id = id;
-            ParentId = parentId;
+            ItemId = id;
+            ItemParentId = parentId;
             Text = text;
             XIndex = xIndex;
             YIndex = yIndex;
@@ -132,8 +159,8 @@ namespace DiagramDesigner.Data
             var item = new ItemDataBase();
             item.Suppress = true;/*复制时阻止通知*/
             item.DiagramControl = DiagramControl;
-            item.Id = Guid.NewGuid();
-            item.ParentId = ParentId;
+            item.ItemId = Guid.NewGuid().ToString();
+            item.ItemParentId = ItemParentId;
             item.Text = Text + "-" + "Copy";
             item.Changed = false;
             item.Added = false;

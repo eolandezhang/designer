@@ -103,7 +103,7 @@ namespace DiagramDesigner
                     else
                     {
                         DesignerItem di = item as DesignerItem;
-                        if (di.ParentID == Guid.Empty)
+                        if (di.ParentID == null)
                         {
                             designerCanvas.SelectionService.AddToSelection(di);
                         }

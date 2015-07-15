@@ -32,7 +32,7 @@ namespace DiagramDesigner.Controls
 
                 foreach (DesignerItem item in selectedDesignerItems)
                 {
-                    if (item != null && item.ParentID == Guid.Empty)
+                    if (item != null && item.ItemParentId == string.Empty)
                     {
                         switch (base.VerticalAlignment)
                         {

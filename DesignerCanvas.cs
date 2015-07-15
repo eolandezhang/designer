@@ -83,10 +83,6 @@ namespace DiagramDesigner
             e.Handled = true;
         }
 
-
-
-
-
         protected override void OnDrop(DragEventArgs e)
         {
             base.OnDrop(e);
@@ -155,8 +151,8 @@ namespace DiagramDesigner
                 }
             }
             // add margin 
-            size.Width += 400;
-            size.Height += 400;
+            size.Width += 1000;
+            size.Height += 1000;
 
             //foreach (DesignerItem item in SelectionService.CurrentSelection.OfType<DesignerItem>())
             //{
@@ -182,6 +178,6 @@ namespace DiagramDesigner
             }
         }
 
-
+        
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -29,6 +30,11 @@ namespace DiagramDesigner.Controls
         {
             DragDelta += DragThumb_DragDelta;
         }
+
+
+
+        private double _verticalOffset = 0;
+        private double _horizontalOffset = 0;
         void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var designerItem = DataContext as DesignerItem;
@@ -68,6 +74,60 @@ namespace DiagramDesigner.Controls
                 designer.InvalidateMeasure();
                 e.Handled = true;
                 ChangeParent(designerItem);
+
+
+                _verticalOffset += e.VerticalChange;
+                if (_verticalOffset < designerItem.ActualHeight)
+                {
+                    var yPos = Canvas.GetTop(designerItem);
+                    var sv = (ScrollViewer)DiagramControl.Template.FindName("DesignerScrollViewer", DiagramControl);
+                    if (sv.VerticalOffset + sv.ViewportHeight - 200 < yPos )
+                        sv.ScrollToVerticalOffset(sv.VerticalOffset + e.VerticalChange);
+                    //sv.ScrollToHorizontalOffset(sv.HorizontalOffset + e.HorizontalChange);
+
+                }
+                else if (_verticalOffset > designerItem.ActualHeight)
+                {
+                    _verticalOffset = 0;
+                }
+                ////var viewportHeight = sv.ViewportHeight;
+                ////var verticalOffset = sv.VerticalOffset;
+                ////var extentHeight = sv.ExtentHeight;
+                ////var scrollableHeight = sv.ScrollableHeight;
+                //var yPos = Canvas.GetTop(designerItem);
+                //var verticalChange = e.VerticalChange;
+                //var horizontalChange = e.HorizontalChange;
+
+                //if (e.VerticalChange > 0)
+                //{
+                //    var ht = sv.VerticalOffset + sv.ViewportHeight - yPos;
+                //    //if (ht < 200 && ht > 0)
+                //    {
+                //        _verticalOffset += verticalChange;
+                //        sv.ScrollToVerticalOffset(_verticalOffset);
+                //    }
+                //}
+                //else
+                //{
+                //    _verticalOffset += verticalChange;
+                //    sv.ScrollToVerticalOffset(_verticalOffset);
+                //}
+                //var xPos = Canvas.GetLeft(designerItem);
+                //if (e.HorizontalChange > 0)
+                //{
+
+                //    var ht = sv.HorizontalOffset + sv.ViewportWidth - xPos;
+                //    //if (ht < 200 && ht > 0)
+                //    {
+                //        _horizontalOffset += horizontalChange;
+                //        sv.ScrollToHorizontalOffset(_horizontalOffset);
+                //    }
+                //}
+                //else
+                //{
+                //    _horizontalOffset += horizontalChange;
+                //    sv.ScrollToHorizontalOffset(_horizontalOffset);
+                //}
             }
         }
 
@@ -78,18 +138,12 @@ namespace DiagramDesigner.Controls
             if (_shadows == null) { _shadows = DiagramControl.DiagramManager.CreateShadows(designerItem, NewParent); }
             DiagramControl.DiagramManager.CreateHelperConnection(NewParent, designerItem);
             DiagramControl.DiagramManager.MoveUpAndDown(NewParent, designerItem);
-            //var height = DiagramControl.DesignerCanvas.ActualHeight;
-            //var y = Canvas.GetTop(designerItem);
-            //if (y <= height - 400)
-            //{
-            //    var sv = (ScrollViewer)DiagramControl.Template.FindName("DesignerScrollViewer", DiagramControl);
-            //    sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem) - 400);
-            //}
         }
 
         //拖动前保存元素位置
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
+            _verticalOffset = 0; _horizontalOffset = 0;
             var diagramControl = DiagramControl;
             if (diagramControl == null) return;
             foreach (var item in diagramControl.DesignerItems)
@@ -109,6 +163,8 @@ namespace DiagramDesigner.Controls
             _shadows = null;
             NewParent = null;
             DiagramControl.DiagramManager.RestoreDragItemChildFlag();
+            _verticalOffset = 0;
+            _horizontalOffset = 0;
         }
 
 

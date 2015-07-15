@@ -71,8 +71,8 @@
                                                         <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
                                                     </Border>
                                                     <DataTemplate.Triggers>
-                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self},Path=DataContext.IsShadow}" Value="True">
-                                                            <Setter TargetName="Bdr" Property="BorderBrush" Value="Gray"></Setter>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent},Path=IsDragItemChild}" Value="True">
+                                                            <Setter TargetName="Bdr" Property="BorderBrush" Value="Transparent"></Setter>
                                                         </DataTrigger>
                                                     </DataTemplate.Triggers>
                                                 </DataTemplate>

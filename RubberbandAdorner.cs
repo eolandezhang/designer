@@ -1,9 +1,12 @@
 ﻿using System;
+using System.ComponentModel.Design;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using DiagramDesigner.Controls;
 
 namespace DiagramDesigner
 {
@@ -12,16 +15,17 @@ namespace DiagramDesigner
         private Point? startPoint;
         private Point? endPoint;
         private Pen rubberbandPen;
-
+        private DiagramControl DiagramControl;
         private DesignerCanvas designerCanvas;
 
-        public RubberbandAdorner(DesignerCanvas designerCanvas, Point? dragStartPoint)
+        public RubberbandAdorner(DiagramControl diagramControl, DesignerCanvas designerCanvas, Point? dragStartPoint)
             : base(designerCanvas)
         {
             this.designerCanvas = designerCanvas;
             this.startPoint = dragStartPoint;
             rubberbandPen = new Pen(Brushes.LightSlateGray, 1);
             rubberbandPen.DashStyle = new DashStyle(new double[] { 2 }, 1);
+            DiagramControl = diagramControl;
         }
 
         protected override void OnMouseMove(System.Windows.Input.MouseEventArgs e)
@@ -53,6 +57,19 @@ namespace DiagramDesigner
             if (adornerLayer != null)
                 adornerLayer.Remove(this);
             e.Handled = true;
+
+
+            if (DiagramControl != null)
+            {
+                var selectedItems = designerCanvas.SelectionService.CurrentSelection;
+                if (selectedItems.Count == 1)
+                { DiagramControl.SelectedItem = selectedItems.FirstOrDefault() as DesignerItem; }
+                foreach (var selectedItem in selectedItems.ConvertAll(x => x as DesignerItem))
+                {
+                    DiagramControl.SelectedItems.Clear();
+                    DiagramControl.SelectedItems.Add(selectedItem);
+                }
+            }
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -87,7 +104,9 @@ namespace DiagramDesigner
                     {
                         DesignerItem di = item as DesignerItem;
                         if (di.ParentID == Guid.Empty)
+                        {
                             designerCanvas.SelectionService.AddToSelection(di);
+                        }
                     }
                 }
             }

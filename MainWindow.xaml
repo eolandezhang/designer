@@ -62,14 +62,21 @@
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
+                                            SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
                                             SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
                                             >
                                             <c:DiagramControl.DesignerItemTemplate>
                                                 <DataTemplate>
-                                                    <Border BorderThickness="1" BorderBrush="DeepSkyBlue">
+                                                    <Border x:Name="Bdr"  BorderThickness="2" BorderBrush="SkyBlue">
                                                         <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
                                                     </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self},Path=DataContext.IsShadow}" Value="True">
+                                                            <Setter TargetName="Bdr" Property="BorderBrush" Value="Gray"></Setter>
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
                                                 </DataTemplate>
+
                                             </c:DiagramControl.DesignerItemTemplate>
                                             <s:DesignerItem.ItemContextMenu>
                                                 <ContextMenu>

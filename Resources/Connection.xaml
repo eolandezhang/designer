@@ -96,7 +96,7 @@
                               Data="{Binding PathGeometry}">
                         </Path>-->
                         <Path Name="PART_ConnectionPath"
-                              StrokeThickness="2"
+                              StrokeThickness="1"
                               Stroke="LightSkyBlue"
                               StrokeStartLineCap="Round"
                               StrokeEndLineCap="Round"

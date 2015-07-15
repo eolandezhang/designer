@@ -78,6 +78,13 @@ namespace DiagramDesigner.Controls
             if (_shadows == null) { _shadows = DiagramControl.DiagramManager.CreateShadows(designerItem, NewParent); }
             DiagramControl.DiagramManager.CreateHelperConnection(NewParent, designerItem);
             DiagramControl.DiagramManager.MoveUpAndDown(NewParent, designerItem);
+            //var height = DiagramControl.DesignerCanvas.ActualHeight;
+            //var y = Canvas.GetTop(designerItem);
+            //if (y <= height - 400)
+            //{
+            //    var sv = (ScrollViewer)DiagramControl.Template.FindName("DesignerScrollViewer", DiagramControl);
+            //    sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem) - 400);
+            //}
         }
 
         //拖动前保存元素位置

@@ -1,12 +1,14 @@
 ﻿using DiagramDesigner.Controls;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace DiagramDesigner
 {
     internal class SelectionService
     {
+        private DiagramControl _diagramControl;
         private DesignerCanvas designerCanvas;
         private List<ISelectable> _currentSelection;
         internal List<ISelectable> CurrentSelection
@@ -24,13 +26,18 @@ namespace DiagramDesigner
         {
             this.designerCanvas = canvas;
         }
+        public SelectionService(DesignerCanvas canvas, DiagramControl diagramControl)
+        {
+            this.designerCanvas = canvas;
+            this._diagramControl = diagramControl;
+        }
 
         internal void SelectItem(ISelectable item)
         {
             this.ClearSelection();
             this.AddToSelection(item);
 
-            
+
         }
 
         internal void AddToSelection(ISelectable item)
@@ -41,16 +48,26 @@ namespace DiagramDesigner
                 CurrentSelection.Add(item);
                 x.IsSelected = true;
 
-                var diagramControl = designerCanvas.TemplatedParent as DiagramControl;
-                if (diagramControl != null)
-                {
-                    diagramControl.SelectedItems.Clear();
-                    foreach (var designerItem in CurrentSelection.Cast<DesignerItem>())
-                    {
-                        diagramControl.SelectedItems.Add(designerItem);
-                    }
-                }
+                #region 通知控件
+                //if (CurrentSelection.Count == 1)
+                //{
+                //    _diagramControl.SelectedItem = x;
+                //    _diagramControl.SelectedItems.Clear();
+                //}
+                //else if (CurrentSelection.Count > 1)
+                //{
+                //    _diagramControl.SelectedItem = null;
+                //    _diagramControl.SelectedItems.Add(x);
+                //}
+                #endregion
 
+                //_diagramControl.SelectedItems.Add(x);
+
+                //_diagramControl.SelectedItems.Clear();
+                //foreach (var designerItem in CurrentSelection.Cast<DesignerItem>())
+                //{
+                //    _diagramControl.SelectedItems.Add(designerItem);
+                //}
 
 
                 //if (item is IGroupable)
@@ -73,27 +90,44 @@ namespace DiagramDesigner
 
         internal void RemoveFromSelection(ISelectable item)
         {
-            if (item is IGroupable)
+            var x = item as DesignerItem;
+            if (x != null)
             {
-                List<IGroupable> groupItems = GetGroupMembers(item as IGroupable);
-
-                foreach (ISelectable groupItem in groupItems)
-                {
-                    groupItem.IsSelected = false;
-                    CurrentSelection.Remove(groupItem);
-                }
-            }
-            else
-            {
-                item.IsSelected = false;
                 CurrentSelection.Remove(item);
+                x.IsSelected = false;
+
+                #region 通知控件
+                //_diagramControl.SelectedItem = null;
+                //_diagramControl.SelectedItems.Remove(x);
+                #endregion
             }
+
+            //if (item is IGroupable)
+            //{
+            //    List<IGroupable> groupItems = GetGroupMembers(item as IGroupable);
+
+            //    foreach (ISelectable groupItem in groupItems)
+            //    {
+            //        groupItem.IsSelected = false;
+            //        CurrentSelection.Remove(groupItem);
+            //    }
+            //}
+            //else
+            //{
+            //    item.IsSelected = false;
+            //    CurrentSelection.Remove(item);
+            //}
         }
 
         internal void ClearSelection()
         {
             CurrentSelection.ForEach(item => item.IsSelected = false);
             CurrentSelection.Clear();
+
+            #region 通知控件
+            //_diagramControl.SelectedItem = null;
+            //_diagramControl.SelectedItems.Clear();
+            #endregion
         }
 
         internal void SelectAll()

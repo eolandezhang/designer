@@ -13,14 +13,25 @@ namespace DiagramDesigner
     public partial class DesignerCanvas : Canvas
     {
         private Point? rubberbandSelectionStartPoint = null;
-
+        private DiagramControl _diagramControl;
+        private DiagramControl DiagramControl
+        {
+            get
+            {
+                if (_diagramControl == null)
+                {
+                    _diagramControl = TemplatedParent as DiagramControl;
+                }
+                return _diagramControl;
+            }
+        }
         private SelectionService selectionService;
         internal SelectionService SelectionService
         {
             get
             {
                 if (selectionService == null)
-                    selectionService = new SelectionService(this);
+                    selectionService = new SelectionService(this, DiagramControl);
 
                 return selectionService;
             }
@@ -38,18 +49,10 @@ namespace DiagramDesigner
                 // if you click directly on the canvas all 
                 // selected items are 'de-selected'
                 SelectionService.ClearSelection();
+                DiagramControl.SelectedItem = null;
+                DiagramControl.SelectedItems.Clear();
                 Focus();
                 e.Handled = true;
-                
-                var diagramControl = TemplatedParent as DiagramControl;
-                if (diagramControl != null)
-                {
-                    selectionService.CurrentSelection.Clear();
-                    SelectionService.ClearSelection();
-                    //diagramControl.DiagramManager.ResetBrushBorderFontStyle(this);
-                    diagramControl.SelectedItems.Clear();
-                }
-
             }
         }
 
@@ -69,7 +72,7 @@ namespace DiagramDesigner
                 AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
                 if (adornerLayer != null)
                 {
-                    RubberbandAdorner adorner = new RubberbandAdorner(this, rubberbandSelectionStartPoint);
+                    RubberbandAdorner adorner = new RubberbandAdorner(_diagramControl, this, rubberbandSelectionStartPoint);
                     if (adorner != null)
                     {
                         adornerLayer.Add(adorner);

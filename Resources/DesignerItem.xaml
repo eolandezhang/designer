@@ -144,9 +144,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
+
                     <Grid>
                         <Ellipse x:Name="outerCircle" 
-                                 Width="9" Height="9" Fill="Snow" Stroke="LightGray"/>
+                                 Width="10" Height="10" Fill="Snow" Stroke="LightGray"/>
                         <!--<Border>-->
                         <TextBlock
                                 x:Name="content" 
@@ -154,10 +155,11 @@
                                 VerticalAlignment="Center" 
                                 Text="{TemplateBinding  Content}"
                                 Foreground="Gray"
-                                FontSize="7">
+                                FontSize="8">
                         </TextBlock>
                         <!--</Border>-->
                     </Grid>
+
                     <ControlTemplate.Triggers>
                         <Trigger Property="ToggleButton.IsChecked" Value="true">
                             <Setter Property="ToggleButton.Content" Value="-"></Setter>
@@ -188,13 +190,11 @@
                         </Grid.ContextMenu>-->
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>
-                            <RowDefinition Height="10"></RowDefinition>
+                            <RowDefinition Height="4"></RowDefinition>
                         </Grid.RowDefinitions>
-
-
                         <Border  Grid.Row="0" x:Name="Border" IsHitTestVisible="True"
-                                 BorderBrush="SkyBlue" BorderThickness="2" Background="GhostWhite">
-                            <Grid>
+                                 BorderBrush="Transparent" BorderThickness="2" Background="WhiteSmoke">
+                            <Grid Margin="1">
                                 <!-- PART_ResizeDecorator -->
                                 <Control Grid.Row="0"  x:Name="PART_ResizeDecorator" 
                                  Visibility="Collapsed"
@@ -217,16 +217,16 @@
                         <Control Grid.Row="1" x:Name="PART_IsExpanderVisible">
                             <Control.Template>
                                 <ControlTemplate  TargetType="{x:Type Control}">
-                                    <c:RelativePositionPanel Margin="-3,0,0,0">
-                                        <ToggleButton 
+                                    <!--<Border Background="Red" BorderThickness="0">-->
+                                        <c:RelativePositionPanel Margin="-3,0,0,0">
+                                            <ToggleButton 
                                             x:Name="PART_ToggleButton" 
                                             c:RelativePositionPanel.RelativePosition="0.1,1"
-                                            Width="10"
-                                            Height="13" 
                                             Style="{StaticResource ButtonTemplate}" 
                                             IsChecked="{Binding IsExpanded}">
-                                        </ToggleButton>
-                                    </c:RelativePositionPanel>
+                                            </ToggleButton>
+                                        </c:RelativePositionPanel>
+                                    <!--</Border>-->
                                 </ControlTemplate>
 
                             </Control.Template>
@@ -246,7 +246,7 @@
                             <Setter TargetName="Border" Property="Background" Value="LightSkyBlue"></Setter>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self},Path=IsNewParent}" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="IndianRed"></Setter>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="OrangeRed"></Setter>
                             <Setter TargetName="Border" Property="Background" Value="GhostWhite"></Setter>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self},Path=IsShadow}" Value="True">

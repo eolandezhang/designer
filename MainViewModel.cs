@@ -2,11 +2,10 @@
 using DiagramDesigner.Data;
 using DiagramDesigner.MVVM;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace DiagramDesigner
 {
@@ -41,7 +40,11 @@ namespace DiagramDesigner
         private ObservableCollection<DesignerItem> _selectedItems;
         public ObservableCollection<DesignerItem> SelectedItems
         {
-            get { return _selectedItems; }
+            get
+            {
+                if (_selectedItems == null) _selectedItems = new ObservableCollection<DesignerItem>();
+                return _selectedItems;
+            }
             set
             {
                 if (_selectedItems != value)
@@ -57,35 +60,35 @@ namespace DiagramDesigner
             InitData();
             PropertyChanged += (s, e) =>
             {
-                switch (e.PropertyName)
-                {
-                    case "SelectedItems":
-                        if (SelectedItems != null)
-                        {
-                            if (SelectedItems.Count > 1 && SelectedItems.FirstOrDefault() != null)
-                            {
-                                SelectedItem = null;
-                            }
-                            else
-                            {
-                                SelectedItem = SelectedItems.FirstOrDefault();
-                            }
+                //switch (e.PropertyName)
+                //{
+                //    case "SelectedItems":
+                //        if (SelectedItems != null)
+                //        {
+                //            if (SelectedItems.Count > 1 && SelectedItems.FirstOrDefault() != null)
+                //            {
+                //                SelectedItem = null;
+                //            }
+                //            else
+                //            {
+                //                SelectedItem = SelectedItems.FirstOrDefault();
+                //            }
 
-                            SelectedItems.CollectionChanged += (d, args) =>
-                            {
-                                if (args.Action == NotifyCollectionChangedAction.Add)
-                                {
-                                    var n = args.NewItems.Cast<DesignerItem>().ToList();
-                                    SelectedItem = SelectedItems.Count() > 1 ? null : n.FirstOrDefault();
-                                }
-                                if (args.Action == NotifyCollectionChangedAction.Reset)
-                                {
-                                    SelectedItem = null;
-                                }
-                            };
-                        }
-                        break;
-                }
+                //            SelectedItems.CollectionChanged += (d, args) =>
+                //            {
+                //                if (args.Action == NotifyCollectionChangedAction.Add)
+                //                {
+                //                    var n = args.NewItems.Cast<DesignerItem>().ToList();
+                //                    SelectedItem = SelectedItems.Count() > 1 ? null : n.FirstOrDefault();
+                //                }
+                //                if (args.Action == NotifyCollectionChangedAction.Reset)
+                //                {
+                //                    SelectedItem = null;
+                //                }
+                //            };
+                //        }
+                //        break;
+                //}
             };
 
 
@@ -209,9 +212,9 @@ namespace DiagramDesigner
         public ICommand CollapseCommand { get { return new RelayCommand(() => { if (DiagramControl != null) DiagramControl.DiagramManager.CollapseAll(); }); } }
         public ICommand ExpandCommand { get { return new RelayCommand(() => { if (DiagramControl != null) DiagramControl.DiagramManager.ExpandAll(); }); } }
 
-        public ICommand CutCommand { get { return new RelayCommand(() => { }, () => SelectedItems != null); } }
-        public ICommand CopyCommand { get { return new RelayCommand(() => { }, () => SelectedItems != null); } }
-        public ICommand PasteCommand { get { return new RelayCommand(() => { }, () => SelectedItems != null); } }
+        public ICommand CutCommand { get { return new RelayCommand(() => { }, () => SelectedItems.Any()); } }
+        public ICommand CopyCommand { get { return new RelayCommand(() => { }, () => SelectedItems.Any()); } }
+        public ICommand PasteCommand { get { return new RelayCommand(() => { }, () => SelectedItems.Any()); } }
 
 
         public ICommand LoadData { get { return new RelayCommand(InitData); } }

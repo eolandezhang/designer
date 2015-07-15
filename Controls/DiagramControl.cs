@@ -166,6 +166,15 @@ namespace DiagramDesigner.Controls
             set { SetValue(SelectedItemsProperty, value); }
         }
 
+        public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
+            "SelectedItem", typeof(DesignerItem), typeof(DiagramControl),
+            new FrameworkPropertyMetadata(null));
+
+        public DesignerItem SelectedItem
+        {
+            get { return (DesignerItem)GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
+        }
 
         #endregion
 
@@ -207,7 +216,7 @@ namespace DiagramDesigner.Controls
                     }
                 }
             };
-            
+
         }
 
         //public void GetDataInfo()

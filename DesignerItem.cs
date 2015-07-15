@@ -1,6 +1,7 @@
 ﻿using DiagramDesigner.Controls;
 using DiagramDesigner.Data;
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -257,21 +258,34 @@ namespace DiagramDesigner
             if (designer != null)
             {
                 if ((Keyboard.Modifiers & (ModifierKeys.Shift | ModifierKeys.Control)) != ModifierKeys.None)
+                {
                     if (IsSelected)
                     {
                         designer.SelectionService.RemoveFromSelection(this);
+
+                        DiagramControl.SelectedItem = null;
+                        DiagramControl.SelectedItems.Remove(this);
                     }
                     else
                     {
                         designer.SelectionService.AddToSelection(this);
+                        DiagramControl.SelectedItem = this;
+                        DiagramControl.SelectedItems.Add(this);
                     }
+                }
                 else if (!IsSelected)
                 {
                     designer.SelectionService.SelectItem(this);
+
+                    DiagramControl.SelectedItem = this;
+                    DiagramControl.SelectedItems.Add(this);
                 }
                 Focus();
             }
             e.Handled = false;
+
+
+
         }
         #endregion
 

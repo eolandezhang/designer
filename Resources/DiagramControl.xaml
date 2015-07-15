@@ -11,20 +11,19 @@
                     <GroupBox x:Name="DiagramHeader">
                         <ScrollViewer HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto" Name="DesignerScrollViewer">
-                            <!--<s:DesignerCanvas
+                            <s:DesignerCanvas
                                     Focusable="true" 
                                     x:Name="Designer"
                                     Background="{StaticResource WindowBackgroundBrush}"
-                                    Margin="2" 
                                     FocusVisualStyle="{x:Null}"
-                                    />-->
-                            <s:DesignerCanvas
+                                    />
+                            <!--<s:DesignerCanvas
                                     Focusable="true" 
                                     x:Name="Designer"
                                     Background="Azure"
                                     Margin="2" 
                                     FocusVisualStyle="{x:Null}"
-                                    />
+                                    />-->
                         </ScrollViewer>
                     </GroupBox>
                 </ControlTemplate>

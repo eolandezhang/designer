@@ -117,6 +117,9 @@ namespace DiagramDesigner
         {
             _diagramControl.DesignerCanvas.SelectionService.ClearSelection();
             _diagramControl.DesignerCanvas.SelectionService.SelectItem(designerItem);
+            _diagramControl.SelectedItem = designerItem;
+            _diagramControl.SelectedItems.Clear();
+            _diagramControl.SelectedItems.Add(designerItem);
         }
 
         #endregion
@@ -222,11 +225,6 @@ namespace DiagramDesigner
         #region Arrange Items
         public void ArrangeWithRootItems()
         {
-            //Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
-            //{
-
-            //Arrange();
-            //Measure();
             var items = _diagramControl.DesignerItems.ToList();
             var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
             foreach (var root in roots)
@@ -240,9 +238,6 @@ namespace DiagramDesigner
                 root.Oldx = Canvas.GetLeft(root);
                 ArrangeWithRootItems(root);
             }
-
-            //}));
-
         }
         void ArrangeWithRootItems/*递归方法，给定根节点，重新布局*/(DesignerItem designerItem/*根节点*/)
         {
@@ -473,9 +468,10 @@ namespace DiagramDesigner
         #endregion
         public DesignerItem ChangeParent(DesignerItem designerItem)
         {
-            _diagramControl.DesignerItems.Where(x => !x.IsNewParent).ToList().ForEach(x => x.IsNewParent = false);
             HideOthers(designerItem);
             var newParent = GetNewParent(designerItem);
+            _diagramControl.DesignerItems.ToList().ForEach(x => { x.IsNewParent = false; });
+            if (newParent != null) newParent.IsNewParent = true;
             return newParent;
         }
         public List<DesignerItem> CreateShadows/*拖拽时产生影子*/(DesignerItem dragItem/*拖动的节点*/, DesignerItem newParent)
@@ -501,6 +497,8 @@ namespace DiagramDesigner
         public void MoveUpAndDown(DesignerItem parent, DesignerItem selectedItem)
         {
             if (parent == null) return;
+
+
             var itemTop = Canvas.GetTop(selectedItem) - selectedItem.ActualHeight / 2;
             var itemsOnCanvas = _diagramControl.DesignerCanvas.Children;
             var designerItemsOnCanvas = itemsOnCanvas.OfType<DesignerItem>().ToList();
@@ -508,6 +506,7 @@ namespace DiagramDesigner
                 x.Oldy > itemTop
                 && x.ID != selectedItem.ID
                ).ToList();/*比元素大的，全部向下移*/
+
             foreach (var designerItem in downItems)
             {
                 Canvas.SetTop(designerItem, designerItem.Oldy + selectedItem.ActualHeight);
@@ -519,7 +518,17 @@ namespace DiagramDesigner
                 ).ToList();/*比父节点大的，比元素小的，恢复位置*/
             foreach (var designerItem in upItems)
             {
-                Canvas.SetTop(designerItem, designerItem.Data.YIndex);
+                //Canvas.SetTop(designerItem, designerItem.Data.YIndex);
+                //var item = designerItem.IsShadow ? designerItem.ShadowOrignal : designerItem;
+                //var x1 = GetAllSubItems(item);
+                //if (x1 == null || !x1.Any()) continue;
+                //var list = designerItemsOnCanvas.Where(x =>
+                //    x.Oldy <= x1.Aggregate((a, b) => a.Oldy > b.Oldy ? a : b).Oldy
+                //    && x.ID != selectedItem.ID
+                //    ).ToList();
+                //list.ForEach(x => { Canvas.SetTop(x, x.Data.YIndex); });
+
+                Canvas.SetTop(designerItem, designerItem.Oldy);
                 var item = designerItem.IsShadow ? designerItem.ShadowOrignal : designerItem;
                 var x1 = GetAllSubItems(item);
                 if (x1 == null || !x1.Any()) continue;
@@ -527,7 +536,7 @@ namespace DiagramDesigner
                     x.Oldy <= x1.Aggregate((a, b) => a.Oldy > b.Oldy ? a : b).Oldy
                     && x.ID != selectedItem.ID
                     ).ToList();
-                list.ForEach(x => { Canvas.SetTop(x, x.Data.YIndex); });
+                list.ForEach(x => { Canvas.SetTop(x, x.Oldy); });
             }
         }
         public void FinishChangeParent(DesignerItem newParent)
@@ -567,8 +576,6 @@ namespace DiagramDesigner
                         select designerItem).ToList();
             if (!list.Any()) return null;
             var parent = list.Aggregate((a, b) => a.Data.YIndex > b.Data.YIndex ? a : b);
-            _diagramControl.DesignerItems.ToList().ForEach(x => { x.IsNewParent = false; });
-            parent.IsNewParent = true;
             return parent;
         }
         #endregion
@@ -661,6 +668,7 @@ namespace DiagramDesigner
             if (path != null)
             {
                 path.Stroke = colorBrushes;
+                //path.StrokeThickness = 2;
             }
         }
         #endregion
@@ -1025,16 +1033,12 @@ namespace DiagramDesigner
         }
         void Scroll(DesignerItem designerItem)
         {
-            //Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
-            //{
-
             if (designerItem == null) return;
             var sv = (ScrollViewer)_diagramControl.Template.FindName("DesignerScrollViewer", _diagramControl);
-            var x = Canvas.GetTop(designerItem);
             sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem) - 400);
             sv.ScrollToHorizontalOffset(Canvas.GetLeft(designerItem) - 400);
-            //}));
         }
+
         #endregion
     }
 }

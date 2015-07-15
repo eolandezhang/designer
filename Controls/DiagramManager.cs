@@ -3,6 +3,7 @@ using DiagramDesigner.Data;
 using DiagramDesigner.MVVM;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -247,21 +248,21 @@ namespace DiagramDesigner
             //Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
             //{
 
-                //Arrange();
-                //Measure();
-                var items = _diagramControl.DesignerItems.ToList();
-                var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
-                foreach (var root in roots)
-                {
-                    //设定节点宽度
-                    SetWidth(root);
-                    //设定节点位置
-                    root.Data.YIndex = Canvas.GetTop(root);
-                    root.Oldy = Canvas.GetTop(root);
-                    root.Data.XIndex = Canvas.GetLeft(root);
-                    root.Oldx = Canvas.GetLeft(root);
-                    ArrangeWithRootItems(root);
-                }
+            //Arrange();
+            //Measure();
+            var items = _diagramControl.DesignerItems.ToList();
+            var roots = items.Where(x => x.Data.ParentId.Equals(Guid.Empty));
+            foreach (var root in roots)
+            {
+                //设定节点宽度
+                SetWidth(root);
+                //设定节点位置
+                root.Data.YIndex = Canvas.GetTop(root);
+                root.Oldy = Canvas.GetTop(root);
+                root.Data.XIndex = Canvas.GetLeft(root);
+                root.Oldx = Canvas.GetLeft(root);
+                ArrangeWithRootItems(root);
+            }
 
             //}));
 
@@ -270,6 +271,7 @@ namespace DiagramDesigner
         void ArrangeWithRootItems/*递归方法，给定根节点，重新布局*/(DesignerItem designerItem/*根节点*/)
         {
             if (designerItem == null) return;
+            designerItem.SetTemplate();
             var directSubItems = GetDirectSubItems(designerItem);
             if (directSubItems == null || directSubItems.Count == 0) return;
             var subItems = directSubItems
@@ -280,7 +282,7 @@ namespace DiagramDesigner
             {
                 if (i != 0) h1 += subItems[i - 1].ActualHeight;
                 var list = new List<DesignerItem>();
-                for (var j = 0; j < i; j++) { list.AddRange(GetAllSubItems(subItems.ElementAt(j))/*.Where(item => !list.Contains(item))*/); }
+                for (var j = 0; j < i; j++) { list.AddRange(GetAllSubItems(subItems.ElementAt(j)).Where(item => !list.Contains(item))/**/); }
                 var preChilds = list.OrderBy(x => x.Data.YIndex).Where(x => x.Visibility.Equals(Visibility.Visible));
                 var h2 = preChilds.Sum(preChild => preChild.ActualHeight);/*父节点的直接子节点的所有子节点的总高度*/
                 #region 设定节点位置
@@ -778,7 +780,6 @@ namespace DiagramDesigner
             DrawChild(parentDesignerItem, designerItem);
             SetSelectItem(designerItem);
             ArrangeWithRootItems();
-            BringToFront(designerItem);
             Scroll(designerItem);
         }
         #region Edit
@@ -1050,11 +1051,11 @@ namespace DiagramDesigner
             //Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
             //{
 
-                if (designerItem == null) return;
-                var sv = (ScrollViewer)_diagramControl.Template.FindName("DesignerScrollViewer", _diagramControl);
-                var x = Canvas.GetTop(designerItem);
-                sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem) - 500);
-                sv.ScrollToHorizontalOffset(Canvas.GetLeft(designerItem) - 500);
+            if (designerItem == null) return;
+            var sv = (ScrollViewer)_diagramControl.Template.FindName("DesignerScrollViewer", _diagramControl);
+            var x = Canvas.GetTop(designerItem);
+            sv.ScrollToVerticalOffset(Canvas.GetTop(designerItem) - 400);
+            sv.ScrollToHorizontalOffset(Canvas.GetLeft(designerItem) - 400);
             //}));
         }
         #endregion

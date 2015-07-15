@@ -224,6 +224,7 @@ namespace DiagramDesigner
              {
                  diagramControl.DiagramManager.Edit(this);
              };
+
         }
         public DesignerItem(DiagramControl diagramControl)
             : this(Guid.NewGuid(), diagramControl) { }
@@ -291,15 +292,27 @@ namespace DiagramDesigner
                             ControlTemplate template = GetDragThumbTemplate(contentVisual);
                             if (template != null) thumb.Template = template;
                         }
-
                     }
-                    contentPresenter.ContentTemplate = DiagramControl.GetDesignerItemTemplate(this.DiagramControl);
-
                 }
             }
         }
 
-
+        public void SetTemplate()
+        {
+            if (Template != null)
+            {
+                ContentPresenter contentPresenter =
+                    Template.FindName("PART_ContentPresenter", this) as ContentPresenter;
+                if (contentPresenter != null)
+                {
+                    if (contentPresenter.ContentTemplate == null)
+                    {
+                        contentPresenter.ContentTemplate = DiagramControl.GetDesignerItemTemplate(this.DiagramControl);
+                        UpdateLayout();
+                    }
+                }
+            }
+        }
 
         public object Clone()
         {

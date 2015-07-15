@@ -66,7 +66,7 @@
                                             >
                                             <c:DiagramControl.DesignerItemTemplate>
                                                 <DataTemplate>
-                                                    <Border>
+                                                    <Border BorderThickness="1" BorderBrush="DeepSkyBlue">
                                                         <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
                                                     </Border>
                                                 </DataTemplate>

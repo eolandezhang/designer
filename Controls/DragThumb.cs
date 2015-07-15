@@ -76,58 +76,54 @@ namespace DiagramDesigner.Controls
                 ChangeParent(designerItem);
 
 
-                _verticalOffset += e.VerticalChange;
-                if (_verticalOffset < designerItem.ActualHeight)
+                VerticalScroll(designerItem, e.VerticalChange);
+                HorizontalScroll(designerItem, e.HorizontalChange);
+            }
+        }
+
+        void VerticalScroll(DesignerItem designerItem, double VerticalChange)
+        {
+            _verticalOffset += VerticalChange;
+            if (_verticalOffset < designerItem.ActualHeight)
+            {
+                var yPos = Canvas.GetTop(designerItem);
+                var sv = (ScrollViewer)DiagramControl.Template.FindName("DesignerScrollViewer", DiagramControl);
+                if (sv.VerticalOffset + sv.ViewportHeight - 100 < yPos && VerticalChange > 0)
                 {
-                    var yPos = Canvas.GetTop(designerItem);
-                    var sv = (ScrollViewer)DiagramControl.Template.FindName("DesignerScrollViewer", DiagramControl);
-                    if (sv.VerticalOffset + sv.ViewportHeight - 200 < yPos )
-                        sv.ScrollToVerticalOffset(sv.VerticalOffset + e.VerticalChange);
-                    //sv.ScrollToHorizontalOffset(sv.HorizontalOffset + e.HorizontalChange);
-
+                    sv.ScrollToVerticalOffset(sv.VerticalOffset + VerticalChange);
                 }
-                else if (_verticalOffset > designerItem.ActualHeight)
+                else if (yPos < sv.VerticalOffset + 100 && VerticalChange < 0)
                 {
-                    _verticalOffset = 0;
+                    sv.ScrollToVerticalOffset(sv.VerticalOffset + VerticalChange);
                 }
-                ////var viewportHeight = sv.ViewportHeight;
-                ////var verticalOffset = sv.VerticalOffset;
-                ////var extentHeight = sv.ExtentHeight;
-                ////var scrollableHeight = sv.ScrollableHeight;
-                //var yPos = Canvas.GetTop(designerItem);
-                //var verticalChange = e.VerticalChange;
-                //var horizontalChange = e.HorizontalChange;
 
-                //if (e.VerticalChange > 0)
-                //{
-                //    var ht = sv.VerticalOffset + sv.ViewportHeight - yPos;
-                //    //if (ht < 200 && ht > 0)
-                //    {
-                //        _verticalOffset += verticalChange;
-                //        sv.ScrollToVerticalOffset(_verticalOffset);
-                //    }
-                //}
-                //else
-                //{
-                //    _verticalOffset += verticalChange;
-                //    sv.ScrollToVerticalOffset(_verticalOffset);
-                //}
-                //var xPos = Canvas.GetLeft(designerItem);
-                //if (e.HorizontalChange > 0)
-                //{
+            }
+            else if (_verticalOffset > designerItem.ActualHeight)
+            {
+                _verticalOffset = 0;
+            }
+        }
+        void HorizontalScroll(DesignerItem designerItem, double HorizontalChange)
+        {
+            _horizontalOffset += HorizontalChange;
+            if (_horizontalOffset < designerItem.ActualWidth)
+            {
+                var xPos = Canvas.GetLeft(designerItem);
+                var sv = (ScrollViewer)DiagramControl.Template.FindName("DesignerScrollViewer", DiagramControl);
+                if (sv.HorizontalOffset + sv.ViewportWidth - designerItem.ActualWidth < xPos && HorizontalChange > 0)
+                {
+                    sv.ScrollToHorizontalOffset(sv.HorizontalOffset + HorizontalChange);
+                }
+                else if (xPos < sv.VerticalOffset + 100 && HorizontalChange < 0)
+                {
+                    sv.ScrollToHorizontalOffset(sv.HorizontalOffset + HorizontalChange);
+                }
+                //sv.ScrollToHorizontalOffset(sv.HorizontalOffset + e.HorizontalChange);
 
-                //    var ht = sv.HorizontalOffset + sv.ViewportWidth - xPos;
-                //    //if (ht < 200 && ht > 0)
-                //    {
-                //        _horizontalOffset += horizontalChange;
-                //        sv.ScrollToHorizontalOffset(_horizontalOffset);
-                //    }
-                //}
-                //else
-                //{
-                //    _horizontalOffset += horizontalChange;
-                //    sv.ScrollToHorizontalOffset(_horizontalOffset);
-                //}
+            }
+            else if (_horizontalOffset > designerItem.ActualWidth)
+            {
+                _horizontalOffset = 0;
             }
         }
 

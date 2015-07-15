@@ -38,20 +38,7 @@ namespace DiagramDesigner.Data
         {
             ItemId = id;
         }
-        //public CustomItemData(
-        //    Guid id,
-        //    Guid parentId,
-        //    string text,
-        //    string desc,
-        //    bool added,
-        //    bool removed,
-        //    double xIndex,
-        //    double yIndex)
-        //    : base(id, parentId, text, added, removed, xIndex, yIndex)
-        //{
-        //    Desc = desc;
-        //}
-
+        
         public CustomItemData(
             string id,
             string parentId,

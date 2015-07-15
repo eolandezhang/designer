@@ -24,8 +24,8 @@ namespace DiagramDesigner
                 OnPropertyChanged("SelectedItem");
             }
         }
-        private ObservableCollection<ItemDataBase> _itemDatas;
-        public ObservableCollection<ItemDataBase> ItemDatas
+        private List<ItemData> _itemDatas;
+        public List<ItemData> ItemDatas
         {
             get { return _itemDatas; }
             set
@@ -55,9 +55,16 @@ namespace DiagramDesigner
             }
         }
         public DiagramControl DiagramControl { get; set; }
+        private ObservableCollection<DesignerItem> _designerItems;
+
+        public ObservableCollection<DesignerItem> DesignerItems
+        {
+            get { return _designerItems; }
+            set { _designerItems = value; OnPropertyChanged("DesignerItems"); }
+        }
         public MainViewModel()
         {
-            InitData();
+            //InitData();
             PropertyChanged += (s, e) =>
             {
                 //switch (e.PropertyName)
@@ -96,15 +103,27 @@ namespace DiagramDesigner
         //可用框架中的消息实现
         public void InitData()
         {
-            ItemDatas = new ObservableCollection<ItemDataBase>()
+            //ItemDatas = new ObservableCollection<ItemDataBase>()
+            //{
+            //    new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",5d,5d),
+            //    new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",0,2),
+            //    new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",0,1),
+            //    new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f933","d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "Item-3", "3",0,3),
+            //    new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",0,4),
+            //    new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5\r\nasdf", "5",0,5)
+            //};
+            ItemDatas = new List<ItemData>()
             {
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",5d,5d),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",0,2),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",0,1),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f933","d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "Item-3", "3",0,3),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",0,4),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5\r\nasdf", "5",0,5)
+                new ItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",5d,5d),
+                new ItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",0,2),
+                new ItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",0,1),
+                new ItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f933","d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "Item-3", "3",0,3),
+                new ItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",0,4),
+                new ItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5\r\nasdf", "5",0,5)
             };
+
+            DesignerItems = DesignerItemOperator.Default.InitDesignerItems(ItemDatas);
+
         }
 
         #region Command
@@ -126,9 +145,9 @@ namespace DiagramDesigner
                 {
                     if (SelectedItem == null) return;
                     var parentId = SelectedItem.ItemParentId;
-                    
+
                     var id = parentId.Equals(string.Empty) ? SelectedItem.ItemId : parentId;
-                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), id, GetText(), "", 0, double.MaxValue));
+                    ItemDatas.Add(new ItemData(Guid.NewGuid().ToString(), id, GetText(), "", 0, double.MaxValue));
                 }, EnableCommand);
             }
         }
@@ -139,7 +158,7 @@ namespace DiagramDesigner
                 return new RelayCommand(() =>
                 {
                     if (SelectedItem == null) return;
-                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), SelectedItem.ItemId, GetText(), "", 0, double.MaxValue));
+                    ItemDatas.Add(new ItemData(Guid.NewGuid().ToString(), SelectedItem.ItemId, GetText(), "", 0, double.MaxValue));
 
                 }, EnableCommand);
             }
@@ -152,9 +171,9 @@ namespace DiagramDesigner
                 {
                     if (SelectedItem == null) return;
                     var item = SelectedItem.Data;
-                    if (item != null && item.ItemParentId != string.Empty)
+                    if (item != null)//&& item.ItemParentId != string.Empty)
                     {
-                        ItemDatas.Remove(item);
+                        ItemDatas.Remove(item as ItemData);
                     }
                 }, EnableCommand);
             }
@@ -218,7 +237,13 @@ namespace DiagramDesigner
         public ICommand PasteCommand { get { return new RelayCommand(() => { }, () => SelectedItems.Any()); } }
 
 
-        public ICommand LoadData { get { return new RelayCommand(InitData); } }
+        public ICommand LoadData
+        {
+            get
+            {
+                return new RelayCommand(InitData);
+            }
+        }
 
         //public ICommand SaveCommand { get { return new RelayCommand(_diagramManager.Save); } }
     }

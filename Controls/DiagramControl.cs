@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,17 +27,14 @@ namespace DiagramDesigner.Controls
             }
             var diagramHeader = (GroupBox)GetTemplateChild("DiagramHeader");
             if (diagramHeader != null) diagramHeader.Header = DiagramHeader;
-            if (LoadDataCommand != null)
-            {
-                LoadDataCommand.Execute(null);
-            }
+
         }
 
         #endregion
 
         #region Fields & Properties
 
-        public readonly ObservableCollection<DesignerItem> DesignerItems; /*节点元素*/
+        //public readonly ObservableCollection<DesignerItem> DesignerItems; /*节点元素*/
         public List<ItemDataBase> RemovedItemDataBase = new List<ItemDataBase>();
         public DesignerCanvas DesignerCanvas { get; set; }
         public bool Suppress /*阻止通知*/ { get; set; }
@@ -68,6 +66,15 @@ namespace DiagramDesigner.Controls
 
         #region Dependency Property 用于数据绑定
 
+        public static readonly DependencyProperty DesignerItemsProperty = DependencyProperty.Register(
+            "DesignerItems", typeof(ObservableCollection<DesignerItem>), typeof(DiagramControl), new PropertyMetadata(new ObservableCollection<DesignerItem>()));
+
+        public ObservableCollection<DesignerItem> DesignerItems
+        {
+            get { return (ObservableCollection<DesignerItem>)GetValue(DesignerItemsProperty); }
+            set { SetValue(DesignerItemsProperty, value); }
+        }
+
         #region ZoomBoxControlProperty 缩放控件，以后需要修改
 
         public static readonly DependencyProperty ZoomBoxControlProperty = DependencyProperty.Register(
@@ -96,50 +103,12 @@ namespace DiagramDesigner.Controls
         #region ItemDatasProperty 数据源
 
         public static readonly DependencyProperty ItemDatasProperty = DependencyProperty.Register(
-            "ItemDatas", typeof(ObservableCollection<ItemDataBase>), typeof(DiagramControl),
-            new FrameworkPropertyMetadata(new ObservableCollection<ItemDataBase>(),
-                (d, e) =>
-                {
-                    var diagramControl = (DiagramControl)d;
-                    if (diagramControl.ItemDatas == null) return;
-                    if (diagramControl.Suppress) return;
-                    var n = e.NewValue as ObservableCollection<ItemDataBase>;
-                    if (n == null) return;
-                    diagramControl.DiagramManager.GenerateDesignerItems();/*利用数据源在画布上添加节点及连线*/
+            "ItemDatas", typeof(ObservableCollection<object>), typeof(DiagramControl),
+            new FrameworkPropertyMetadata(new ObservableCollection<object>()));
 
-                    n.CollectionChanged += (sender, arg) =>
-                    {
-                        switch (arg.Action)
-                        {
-                            case NotifyCollectionChangedAction.Add:
-                                {
-                                    var items = arg.NewItems.Cast<ItemDataBase>();
-                                    var f = items.FirstOrDefault();
-                                    if (f != null)
-                                    {
-                                        diagramControl.DiagramManager.AddDesignerItem(f);
-                                    }
-                                }
-                                break;
-                            case NotifyCollectionChangedAction.Remove:
-                                {
-                                    var items = arg.OldItems.Cast<ItemDataBase>();
-                                    var f = items.FirstOrDefault();
-                                    if (f != null)
-                                    {
-                                        diagramControl.DiagramManager.DeleteDesignerItem(f);
-                                    }
-                                }
-                                break;
-                        }
-                    };
-
-
-                }));
-
-        public ObservableCollection<ItemDataBase> ItemDatas
+        public ObservableCollection<object> ItemDatas
         {
-            get { return (ObservableCollection<ItemDataBase>)GetValue(ItemDatasProperty); }
+            get { return (ObservableCollection<object>)GetValue(ItemDatasProperty); }
             set { SetValue(ItemDatasProperty, value); }
         }
 
@@ -211,6 +180,33 @@ namespace DiagramDesigner.Controls
         }
         #endregion
 
+        #region LoadDataCommand
+        public static readonly DependencyProperty LoadDataCommandProperty = DependencyProperty.Register(
+            "LoadDataCommand", typeof(ICommand), typeof(DiagramControl), new PropertyMetadata(default(ICommand),
+                (d, e) =>
+                {
+                    var diagramControl = d as DiagramControl;
+
+                    if (diagramControl.LoadDataCommand != null)
+                    {
+                        //diagramControl.DesignerItems.Clear();
+                        diagramControl.LoadDataCommand.Execute(null);
+                        foreach (var designerItem in diagramControl.DesignerItems)
+                        {
+                            designerItem.DiagramControl = diagramControl;
+                        }
+                        diagramControl.DiagramManager.GenerateDesignerItems();
+
+                    }
+                }));
+
+        public ICommand LoadDataCommand
+        {
+            get { return (ICommand)GetValue(LoadDataCommandProperty); }
+            set { SetValue(LoadDataCommandProperty, value); }
+        }
+        #endregion
+
         #endregion
 
         #region Constructors
@@ -251,14 +247,7 @@ namespace DiagramDesigner.Controls
 
         #region Commands
 
-        public static readonly DependencyProperty LoadDataCommandProperty = DependencyProperty.Register(
-            "LoadDataCommand", typeof(ICommand), typeof(DiagramControl), new PropertyMetadata(default(ICommand)));
 
-        public ICommand LoadDataCommand
-        {
-            get { return (ICommand)GetValue(LoadDataCommandProperty); }
-            set { SetValue(LoadDataCommandProperty, value); }
-        }
         #endregion
 
         #region INotifyPropertyChanged

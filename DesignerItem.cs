@@ -14,7 +14,7 @@ namespace DiagramDesigner
     [TemplatePart(Name = "PART_ResizeDecorator", Type = typeof(Control))]
     [TemplatePart(Name = "PART_ConnectorDecorator", Type = typeof(Control))]
     [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
-    public class DesignerItem : ContentControl, ISelectable, IGroupable, ICloneable
+    public class DesignerItem : ContentControl, ISelectable, IGroupable//, ICloneable
     {
         #region Fields
         #region 位置
@@ -28,8 +28,11 @@ namespace DiagramDesigner
         #region Property
         public string ItemId { get; set; }
         public string ItemParentId { get; set; }
+        public string Text { get; set; }
+        public double YIndex { get; set; }
+        public double XIndex { get; set; }
         //public Guid ID { get; set; }
-        public ItemDataBase Data { get; set; }/*存放数据*/
+        public object Data { get; set; }/*存放数据*/
         #region IsSelected Property 被选中的
         public bool IsSelected
         {
@@ -144,12 +147,12 @@ namespace DiagramDesigner
         #endregion
         #region 树状图，不使用的属性
         #region ParentID Property 分组时用的，并不是表示父节点ID
-       
+
         public string ParentID
-                {
-                    get { return (string)GetValue(ParentIDProperty); }
-                    set { SetValue(ParentIDProperty, value); }
-                }
+        {
+            get { return (string)GetValue(ParentIDProperty); }
+            set { SetValue(ParentIDProperty, value); }
+        }
         public static readonly DependencyProperty ParentIDProperty = DependencyProperty.Register("ParentID", typeof(string), typeof(DesignerItem));
         #endregion
         #region IsGroup Property 分组
@@ -216,35 +219,35 @@ namespace DiagramDesigner
         #endregion
 
         #region Constructors
-        public DesignerItem(string id, DiagramControl diagramControl)
+        public DesignerItem(string id, string text, DiagramControl diagramControl)
         {
             this.ItemId = id;
+            Text = text;
             ItemParentId = string.Empty;
             Loaded += DesignerItem_Loaded;
-            Data = new CustomItemData(id);
-            Data.DiagramControl = diagramControl;
+            //Data = new CustomItemData(id);
+            //Data.DiagramControl = diagramControl;
             DiagramControl = diagramControl;
             Focusable = false;
             MouseDoubleClick += (sender, e) =>
              {
                  diagramControl.DiagramManager.Edit(this);
              };
-
         }
         public DesignerItem(DiagramControl diagramControl)
-            : this(Guid.NewGuid().ToString(), diagramControl) { }
-        public DesignerItem(string id, ItemDataBase itemData, DiagramControl diagramControl)
-            : this(id, diagramControl)
+            : this(Guid.NewGuid().ToString(), "New Item", diagramControl) { }
+        public DesignerItem(string id, string text, object itemData, DiagramControl diagramControl)
+            : this(id, text, diagramControl)
         {
             Data = itemData;
-            itemData.DiagramControl = diagramControl;
+            //itemData.DiagramControl = diagramControl;
         }
-        public DesignerItem(string id, string parentItemId, ItemDataBase itemData, DiagramControl diagramControl)
-            : this(id, diagramControl)
+        public DesignerItem(string id, string parentItemId, string text, object itemData, DiagramControl diagramControl)
+            : this(id, text, itemData, diagramControl)
         {
             ItemParentId = parentItemId;
-            Data.ItemParentId = parentItemId; Data = itemData;
-            itemData.DiagramControl = diagramControl;
+            Data = itemData;
+            //itemData.DiagramControl = diagramControl;
         }
         static DesignerItem()
         {
@@ -333,10 +336,10 @@ namespace DiagramDesigner
             }
         }
 
-        public object Clone()
-        {
-            var data = (ItemDataBase)Data.Clone();
-            return new DesignerItem(data.ItemId, DiagramControl) { Data = data, DiagramControl = DiagramControl };
-        }
+        //public object Clone()
+        //{
+        //    var data = (ItemData)Data.Clone();
+        //    return new DesignerItem(data.ItemId, DiagramControl) { Data = data, DiagramControl = DiagramControl };
+        //}
     }
 }

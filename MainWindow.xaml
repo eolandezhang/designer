@@ -62,8 +62,10 @@
                                             DiagramHeader="树状图" 
                                             ZoomBoxControl="{Binding ElementName=ZoomBox}"
                                             ItemDatas="{Binding ItemDatas}"
+                                            DesignerItems="{Binding DesignerItems}"
                                             SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
                                             SelectedItems="{Binding SelectedItems,Mode=OneWayToSource}"
+                                            LoadDataCommand="{Binding LoadData,Mode=OneWay}"
                                             >
                                             <c:DiagramControl.DesignerItemTemplate>
                                                 <DataTemplate>

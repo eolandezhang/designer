@@ -99,7 +99,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\InputBindingsBehavior.cs" />
-    <Compile Include="Data\DataItem.cs" />
+    <Compile Include="Data\DesignerItemOperator.cs" />
+    <Compile Include="Data\ItemData.cs" />
     <Compile Include="InputBindingManager.cs" />
     <Compile Include="MVVM\DataContextSpy.cs" />
     <Compile Include="MVVM\ObservableObject.cs" />

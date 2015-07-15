@@ -210,11 +210,8 @@ namespace DiagramDesigner
             GenerateDesignerItemContent(item, DEFAULT_FONT_COLOR_BRUSH);
             if (!item.Data.Removed)
             {
-
                 _diagramControl.DesignerCanvas.Children.Add(item);
-
-                Arrange();
-
+                _diagramControl.UpdateLayout();
                 Canvas.SetTop(item, topOffset);
                 Canvas.SetLeft(item, leftOffset);
             }
@@ -223,26 +220,6 @@ namespace DiagramDesigner
         #endregion
 
         #region Arrange Items
-        /* Updates the DesiredSize of a UIElement.
-         * Parent elements call this method 
-         * from their own MeasureCore implementations 
-         * to form a recursive（递归） layout update.
-         */
-        public void Measure()
-        {
-            _diagramControl.DesignerCanvas.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        }
-        /* Positions child elements and determines a size for a UIElement.
-        * Parent elements call this method
-        * from their own MeasureCore implementations 
-        * to form a recursive（递归） layout update.
-        */
-        public void Arrange()
-        {
-            var sv = Application.Current.MainWindow;
-            if (sv == null) return;
-            _diagramControl.DesignerCanvas.Arrange(new Rect(0, 0, sv.ActualWidth, sv.ActualHeight));
-        }
         public void ArrangeWithRootItems()
         {
             //Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
@@ -267,7 +244,6 @@ namespace DiagramDesigner
             //}));
 
         }
-
         void ArrangeWithRootItems/*递归方法，给定根节点，重新布局*/(DesignerItem designerItem/*根节点*/)
         {
             if (designerItem == null) return;
@@ -601,7 +577,8 @@ namespace DiagramDesigner
         void ChangeOriginalItemConnectionToShadow/*将item上的连线，连接到shadow上*/(DesignerItem item, DesignerItem shadow)
         {
             if (item == null || shadow == null) return;
-            Measure();//shadow放置到canvas上之后，需要重新测量，才能取得connector
+            _diagramControl.UpdateLayout();
+
             var connections = GetItemConnections(item).ToList();
             foreach (var connection in connections)
             {
@@ -679,7 +656,7 @@ namespace DiagramDesigner
         }
         void SetConnectionColor/*设定连线颜色*/(Connection connection, Brush colorBrushes)
         {
-            Measure();
+            _diagramControl.UpdateLayout();
             var path = connection.Template.FindName("PART_ConnectionPath", connection) as Path;
             if (path != null)
             {

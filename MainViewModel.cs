@@ -98,12 +98,12 @@ namespace DiagramDesigner
         {
             ItemDatas = new ObservableCollection<ItemDataBase>()
             {
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",false,false,5d,5d),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",false,false,0,2),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",false,false,0,1),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f933","d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "Item-3", "3",false,false,0,3),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",false,false,0,4),
-                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5\r\nasdf", "5",false,false,0,5)
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f93c","","Root","Root　Item",5d,5d),
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f931","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-1", "1",0,2),
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f932","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-2", "2",0,1),
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f933","d342e6d4-9e76-4a21-b4f8-41f8fab0f931", "Item-3", "3",0,3),
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f934","d342e6d4-9e76-4a21-b4f8-41f8fab0f93c", "Item-4", "4",0,4),
+                new CustomItemData("d342e6d4-9e76-4a21-b4f8-41f8fab0f935","d342e6d4-9e76-4a21-b4f8-41f8fab0f933", "Item-5\r\nasdf", "5",0,5)
             };
         }
 
@@ -128,7 +128,7 @@ namespace DiagramDesigner
                     var parentId = SelectedItem.ItemParentId;
                     
                     var id = parentId.Equals(string.Empty) ? SelectedItem.ItemId : parentId;
-                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), id, GetText(), "", true, false, 0, double.MaxValue));
+                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), id, GetText(), "", 0, double.MaxValue));
                 }, EnableCommand);
             }
         }
@@ -139,7 +139,7 @@ namespace DiagramDesigner
                 return new RelayCommand(() =>
                 {
                     if (SelectedItem == null) return;
-                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), SelectedItem.ItemId, GetText(), "", true, false, 0, double.MaxValue));
+                    ItemDatas.Add(new CustomItemData(Guid.NewGuid().ToString(), SelectedItem.ItemId, GetText(), "", 0, double.MaxValue));
 
                 }, EnableCommand);
             }

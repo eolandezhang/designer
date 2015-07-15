@@ -57,16 +57,12 @@ namespace DiagramDesigner.Data
             string parentId,
             string text,
             string desc,
-            bool added,
-            bool removed,
             double xIndex,
             double yIndex)
             : base(
             id,
             parentId,
             text,
-            added,
-            removed,
             xIndex,
             yIndex)
         {

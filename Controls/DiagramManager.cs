@@ -74,7 +74,7 @@ namespace DiagramDesigner
         List<DesignerItem> GetDirectSubItems/*取得直接子节点*/(DesignerItem item)
         {
             var list =
-                _diagramControl.DesignerItems.Where(x => x.ItemParentId == item.ItemId && !x.Data.Removed).OrderBy(x => x.Data.YIndex).ToList();
+                _diagramControl.DesignerItems.Where(x => x.ItemParentId == item.ItemId).OrderBy(x => x.Data.YIndex).ToList();
 
             if (item.CanCollapsed == false)
             {
@@ -95,7 +95,7 @@ namespace DiagramDesigner
             var result = new List<DesignerItem>();
             var child = new List<DesignerItem>();
             var list = _diagramControl.DesignerItems
-                .Where(x => x.ItemParentId == item.ItemId && !x.Data.Removed)
+                .Where(x => x.ItemParentId == item.ItemId)
                 .OrderBy(x => x.Data.YIndex).ToList();
             foreach (var subItem in list.Where(subItem => !result.Contains(subItem)))
             {
@@ -172,7 +172,7 @@ namespace DiagramDesigner
             if (designerItems.All(x => !x.ItemId.Equals(parentItem.ItemId))
                 && String.IsNullOrEmpty(parentItem.ItemParentId))
             { DrawRoot(parentItem, parentItem.Data.YIndex, parentItem.Data.XIndex); }
-            var childs = _diagramControl.DesignerItems.Where(x => x.ItemParentId==(parentItem.ItemId));
+            var childs = _diagramControl.DesignerItems.Where(x => x.ItemParentId == (parentItem.ItemId));
             foreach (var childItem in childs)
             {
                 if (designerItems.All(x => !x.ItemId.Equals(childItem.ItemId))) { DrawChild(parentItem, childItem); }
@@ -189,7 +189,6 @@ namespace DiagramDesigner
         void DrawChild /*创建非根节点时，同时创建与父节点之间的连线*/(DesignerItem parent, DesignerItem childItem)
         {
             if (parent == null) return;
-            if (childItem.Data.Removed) return;
             DrawDesignerItem(childItem);/*创建子节点*/
             var source = GetItemConnector(parent, PARENT_CONNECTOR);
             var sink = GetItemConnector(childItem, "Left");
@@ -211,13 +210,10 @@ namespace DiagramDesigner
         {
             if (item.Data == null) return;
             GenerateDesignerItemContent(item, DEFAULT_FONT_COLOR_BRUSH);
-            if (!item.Data.Removed)
-            {
-                _diagramControl.DesignerCanvas.Children.Add(item);
-                _diagramControl.UpdateLayout();
-                Canvas.SetTop(item, topOffset);
-                Canvas.SetLeft(item, leftOffset);
-            }
+            _diagramControl.DesignerCanvas.Children.Add(item);
+            _diagramControl.UpdateLayout();
+            Canvas.SetTop(item, topOffset);
+            Canvas.SetLeft(item, leftOffset);
         }
 
         #endregion
@@ -838,7 +834,6 @@ namespace DiagramDesigner
             var child = GetAllChildItemDataBase(itemDataBase.ItemId);
             _diagramControl.RemovedItemDataBase.AddRange(child);
             _diagramControl.RemovedItemDataBase.Add(itemDataBase);
-            _diagramControl.RemovedItemDataBase.ForEach(x => { x.Removed = true; });
             child.ForEach(c =>
             {
                 DeleteItem(_diagramControl.DesignerItems.FirstOrDefault(x => x.ItemId == c.ItemId));
@@ -922,7 +917,7 @@ namespace DiagramDesigner
         }
         private void CreateChildDesignerItem(DesignerItem parentDesignerItem)
         {
-            var child = _diagramControl.ItemDatas.Where(x => x.ItemParentId == parentDesignerItem.ItemId && !x.Removed);
+            var child = _diagramControl.ItemDatas.Where(x => x.ItemParentId == parentDesignerItem.ItemId);
             foreach (var userDataSource in child)
             {
                 var childDesignerItem = CreateChildItem(parentDesignerItem.ItemId, userDataSource);

@@ -25,7 +25,6 @@ namespace DiagramDesigner.Data
             }
         }
         private string _itemParentId;
-
         public string ItemParentId
         {
             get
@@ -38,24 +37,6 @@ namespace DiagramDesigner.Data
                 OnPropertyChanged("ItemParentId");
             }
         }
-        //public Guid Id { get; set; }
-        //private Guid _parentId;
-        //public Guid ParentId
-        //{
-        //    get { return _parentId; }
-        //    set
-        //    {
-        //        if (_parentId == value) return;
-
-        //        _parentId = value;
-        //        OnPropertyChanged("ParentId");
-
-        //        if (!Added)
-        //        {
-        //            Changed = true;
-        //        }
-        //    }
-        //}
         private string _text;
         public string Text
         {
@@ -82,13 +63,13 @@ namespace DiagramDesigner.Data
             set
             {
                 if (_changed == value) return;
-                if (Added) value = false;
+                //if (Added) value = false;
                 _changed = value;
                 OnPropertyChanged("Changed");
             }
         }
-        public bool Added { get; set; }
-        public bool Removed { get; set; }
+        //public bool Added { get; set; }
+        
         private double _xIndex;
         public double XIndex
         {
@@ -122,8 +103,6 @@ namespace DiagramDesigner.Data
             string id,
             string parentId,
             string text,
-            bool added,
-            bool removed,
             double xIndex,
             double yIndex)
         {
@@ -133,8 +112,7 @@ namespace DiagramDesigner.Data
             XIndex = xIndex;
             YIndex = yIndex;
             Changed = false;
-            Added = added;
-            Removed = removed;
+           
         }
 
 
@@ -163,8 +141,6 @@ namespace DiagramDesigner.Data
             item.ItemParentId = ItemParentId;
             item.Text = Text + "-" + "Copy";
             item.Changed = false;
-            item.Added = false;
-            item.Removed = false;
             item.XIndex = 0;
             item.YIndex = 0;
             item.Suppress = false;

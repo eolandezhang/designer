@@ -114,12 +114,10 @@ namespace DiagramDesigner.Controls
                 {
                     sv.ScrollToHorizontalOffset(sv.HorizontalOffset + HorizontalChange);
                 }
-                else if (xPos < sv.VerticalOffset + 100 && HorizontalChange < 0)
+                else if (xPos < sv.HorizontalOffset + designerItem.ActualWidth && HorizontalChange < 0)
                 {
                     sv.ScrollToHorizontalOffset(sv.HorizontalOffset + HorizontalChange);
                 }
-                //sv.ScrollToHorizontalOffset(sv.HorizontalOffset + e.HorizontalChange);
-
             }
             else if (_horizontalOffset > designerItem.ActualWidth)
             {

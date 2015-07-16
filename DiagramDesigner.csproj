@@ -246,6 +246,8 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="BOM设计器.xmind" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="Documents\BOM设计器.xmind" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
